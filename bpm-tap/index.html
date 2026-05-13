@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BPM TAP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: #100C0A;
+    color: #EAE0D0;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 300;
+    width: 100%;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    padding: 6px;
+  }
+
+  .strip {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid rgba(234, 224, 208, 0.5);
+    width: 100%;
+    min-height: 120px;
+  }
+
+  .cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 14px 18px;
+    border-right: 1px solid rgba(234, 224, 208, 0.3);
+  }
+  .cell:last-child { border-right: none; }
+
+  /* ── TAP ────────────────────────────────────────── */
+  .cell-tap {
+    padding: 12px 16px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .tap-btn {
+    width: 110px;
+    height: 88px;
+    background: transparent;
+    border: 1px solid #EAE0D0;
+    color: #EAE0D0;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 0.4em;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      background-color 0.08s linear,
+      color 0.08s linear,
+      border-color 0.08s linear,
+      box-shadow 0.18s ease-out;
+  }
+
+  .tap-btn:focus { outline: none; }
+  .tap-btn:focus-visible {
+    outline: 1px solid rgba(234, 224, 208, 0.5);
+    outline-offset: 3px;
+  }
+
+  .tap-btn.active {
+    background: #C07838;
+    border-color: #C07838;
+    color: #1E1A17;
+    box-shadow: 0 0 24px rgba(216, 144, 74, 0.55);
+  }
+
+  /* ── BPM ────────────────────────────────────────── */
+  .cell-bpm {
+    align-items: center;
+    min-width: 120px;
+  }
+
+  .bpm-number {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #EAE0D0;
+    font-weight: 400;
+    min-height: 56px;
+  }
+
+  .bpm-unit {
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    color: rgba(234, 224, 208, 0.75);
+    margin-top: 8px;
+    min-height: 12px;
+  }
+
+  /* ── STATS ──────────────────────────────────────── */
+  .cell-stats {
+    min-width: 150px;
+    gap: 12px;
+  }
+
+  .stat-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 0.32em;
+    color: rgba(234, 224, 208, 0.75);
+  }
+
+  .stat-value {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    color: #EAE0D0;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    min-height: 13px;
+  }
+
+  /* ── EXAMPLE CELLS ──────────────────────────────── */
+  .cell-ex {
+    flex: 1;
+    min-width: 130px;
+    gap: 8px;
+  }
+
+  .ex-label {
+    font-size: 9px;
+    letter-spacing: 0.32em;
+    color: rgba(234, 224, 208, 0.75);
+  }
+
+  .ex-value {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    color: #EAE0D0;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1.45;
+    min-height: 13px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ── RESET ──────────────────────────────────────── */
+  .cell-reset {
+    justify-content: center;
+    align-items: center;
+    padding: 14px 14px;
+  }
+
+  .reset-btn {
+    background: transparent;
+    border: 1px solid rgba(234, 224, 208, 0.6);
+    color: rgba(234, 224, 208, 0.9);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 9px;
+    letter-spacing: 0.4em;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .reset-btn:hover {
+    border-color: #EAE0D0;
+    color: #EAE0D0;
+  }
+
+  .reset-btn:focus { outline: none; }
+  .reset-btn:focus-visible {
+    outline: 1px solid rgba(234, 224, 208, 0.5);
+    outline-offset: 3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="strip">
+
+  <div class="cell cell-tap">
+    <button class="tap-btn" id="tapBtn" type="button">TAP</button>
+  </div>
+
+  <div class="cell cell-bpm">
+    <div class="bpm-number" id="bpmNumber"></div>
+    <div class="bpm-unit" id="bpmUnit"></div>
+  </div>
+
+  <div class="cell cell-stats">
+    <div class="stat-row">
+      <span class="stat-label">ACCURACY</span>
+      <span class="stat-value" id="accuracy"></span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">SCORE</span>
+      <span class="stat-value" id="score"></span>
+    </div>
+  </div>
+
+  <div class="cell cell-ex">
+    <div class="ex-label">MUSICAL EXAMPLE</div>
+    <div class="ex-value" id="musicalEx"></div>
+  </div>
+
+  <div class="cell cell-ex">
+    <div class="ex-label">GENRE EXAMPLE</div>
+    <div class="ex-value" id="genreEx"></div>
+  </div>
+
+  <div class="cell cell-ex">
+    <div class="ex-label">OTHER EXAMPLE</div>
+    <div class="ex-value" id="otherEx"></div>
+  </div>
+
+  <div class="cell cell-reset">
+    <button class="reset-btn" id="resetBtn" type="button">RESET</button>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+/* ── DATA ───────────────────────────────────────── */
+
+// Bracket-based song lookup. Each entry covers [min, max) BPM.
+const SONG_BRACKETS = [
+  { min: 65,  max: 70,  t: 'JEALOUS GUY',                  a: 'JOHN LENNON' },
+  { min: 70,  max: 75,  t: 'BOHEMIAN RHAPSODY',            a: 'QUEEN' },
+  { min: 75,  max: 80,  t: 'KARMA POLICE',                 a: 'RADIOHEAD' },
+  { min: 80,  max: 85,  t: 'BOULEVARD OF BROKEN DREAMS',   a: 'GREEN DAY' },
+  { min: 85,  max: 90,  t: 'WONDERWALL',                   a: 'OASIS' },
+  { min: 90,  max: 95,  t: 'BACK IN BLACK',                a: 'AC/DC' },
+  { min: 95,  max: 100, t: 'CALIFORNICATION',              a: 'RED HOT CHILI PEPPERS' },
+  { min: 100, max: 105, t: 'TAKE ME OUT',                  a: 'FRANZ FERDINAND' },
+  { min: 105, max: 110, t: 'EYE OF THE TIGER',             a: 'SURVIVOR' },
+  { min: 110, max: 115, t: 'SHOULD I STAY OR SHOULD I GO', a: 'THE CLASH' },
+  { min: 115, max: 120, t: 'SMELLS LIKE TEEN SPIRIT',      a: 'NIRVANA' },
+  { min: 120, max: 125, t: 'WELCOME TO THE JUNGLE',        a: "GUNS N' ROSES" },
+  { min: 125, max: 130, t: 'INSOMNIA',                     a: 'FAITHLESS' },
+  { min: 130, max: 135, t: 'SONG 2',                       a: 'BLUR' },
+  { min: 135, max: 140, t: 'SANDSTORM',                    a: 'DARUDE' },
+  { min: 140, max: 145, t: 'TOXIC',                        a: 'BRITNEY SPEARS' },
+  { min: 145, max: 150, t: 'MR. BRIGHTSIDE',               a: 'THE KILLERS' },
+  { min: 150, max: 155, t: 'SEX ON FIRE',                  a: 'KINGS OF LEON' },
+  { min: 155, max: 160, t: 'EVERLONG',                     a: 'FOO FIGHTERS' },
+  { min: 160, max: 165, t: 'PARANOID',                     a: 'BLACK SABBATH' },
+  { min: 165, max: 170, t: 'TAKE ON ME',                   a: 'A-HA' },
+  { min: 170, max: 175, t: 'RUN TO THE HILLS',             a: 'IRON MAIDEN' },
+  // 175–180 intentionally empty
+  { min: 180, max: 185, t: 'HOLIDAY IN CAMBODIA',          a: 'DEAD KENNEDYS' },
+  { min: 185, max: 190, t: "FIGHT 'EM TIL YOU CAN'T",      a: 'ANTHRAX' },
+  { min: 190, max: 195, t: 'BATTERY',                      a: 'METALLICA' },
+  { min: 195, max: 200, t: '199 FISH BALLOONS',            a: 'HELLFISH' }
+];
+
+const GENRES = [
+  { bpm: 65,  n: 'DOOM METAL' },
+  { bpm: 75,  n: 'TRIP-HOP' },
+  { bpm: 85,  n: 'LO-FI HIP-HOP' },
+  { bpm: 90,  n: 'BOOM-BAP HIP-HOP' },
+  { bpm: 95,  n: 'REGGAETON' },
+  { bpm: 105, n: 'NEO-SOUL' },
+  { bpm: 115, n: 'DISCO' },
+  { bpm: 122, n: 'DEEP HOUSE' },
+  { bpm: 126, n: 'TECH HOUSE' },
+  { bpm: 128, n: 'BIG ROOM / MAINSTAGE HOUSE' },
+  { bpm: 135, n: 'TRANCE' },
+  { bpm: 138, n: 'TECHNO' },
+  { bpm: 140, n: 'DUBSTEP' },
+  { bpm: 145, n: 'TRAP' },
+  { bpm: 155, n: 'HARDSTYLE' },
+  { bpm: 160, n: 'FOOTWORK' },
+  { bpm: 170, n: 'JUNGLE' },
+  { bpm: 174, n: 'DRUM & BASS' },
+  { bpm: 180, n: 'HAPPY HARDCORE' },
+  { bpm: 200, n: 'GABBER' },
+  { bpm: 220, n: 'FRENCHCORE' },
+  { bpm: 250, n: 'TERRORCORE' },
+  { bpm: 300, n: 'SPEEDCORE' },
+  { bpm: 600, n: 'SPLITTERCORE' }
+];
+
+const PHYSICAL = [
+  { bpm: 40,  n: 'CHURCH BELL TOLLING (FUNERAL)' },
+  { bpm: 50,  n: 'SLOW WINDSCREEN WIPER (INTERMITTENT)' },
+  { bpm: 60,  n: 'GRANDFATHER CLOCK PENDULUM' },
+  { bpm: 70,  n: 'MEDIUM WINDSCREEN WIPER' },
+  { bpm: 80,  n: 'CAR INDICATOR (STANDARD CLICK RATE)' },
+  { bpm: 90,  n: 'CASUAL WALKING PACE (FOOTSTEPS)' },
+  { bpm: 100, n: 'PEDESTRIAN CROSSING "WAIT" TONE' },
+  { bpm: 115, n: 'V/LINE TRAIN AT CRUISE (RAIL CLACKS)' },
+  { bpm: 120, n: 'COMMUTER CYCLING CADENCE' },
+  { bpm: 130, n: 'FAST CAR INDICATOR (SOME EUROPEAN MAKES)' },
+  { bpm: 140, n: 'SNOWY TREE CRICKET AT 25°C' },
+  { bpm: 150, n: 'TROTTING HORSE HOOVES' },
+  { bpm: 160, n: 'STEADY RUNNING CADENCE' },
+  { bpm: 180, n: 'SPRINT CADENCE' },
+  { bpm: 220, n: 'DOMESTIC SEWING MACHINE' },
+  { bpm: 250, n: 'INDUSTRIAL SEWING MACHINE' },
+  { bpm: 300, n: 'FAST TAP DANCER' },
+  { bpm: 400, n: 'GALLOPING HORSE HOOVES' },
+  { bpm: 500, n: 'HELICOPTER ROTOR (LIGHT AIRCRAFT)' },
+  { bpm: 600, n: 'PEDESTRIAN CROSSING "WALK NOW" TONE' }
+];
+
+const AWARDS = {
+  16:  { any: 'TAPPING ALONG',       good: 'IN TIME',            great: 'LOCKED IN' },
+  32:  { any: 'KEEPING TIME',        good: 'STEADY HAND',        great: 'POCKET FOUND' },
+  48:  { any: 'METRONOME APPRENTICE',good: 'CLICK TRACK FRIENDLY',great:'POCKET SURGEON' },
+  64:  { any: 'TIME KEEPER',         good: 'IN THE POCKET',      great: 'TEMPO WHISPERER' },
+  80:  { any: 'SESSION READY',       good: 'BACKLINE STEADY',    great: 'DRUM TECH IN TRAINING' },
+  96:  { any: 'POCKET VETERAN',      good: 'CLICK KILLER',       great: 'THE CLICK BOWS TO YOU' },
+  112: { any: 'RHYTHMIC ENDURANCE',  good: 'INHUMAN PRECISION',  great: 'SUSPICIOUSLY MECHANICAL' },
+  128: { ultimate: 'CERTIFIED CYBERNETIC DRUM MACHINE' }
+};
+
+const JOKE_AWARDS = [
+  'FREE JAZZ ENERGY',
+  'VIBING, NOT TIMING',
+  'RUBATO MASTER',
+  'EXPRESSIVE TIMING',
+  'TIME IS A CONSTRUCT',
+  'THE BEAT IS A SUGGESTION',
+  'POLYRHYTHMIC (AGAINST YOUR WILL)',
+  'TEMPO-CURIOUS',
+  'TIME IS A FLAT CIRCLE (BUT NOT A CLOCK IT SEEMS)'
+];
+
+/* ── CONFIG ─────────────────────────────────────── */
+
+const IDLE_RESET_MS = 2500;
+const BPM_WINDOW    = 8;     // last N taps for displayed BPM
+const MIN_BPM       = 40;
+const MAX_BPM       = 600;
+const GENRE_TOL     = 10;
+const PHYS_TOL      = 10;
+const LOW_ACC       = 65;    // below this → joke award
+const GOOD_ACC      = 85;
+const GREAT_ACC     = 95;
+
+/* ── STATE ──────────────────────────────────────── */
+
+let taps = [];                 // performance.now() timestamps
+let currentScore = '';         // sticky until reset or new milestone overwrites
+
+/* ── DOM ────────────────────────────────────────── */
+
+const bpmNumberEl = document.getElementById('bpmNumber');
+const bpmUnitEl   = document.getElementById('bpmUnit');
+const accuracyEl  = document.getElementById('accuracy');
+const scoreEl     = document.getElementById('score');
+const musicalEx   = document.getElementById('musicalEx');
+const genreEx     = document.getElementById('genreEx');
+const otherEx     = document.getElementById('otherEx');
+const tapBtn      = document.getElementById('tapBtn');
+const resetBtn    = document.getElementById('resetBtn');
+
+/* ── HELPERS ────────────────────────────────────── */
+
+function findNearest(target, list, tolerance) {
+  let best = null;
+  let bestDiff = Infinity;
+  for (const item of list) {
+    const diff = Math.abs(item.bpm - target);
+    if (diff <= tolerance && diff < bestDiff) {
+      best = item;
+      bestDiff = diff;
+    }
+  }
+  return best;
+}
+
+function findSongBracket(bpm) {
+  for (const b of SONG_BRACKETS) {
+    if (bpm >= b.min && bpm < b.max) return b;
+  }
+  return null;
+}
+
+function intervalsFrom(arr) {
+  const out = [];
+  for (let i = 1; i < arr.length; i++) out.push(arr[i] - arr[i - 1]);
+  return out;
+}
+
+function calculateBPM() {
+  if (taps.length < 4) return null;
+  const recent = taps.slice(-BPM_WINDOW);
+  const ints = intervalsFrom(recent);
+  const avg = ints.reduce((a, b) => a + b, 0) / ints.length;
+  if (avg <= 0) return null;
+  return Math.round(60000 / avg);
+}
+
+function calculateAccuracy() {
+  if (taps.length < 4) return null;
+  const ints = intervalsFrom(taps);
+  const mean = ints.reduce((a, b) => a + b, 0) / ints.length;
+  if (mean <= 0) return 0;
+  const variance = ints.reduce((s, v) => s + (v - mean) ** 2, 0) / ints.length;
+  const stdDev = Math.sqrt(variance);
+  const cv = stdDev / mean;
+  return Math.max(0, Math.min(100, Math.round((1 - cv) * 100)));
+}
+
+function awardFor(milestone, accuracy, tapCount) {
+  // 128 ultimate gate
+  if (milestone === 128) {
+    if (accuracy >= GREAT_ACC) return AWARDS[128].ultimate;
+    milestone = 112; // fall back
+  }
+  const tier = AWARDS[milestone];
+  if (accuracy < LOW_ACC) {
+    return JOKE_AWARDS[Math.floor(Math.random() * JOKE_AWARDS.length)];
+  }
+  if (accuracy >= GREAT_ACC) return tier.great;
+  if (accuracy >= GOOD_ACC) return tier.good;
+  return tier.any;
+}
+
+function checkMilestone(tapCount, accuracy) {
+  // Only fire on exact milestone hits to keep score sticky between milestones
+  const milestones = [16, 32, 48, 64, 80, 96, 112, 128];
+  if (milestones.includes(tapCount)) {
+    currentScore = awardFor(tapCount, accuracy, tapCount);
+  }
+}
+
+/* ── RENDER ─────────────────────────────────────── */
+
+function render() {
+  const bpm = calculateBPM();
+  const acc = calculateAccuracy();
+  const inRange = bpm !== null && bpm >= MIN_BPM && bpm <= MAX_BPM;
+
+  if (inRange) {
+    bpmNumberEl.textContent = bpm;
+    bpmUnitEl.textContent   = 'BPM';
+
+    const song  = findSongBracket(bpm);
+    const genre = findNearest(bpm, GENRES,   GENRE_TOL);
+    const phys  = findNearest(bpm, PHYSICAL, PHYS_TOL);
+
+    musicalEx.textContent = song  ? `${song.t} — ${song.a}` : '';
+    genreEx.textContent   = genre ? genre.n : '';
+    otherEx.textContent   = phys  ? phys.n  : '';
+  } else {
+    bpmNumberEl.textContent = '';
+    bpmUnitEl.textContent   = '';
+    musicalEx.textContent   = '';
+    genreEx.textContent     = '';
+    otherEx.textContent     = '';
+  }
+
+  accuracyEl.textContent = acc !== null ? `${acc}%` : '';
+  scoreEl.textContent    = currentScore;
+}
+
+function clearAll() {
+  taps = [];
+  currentScore = '';
+  bpmNumberEl.textContent = '';
+  bpmUnitEl.textContent   = '';
+  accuracyEl.textContent  = '';
+  scoreEl.textContent     = '';
+  musicalEx.textContent   = '';
+  genreEx.textContent     = '';
+  otherEx.textContent     = '';
+}
+
+/* ── INPUT ──────────────────────────────────────── */
+
+let flashTimer = null;
+
+function handleTap() {
+  const now = performance.now();
+
+  // Idle auto-reset: if last tap was long ago, start fresh
+  if (taps.length > 0 && now - taps[taps.length - 1] > IDLE_RESET_MS) {
+    taps = [];
+    currentScore = '';
+  }
+
+  taps.push(now);
+
+  const acc = calculateAccuracy();
+  if (acc !== null) checkMilestone(taps.length, acc);
+
+  // Tap flash
+  tapBtn.classList.add('active');
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => tapBtn.classList.remove('active'), 90);
+
+  render();
+}
+
+tapBtn.addEventListener('click', handleTap);
+resetBtn.addEventListener('click', clearAll);
+
+// Spacebar = tap. Block repeat to avoid auto-fire on hold.
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !e.repeat) {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+    e.preventDefault();
+    handleTap();
+  }
+});
+
+// Prevent the button's own default space-activation (would double-fire)
+tapBtn.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'Enter') e.preventDefault();
+});
+</script>
+</body>
+</html>

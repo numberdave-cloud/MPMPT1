@@ -10,11 +10,13 @@ Each MOTE is a single self-contained HTML file. Web Audio API only, no external 
 | --- | --- |
 | [`hello/`](./hello) | Deployment pipeline test |
 | [`mote-1/`](./mote-1) | MOTE-1 — What is a MOTE? (intro / self-referential CRT tour) |
+| [`bpm-tap/`](./bpm-tap) | BPM Tap — tap-tempo counter with accuracy scoring and BPM references |
 
 ## Live URLs
 
 - https://numberdave-cloud.github.io/MPMPT1/hello/
 - https://numberdave-cloud.github.io/MPMPT1/mote-1/
+- https://numberdave-cloud.github.io/MPMPT1/bpm-tap/
 
 ## Embedding in Canvas
 
