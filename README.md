@@ -11,12 +11,14 @@ Each MOTE is a single self-contained HTML file. Web Audio API only, no external 
 | [`hello/`](./hello) | Deployment pipeline test |
 | [`mote-1/`](./mote-1) | MOTE-1 — What is a MOTE? (intro / self-referential CRT tour) |
 | [`bpm-tap/`](./bpm-tap) | BPM Tap — tap-tempo counter with accuracy scoring and BPM references |
+| [`step-sequencer/`](./step-sequencer) | Step Sequencer — 16-step grid with kick/snare/hat/side-stick, preset patterns (disco / rock / garage), step/count label toggle, and hover-driven theory info |
 
 ## Live URLs
 
 - https://numberdave-cloud.github.io/MPMPT1/hello/
 - https://numberdave-cloud.github.io/MPMPT1/mote-1/
 - https://numberdave-cloud.github.io/MPMPT1/bpm-tap/
+- https://numberdave-cloud.github.io/MPMPT1/step-sequencer/
 
 ## Embedding in Canvas
 

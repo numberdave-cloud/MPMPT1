@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step Sequencer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter:ital,wght@1,400&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1E1A17;
+  --surface: #25201C;
+  --surface-2: #2D2722;
+  --surface-3: #362F28;
+  --text: #EAE0D0;
+  --text-dim: #A89C8B;
+  --text-faint: #968A79;
+  --accent: #C07838;
+  --accent-glow: #D8904A;
+  --border: rgba(234,224,208,0.10);
+  --border-strong: rgba(234,224,208,0.18);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.widget {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.header {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.header-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* ── Sequencer panel ────────────────────────────────────────────────────── */
+.seq-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1.25rem;
+}
+
+.step-numbers {
+  display: grid;
+  grid-template-columns: 90px repeat(16, 1fr);
+  gap: 3px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+.step-num {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--text-faint);
+  text-align: center;
+  line-height: 1;
+}
+.step-num.beat { color: var(--text); font-weight: 500; }
+
+.mode-toggle-wrap {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 12px;
+}
+.mode-toggle {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.mode-toggle:hover {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--accent);
+}
+.mode-toggle:active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.track {
+  display: grid;
+  grid-template-columns: 90px repeat(16, 1fr);
+  gap: 3px;
+  margin-bottom: 5px;
+  align-items: center;
+}
+.track:last-child { margin-bottom: 0; }
+
+.track-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding-right: 12px;
+  text-align: right;
+  cursor: help;
+}
+
+.step-btn {
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: background 0.08s, border-color 0.08s, transform 0.05s;
+  min-height: 28px;
+  border-radius: 2px;
+}
+.step-btn:hover {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+.step-btn:active { transform: scale(0.92); }
+
+.step-btn.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.step-btn.playing { border-color: var(--text); }
+.step-btn.on.playing {
+  background: var(--accent-glow);
+  border-color: var(--accent-glow);
+  box-shadow: 0 0 8px rgba(216,144,74,0.55);
+}
+
+/* ── Controls panel ─────────────────────────────────────────────────────── */
+.controls-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.play-btn {
+  width: 42px; height: 42px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+  color: var(--text);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.play-btn:hover { background: var(--surface-3); border-color: var(--accent); }
+.play-btn:active { transform: scale(0.94); }
+.play-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.tempo-group { display: flex; align-items: center; gap: 10px; }
+.tempo-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.tempo-input-wrap { display: flex; align-items: baseline; gap: 6px; }
+.tempo-input {
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--accent-glow);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  padding: 4px 6px;
+  width: 58px;
+  text-align: center;
+  outline: none;
+  -moz-appearance: textfield;
+  transition: border-color 0.12s;
+}
+.tempo-input::-webkit-outer-spin-button,
+.tempo-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.tempo-input:focus { border-color: var(--accent); }
+.tempo-unit {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+
+.presets-group { display: flex; align-items: center; gap: 10px; }
+.presets-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.preset-btns { display: flex; gap: 4px; }
+
+.action-btn, .preset-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 11px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.action-btn:hover, .preset-btn:hover {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--accent);
+}
+.action-btn:active, .preset-btn:active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.clear-spacer { margin-left: auto; }
+
+/* ── Info panel — fixed height, centered, quieter than other text ───────── */
+.info-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 8px 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  overflow: hidden;
+}
+.info-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-dim);
+  text-align: center;
+  transition: color 0.12s, font-style 0.12s;
+}
+.info-text.default {
+  color: var(--text-faint);
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<div class="widget">
+
+  <div class="header">
+    <div class="header-title">Step Sequencer</div>
+  </div>
+
+  <div class="seq-panel">
+
+    <div class="step-numbers" data-info="Each bar has 16 steps — 4 beats × 4 sixteenth-note subdivisions. The brighter numbers mark the start of each beat.">
+      <div class="mode-toggle-wrap">
+        <button class="mode-toggle" id="modeToggle" aria-label="Toggle step / count mode" data-info="Switch between step numbers (1-16) and drummer counting (1 e & a · 2 e & a...). Drummer counting names each 16th-note subdivision so you can speak the rhythm out loud.">Count</button>
+      </div>
+      <div class="step-num beat">1</div>
+      <div class="step-num">2</div>
+      <div class="step-num">3</div>
+      <div class="step-num">4</div>
+      <div class="step-num beat">5</div>
+      <div class="step-num">6</div>
+      <div class="step-num">7</div>
+      <div class="step-num">8</div>
+      <div class="step-num beat">9</div>
+      <div class="step-num">10</div>
+      <div class="step-num">11</div>
+      <div class="step-num">12</div>
+      <div class="step-num beat">13</div>
+      <div class="step-num">14</div>
+      <div class="step-num">15</div>
+      <div class="step-num">16</div>
+    </div>
+
+    <div class="track" data-track="kick" id="track-kick">
+      <div class="track-label" data-info="You can place a kick anywhere but the most important place is going to be the downbeat (the first beat of the bar).">Kick</div>
+    </div>
+    <div class="track" data-track="snare" id="track-snare">
+      <div class="track-label" data-info="Snares work best when they are placed on the backbeat in each bar. This is the second and fourth quarter note of each bar.">Snare</div>
+    </div>
+    <div class="track" data-track="hihat" id="track-hihat">
+      <div class="track-label" data-info="Hi-hats work best as timekeepers. Try placing them on every 8th note (every other step) for a steady rock feel, or on the offbeats between the kicks for a disco feel.">Hi-Hat</div>
+    </div>
+    <div class="track" data-track="stick" id="track-stick">
+      <div class="track-label" data-info="The side stick is a quieter accent, often used for ghost notes between the main snare hits, or as a softer alternative to the snare in mellower grooves like bossa nova or ballads.">Side Stick</div>
+    </div>
+
+  </div>
+
+  <div class="controls-panel">
+    <button class="play-btn" id="playBtn" aria-label="Play / Stop" data-info="Start or stop playback. The grid loops continuously until stopped.">
+      <svg id="playIcon" width="16" height="16" viewBox="0 0 18 18" fill="none">
+        <polygon points="5,3 15,9 5,15" fill="currentColor"/>
+      </svg>
+    </button>
+
+    <div class="tempo-group" data-info="Tempo in beats per minute (BPM) — the speed of the underlying pulse. Around 60-80 for ballads, 90-120 for pop, 120-140 for dance, 140+ for fast rock and electronic.">
+      <span class="tempo-label">Tempo</span>
+      <div class="tempo-input-wrap">
+        <input type="number" class="tempo-input" id="tempoInput" min="40" max="300" value="120">
+        <span class="tempo-unit">BPM</span>
+      </div>
+    </div>
+
+    <div class="presets-group">
+      <span class="presets-label">Presets</span>
+      <div class="preset-btns">
+        <button class="preset-btn" data-preset="disco" data-info="Disco beat — kick on every beat (four-on-the-floor), snare on the backbeat (2 and 4), and hi-hat on the offbeats. The classic late-70s dance pattern at 110 BPM.">Disco</button>
+        <button class="preset-btn" data-preset="rock" data-info="Hard rock beat — eighth-note kicks with the snare punching the backbeat, and steady eighth-note hi-hats driving the pulse. Fast, dense, and aggressive.">Rock</button>
+        <button class="preset-btn" data-preset="garage" data-info="UK garage — broken, syncopated kicks instead of four-on-the-floor, backbeat snare, skippy 16th hi-hats, and side-stick ghost notes. The syncopation is the signature of the style.">Garage</button>
+      </div>
+    </div>
+
+    <button class="action-btn clear-spacer" id="clearBtn" data-info="Clears all active steps from the grid, leaving a blank sequence to build from scratch.">Clear</button>
+  </div>
+
+  <div class="info-panel">
+    <span class="info-text default" id="infoText">Hover any control to learn more.</span>
+  </div>
+
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const TRACKS = ['kick','snare','hihat','stick'];
+const STEPS = 16;
+
+const grid = {
+  kick:  Array(STEPS).fill(false),
+  snare: Array(STEPS).fill(false),
+  hihat: Array(STEPS).fill(false),
+  stick: Array(STEPS).fill(false),
+};
+
+const volumes = { kick: 0.9, snare: 0.8, hihat: 0.65, stick: 0.7 };
+
+let bpm = 120;
+let playing = false;
+let currentStep = 0;
+let schedulerTimer = null;
+let nextNoteTime = 0;
+let audioCtx = null;
+
+// ── Step/Count label modes ─────────────────────────────────────────────────
+const STEP_LABELS  = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16'];
+const COUNT_LABELS = ['1','e','&','a','2','e','&','a','3','e','&','a','4','e','&','a'];
+let countMode = false;
+
+function renderStepLabels() {
+  const labels = countMode ? COUNT_LABELS : STEP_LABELS;
+  document.querySelectorAll('.step-num').forEach((el, i) => {
+    el.textContent = labels[i];
+  });
+  modeToggle.textContent = countMode ? 'Steps' : 'Count';
+}
+
+// ── Info panel handler ─────────────────────────────────────────────────────
+const infoText = document.getElementById('infoText');
+const DEFAULT_INFO = 'Hover any control to learn more.';
+
+function setInfo(text) {
+  if (text) {
+    infoText.textContent = text;
+    infoText.classList.remove('default');
+  } else {
+    infoText.textContent = DEFAULT_INFO;
+    infoText.classList.add('default');
+  }
+}
+
+document.querySelectorAll('[data-info]').forEach(el => {
+  el.addEventListener('mouseenter', () => setInfo(el.dataset.info));
+  el.addEventListener('mouseleave', () => setInfo(null));
+  el.addEventListener('focus', () => setInfo(el.dataset.info));
+  el.addEventListener('blur', () => setInfo(null));
+});
+
+// ── Build grid UI ──────────────────────────────────────────────────────────
+const stepEls = { kick:[], snare:[], hihat:[], stick:[] };
+
+TRACKS.forEach(track => {
+  const row = document.getElementById('track-' + track);
+  for (let s = 0; s < STEPS; s++) {
+    const btn = document.createElement('div');
+    btn.className = 'step-btn' + (grid[track][s] ? ' on' : '');
+    btn.addEventListener('click', () => {
+      grid[track][s] = !grid[track][s];
+      btn.classList.toggle('on', grid[track][s]);
+    });
+    row.appendChild(btn);
+    stepEls[track].push(btn);
+  }
+});
+
+// ── Audio synthesis ────────────────────────────────────────────────────────
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playKick(time, vol) {
+  const ctx = getCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const osc2 = ctx.createOscillator();
+  const gain2 = ctx.createGain();
+
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(140, time);
+  osc.frequency.exponentialRampToValueAtTime(30, time + 0.1);
+
+  gain.gain.setValueAtTime(vol * 1.2, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.75);
+
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(600, time);
+  osc2.frequency.exponentialRampToValueAtTime(50, time + 0.02);
+  gain2.gain.setValueAtTime(vol * 0.6, time);
+  gain2.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc2.connect(gain2); gain2.connect(ctx.destination);
+  osc.start(time); osc.stop(time + 0.85);
+  osc2.start(time); osc2.stop(time + 0.06);
+}
+
+function playSnare(time, vol) {
+  const ctx = getCtx();
+
+  const bufSize = ctx.sampleRate * 0.25;
+  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+
+  const noise = ctx.createBufferSource();
+  noise.buffer = buf;
+
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'bandpass';
+  noiseFilter.frequency.value = 2800;
+  noiseFilter.Q.value = 0.6;
+
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(vol * 0.8, time);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+
+  const osc = ctx.createOscillator();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(220, time);
+  osc.frequency.exponentialRampToValueAtTime(150, time + 0.06);
+  const oscGain = ctx.createGain();
+  oscGain.gain.setValueAtTime(vol * 0.5, time);
+  oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+
+  noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(ctx.destination);
+  osc.connect(oscGain); oscGain.connect(ctx.destination);
+  noise.start(time); noise.stop(time + 0.25);
+  osc.start(time); osc.stop(time + 0.12);
+}
+
+function playHihat(time, vol) {
+  const ctx = getCtx();
+  const bufSize = Math.floor(ctx.sampleRate * 0.12);
+  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+
+  const noise = ctx.createBufferSource();
+  noise.buffer = buf;
+
+  const hiFilter = ctx.createBiquadFilter();
+  hiFilter.type = 'highpass';
+  hiFilter.frequency.value = 7000;
+
+  const peakFilter = ctx.createBiquadFilter();
+  peakFilter.type = 'peaking';
+  peakFilter.frequency.value = 10000;
+  peakFilter.gain.value = 6;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(vol * 0.6, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+
+  noise.connect(hiFilter); hiFilter.connect(peakFilter); peakFilter.connect(gain); gain.connect(ctx.destination);
+  noise.start(time); noise.stop(time + 0.12);
+}
+
+function playSideStick(time, vol) {
+  const ctx = getCtx();
+
+  const bufSize = Math.floor(ctx.sampleRate * 0.05);
+  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+
+  const noise = ctx.createBufferSource();
+  noise.buffer = buf;
+
+  const bandFilter = ctx.createBiquadFilter();
+  bandFilter.type = 'bandpass';
+  bandFilter.frequency.value = 1200;
+  bandFilter.Q.value = 2.5;
+
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(vol * 0.7, time);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(900, time);
+  osc.frequency.exponentialRampToValueAtTime(780, time + 0.008);
+  const oscGain = ctx.createGain();
+  oscGain.gain.setValueAtTime(vol * 0.9, time);
+  oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.035);
+
+  noise.connect(bandFilter); bandFilter.connect(noiseGain); noiseGain.connect(ctx.destination);
+  osc.connect(oscGain); oscGain.connect(ctx.destination);
+  noise.start(time); noise.stop(time + 0.06);
+  osc.start(time); osc.stop(time + 0.04);
+}
+
+const SOUND_FNS = { kick: playKick, snare: playSnare, hihat: playHihat, stick: playSideStick };
+
+// ── Presets ────────────────────────────────────────────────────────────────
+const PRESETS = {
+  disco: {
+    bpm: 110,
+    kick:  [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+    snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+    hihat: [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+    stick: [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
+  },
+  rock: {
+    bpm: 200,
+    kick:  [1,0,1,0, 0,0,1,0, 1,0,1,0, 0,0,1,0],
+    snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+    hihat: [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+    stick: [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
+  },
+  garage: {
+    bpm: 130,
+    kick:  [1,0,0,0, 0,0,1,0, 0,0,1,0, 0,0,0,0],
+    snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+    hihat: [0,1,1,0, 1,0,1,1, 0,1,1,0, 1,0,1,1],
+    stick: [0,0,0,0, 0,0,0,1, 0,0,0,0, 0,0,1,0],
+  },
+};
+
+function loadPreset(name) {
+  const p = PRESETS[name];
+  if (!p) return;
+  bpm = p.bpm;
+  tempoInput.value = bpm;
+  TRACKS.forEach(t => {
+    grid[t] = p[t].map(Boolean);
+    stepEls[t].forEach((el, i) => {
+      el.classList.toggle('on', !!grid[t][i]);
+    });
+  });
+}
+
+// ── Scheduler ──────────────────────────────────────────────────────────────
+const LOOKAHEAD = 0.1;
+const SCHEDULE_INTERVAL = 25;
+
+function scheduleNote(step, time) {
+  TRACKS.forEach(track => {
+    if (grid[track][step]) {
+      SOUND_FNS[track](time, volumes[track]);
+    }
+  });
+}
+
+function scheduler() {
+  const ctx = getCtx();
+  while (nextNoteTime < ctx.currentTime + LOOKAHEAD) {
+    scheduleNote(currentStep, nextNoteTime);
+    updatePlayhead(currentStep);
+    const secondsPerBeat = 60 / bpm;
+    const secondsPerStep = secondsPerBeat / 4;
+    nextNoteTime += secondsPerStep;
+    currentStep = (currentStep + 1) % STEPS;
+  }
+}
+
+let displayStep = -1;
+function updatePlayhead(step) {
+  TRACKS.forEach(t => {
+    if (displayStep >= 0) stepEls[t][displayStep].classList.remove('playing');
+  });
+  TRACKS.forEach(t => stepEls[t][step].classList.add('playing'));
+  displayStep = step;
+}
+
+function startSequencer() {
+  const ctx = getCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+  currentStep = 0;
+  nextNoteTime = ctx.currentTime + 0.05;
+  schedulerTimer = setInterval(scheduler, SCHEDULE_INTERVAL);
+}
+
+function stopSequencer() {
+  clearInterval(schedulerTimer);
+  schedulerTimer = null;
+  TRACKS.forEach(t => {
+    stepEls[t].forEach(el => el.classList.remove('playing'));
+  });
+  displayStep = -1;
+}
+
+// ── Controls ───────────────────────────────────────────────────────────────
+const playBtn = document.getElementById('playBtn');
+const playIcon = document.getElementById('playIcon');
+
+playBtn.addEventListener('click', () => {
+  playing = !playing;
+  if (playing) {
+    startSequencer();
+    playBtn.classList.add('active');
+    playIcon.innerHTML = '<rect x="4" y="3" width="4" height="12" rx="1" fill="currentColor"/><rect x="10" y="3" width="4" height="12" rx="1" fill="currentColor"/>';
+  } else {
+    stopSequencer();
+    playBtn.classList.remove('active');
+    playIcon.innerHTML = '<polygon points="5,3 15,9 5,15" fill="currentColor"/>';
+  }
+});
+
+const tempoInput = document.getElementById('tempoInput');
+function applyTempo() {
+  let v = parseInt(tempoInput.value, 10);
+  if (isNaN(v)) v = 120;
+  v = Math.max(40, Math.min(300, v));
+  bpm = v;
+  tempoInput.value = v;
+}
+tempoInput.addEventListener('input', () => {
+  const v = parseInt(tempoInput.value, 10);
+  if (!isNaN(v) && v >= 40 && v <= 300) bpm = v;
+});
+tempoInput.addEventListener('blur', applyTempo);
+tempoInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { applyTempo(); tempoInput.blur(); }
+});
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => loadPreset(btn.dataset.preset));
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  TRACKS.forEach(t => {
+    grid[t].fill(false);
+    stepEls[t].forEach(el => el.classList.remove('on'));
+  });
+});
+
+const modeToggle = document.getElementById('modeToggle');
+modeToggle.addEventListener('click', () => {
+  countMode = !countMode;
+  renderStepLabels();
+});
+</script>
+</body>
+</html>
