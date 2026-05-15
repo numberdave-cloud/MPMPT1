@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MOTE — Melodic Step Sequencer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #1E1A17;
+  color: #EAE0D0;
+  font-family: 'Inter', sans-serif;
+  padding: 24px;
+  min-height: 100vh;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.container { max-width: 760px; margin: 0 auto; }
+
+h1 {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  color: #EAE0D0;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  background: transparent;
+  color: #EAE0D0;
+  border: 1px solid #EAE0D0;
+  padding: 8px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: inline-block;
+  line-height: 1;
+}
+.btn:hover { border-color: #D8904A; color: #D8904A; }
+.btn.active { background: #C07838; border-color: #C07838; color: #1E1A17; }
+.btn:active { transform: translateY(1px); }
+#transportBtn { min-width: 92px; text-align: center; }
+
+.tempo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+.tempo-label {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.tempo-readout {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #D8904A;
+  min-width: 64px;
+}
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 140px;
+  height: 2px;
+  background: #EAE0D0;
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 10px;
+  background: #C07838;
+  border: none;
+  cursor: pointer;
+  border-radius: 0;
+  border-left: 1px solid #1E1A17;
+  border-right: 1px solid #1E1A17;
+}
+input[type=range]::-moz-range-thumb {
+  width: 12px;
+  height: 10px;
+  background: #C07838;
+  border: none;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.grid-wrapper {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.row-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 34px;
+}
+.row-label {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: #EAE0D0;
+  opacity: 0.75;
+  padding-right: 8px;
+  cursor: pointer;
+  transition: color 0.1s;
+}
+.row-label:hover { color: #D8904A; opacity: 1; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  grid-template-rows: repeat(8, 28px);
+  gap: 1px;
+  flex: 1;
+  background: #2A2522;
+  padding: 1px;
+  border: 1px solid #2A2522;
+}
+.cell {
+  background: #1E1A17;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.05s, border-color 0.05s;
+}
+.cell.beat-marker { box-shadow: inset 1px 0 0 #3A322D; }
+.cell.active { background: #C07838; }
+.cell.playing:not(.active) { background: rgba(216, 144, 74, 0.18); }
+.cell.active.playing {
+  background: #D8904A;
+  box-shadow: 0 0 8px rgba(216, 144, 74, 0.6);
+}
+.cell:hover { border-color: #D8904A; }
+
+.step-numbers {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 1px;
+  margin-left: 42px;
+  margin-top: 2px;
+  padding: 0 1px;
+}
+.step-num {
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  opacity: 0.35;
+  letter-spacing: 0.05em;
+}
+.step-num.beat { opacity: 0.85; color: #D8904A; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>MOTE — MELODIC STEP SEQUENCER</h1>
+
+  <div class="controls">
+    <button id="transportBtn" class="btn">▶ PLAY</button>
+    <button id="clearBtn" class="btn">CLEAR</button>
+    <a id="exportBtn" class="btn" download="mote-pattern.mid" href="#">EXPORT MIDI</a>
+    <div class="tempo">
+      <span class="tempo-label">TEMPO</span>
+      <input type="range" id="tempoSlider" min="60" max="180" value="120">
+      <span class="tempo-readout" id="tempoReadout">120 BPM</span>
+    </div>
+  </div>
+
+  <div class="grid-wrapper">
+    <div class="row-labels" id="rowLabels"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="step-numbers" id="stepNumbers"></div>
+</div>
+
+<script>
+// ---- CONFIG ----
+const COLS = 16;
+// Diatonic A-minor / C-major white keys, A3 (top) down to A2 (bottom)
+const ROW_MIDI =   [57,  55,  53,  52,  50,  48,  47,  45]; // A3 G3 F3 E3 D3 C3 B2 A2
+const NOTE_NAMES = ['A3','G3','F3','E3','D3','C3','B2','A2'];
+const ROWS = ROW_MIDI.length;
+
+// ---- STATE ----
+let grid = Array.from({length: ROWS}, () => Array(COLS).fill(false));
+let tempo = 120;
+let playing = false;
+let currentStep = 0;
+let nextStepTime = 0;
+let playbackStartTime = 0;
+let visualStep = -1;
+let schedulerTimer = null;
+
+// ---- AUDIO ----
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioCtx();
+
+// Master out
+const masterGain = audioCtx.createGain();
+masterGain.gain.value = 0.32;
+masterGain.connect(audioCtx.destination);
+
+// Synth bus (all voices land here) splits into dry + reverb send
+const synthBus = audioCtx.createGain();
+synthBus.gain.value = 1.0;
+
+const dryGain = audioCtx.createGain();
+dryGain.gain.value = 0.9;
+synthBus.connect(dryGain);
+dryGain.connect(masterGain);
+
+// --- Hall reverb ---
+// Synthesised impulse response: noise * exponential decay, with a short
+// pre-delay and attack buildup so it feels more "room/hall" than just a
+// flat noise tail.
+function makeHallImpulse(ctx, durationSec) {
+  const sr = ctx.sampleRate;
+  const length = Math.floor(sr * durationSec);
+  const impulse = ctx.createBuffer(2, length, sr);
+  const decayRate = 6.9 / durationSec; // ~60 dB drop over durationSec
+  const preDelay = Math.floor(sr * 0.015); // 15 ms
+  const buildup  = 0.03;                   // 30 ms attack on the tail
+  for (let ch = 0; ch < 2; ch++) {
+    const data = impulse.getChannelData(ch);
+    for (let i = 0; i < length; i++) {
+      if (i < preDelay) { data[i] = 0; continue; }
+      const t = (i - preDelay) / sr;
+      const env = Math.exp(-decayRate * t);
+      const attack = Math.min(1, t / buildup);
+      data[i] = (Math.random() * 2 - 1) * env * attack;
+    }
+  }
+  return impulse;
+}
+
+const reverb = audioCtx.createConvolver();
+reverb.buffer = makeHallImpulse(audioCtx, 2.0);
+const wetGain = audioCtx.createGain();
+wetGain.gain.value = 0.35; // medium hall
+synthBus.connect(reverb);
+reverb.connect(wetGain);
+wetGain.connect(masterGain);
+
+let lastVoice = null;
+const liveVoices = new Set();
+
+function midiToFreq(note) {
+  return 440 * Math.pow(2, (note - 69) / 12);
+}
+
+// Voice: sawtooth + sub sine (oct below) → lowpass w/ env → amp env → bus
+function playNote(midiNote, time, gate) {
+  const RELEASE = 0.5;
+  const BASE_CUTOFF = 350;
+  const PEAK_CUTOFF = 6500;
+  const FILTER_ATTACK = 0.001;
+  const FILTER_DECAY  = 0.1;
+
+  // Mono voice stealing
+  if (lastVoice) {
+    const v = lastVoice;
+    try {
+      v.ampGain.gain.cancelScheduledValues(time);
+      v.ampGain.gain.linearRampToValueAtTime(0, time + 0.008);
+      for (const o of v.oscs) o.stop(time + 0.02);
+    } catch (e) {}
+    liveVoices.delete(v);
+  }
+
+  // --- Saw (main) ---
+  const saw = audioCtx.createOscillator();
+  saw.type = 'sawtooth';
+  saw.frequency.setValueAtTime(midiToFreq(midiNote), time);
+
+  // --- Sub sine, an octave below ---
+  const sub = audioCtx.createOscillator();
+  sub.type = 'sine';
+  sub.frequency.setValueAtTime(midiToFreq(midiNote - 12), time);
+
+  const subGain = audioCtx.createGain();
+  subGain.gain.value = 0.6; // sub sits under the saw, doesn't dominate
+
+  const oscMix = audioCtx.createGain();
+  oscMix.gain.value = 1.0;
+
+  // --- Filter + filter envelope ---
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.Q.value = 3;
+  filter.frequency.setValueAtTime(BASE_CUTOFF, time);
+  filter.frequency.linearRampToValueAtTime(PEAK_CUTOFF, time + FILTER_ATTACK);
+  filter.frequency.exponentialRampToValueAtTime(BASE_CUTOFF, time + FILTER_ATTACK + FILTER_DECAY);
+
+  // --- Amp envelope ---
+  const ampGain = audioCtx.createGain();
+  ampGain.gain.setValueAtTime(0, time);
+  ampGain.gain.linearRampToValueAtTime(0.5, time + 0.005);
+  ampGain.gain.setValueAtTime(0.5, time + gate);
+  ampGain.gain.exponentialRampToValueAtTime(0.001, time + gate + RELEASE);
+
+  // Routing
+  saw.connect(oscMix);
+  sub.connect(subGain);
+  subGain.connect(oscMix);
+  oscMix.connect(filter);
+  filter.connect(ampGain);
+  ampGain.connect(synthBus);
+
+  saw.start(time);
+  sub.start(time);
+  const stopAt = time + gate + RELEASE + 0.05;
+  saw.stop(stopAt);
+  sub.stop(stopAt);
+
+  const voice = { oscs: [saw, sub], ampGain };
+  lastVoice = voice;
+  liveVoices.add(voice);
+
+  const lifetimeMs = (Math.max(0, time - audioCtx.currentTime) + gate + RELEASE + 0.1) * 1000;
+  setTimeout(() => liveVoices.delete(voice), lifetimeMs);
+}
+
+function killAllVoices() {
+  const now = audioCtx.currentTime;
+  for (const v of liveVoices) {
+    try {
+      v.ampGain.gain.cancelScheduledValues(now);
+      v.ampGain.gain.linearRampToValueAtTime(0, now + 0.015);
+      for (const o of v.oscs) o.stop(now + 0.05);
+    } catch (e) {}
+  }
+  liveVoices.clear();
+  lastVoice = null;
+}
+
+function ensureAudioRunning() {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+// ---- UI BUILD ----
+const gridEl = document.getElementById('grid');
+const rowLabelsEl = document.getElementById('rowLabels');
+const stepNumbersEl = document.getElementById('stepNumbers');
+
+for (let r = 0; r < ROWS; r++) {
+  const label = document.createElement('div');
+  label.className = 'row-label';
+  label.textContent = NOTE_NAMES[r];
+  label.addEventListener('click', () => {
+    ensureAudioRunning();
+    playNote(ROW_MIDI[r], audioCtx.currentTime + 0.01, 0.25);
+  });
+  rowLabelsEl.appendChild(label);
+}
+
+for (let r = 0; r < ROWS; r++) {
+  for (let c = 0; c < COLS; c++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    if (c % 4 === 0) cell.classList.add('beat-marker');
+    cell.dataset.row = r;
+    cell.dataset.col = c;
+    cell.addEventListener('click', () => toggleCell(r, c));
+    gridEl.appendChild(cell);
+  }
+}
+
+for (let c = 0; c < COLS; c++) {
+  const num = document.createElement('div');
+  num.className = 'step-num' + (c % 4 === 0 ? ' beat' : '');
+  num.textContent = c + 1;
+  stepNumbersEl.appendChild(num);
+}
+
+function getCellEl(r, c) {
+  return gridEl.children[r * COLS + c];
+}
+
+// Monophonic grid
+function toggleCell(r, c) {
+  ensureAudioRunning();
+  const wasActive = grid[r][c];
+  for (let rr = 0; rr < ROWS; rr++) {
+    if (grid[rr][c]) {
+      grid[rr][c] = false;
+      getCellEl(rr, c).classList.remove('active');
+    }
+  }
+  if (!wasActive) {
+    grid[r][c] = true;
+    getCellEl(r, c).classList.add('active');
+    playNote(ROW_MIDI[r], audioCtx.currentTime + 0.01, 0.22);
+  }
+}
+
+// ---- SCHEDULER ----
+const LOOKAHEAD = 0.1;
+const SCHED_INTERVAL = 25;
+
+function stepDuration() { return (60 / tempo) / 4; }
+
+function scheduleStep(step, time) {
+  const gate = stepDuration() * 0.9;
+  for (let r = 0; r < ROWS; r++) {
+    if (grid[r][step]) {
+      playNote(ROW_MIDI[r], time, gate);
+      break;
+    }
+  }
+}
+
+function scheduler() {
+  while (nextStepTime < audioCtx.currentTime + LOOKAHEAD) {
+    scheduleStep(currentStep, nextStepTime);
+    currentStep = (currentStep + 1) % COLS;
+    nextStepTime += stepDuration();
+  }
+}
+
+function visualLoop() {
+  if (!playing) return;
+  const elapsed = audioCtx.currentTime - playbackStartTime;
+  if (elapsed >= 0) {
+    const step = Math.floor(elapsed / stepDuration()) % COLS;
+    if (step !== visualStep) {
+      visualStep = step;
+      updatePlayhead(step);
+    }
+  }
+  requestAnimationFrame(visualLoop);
+}
+
+function updatePlayhead(step) {
+  for (const el of gridEl.children) el.classList.remove('playing');
+  if (playing) {
+    for (let r = 0; r < ROWS; r++) {
+      getCellEl(r, step).classList.add('playing');
+    }
+  }
+}
+
+const transportBtn = document.getElementById('transportBtn');
+
+function start() {
+  ensureAudioRunning();
+  if (playing) return;
+  playing = true;
+  currentStep = 0;
+  visualStep = -1;
+  playbackStartTime = audioCtx.currentTime + 0.05;
+  nextStepTime = playbackStartTime;
+  transportBtn.textContent = '■ STOP';
+  transportBtn.classList.add('active');
+  schedulerTimer = setInterval(scheduler, SCHED_INTERVAL);
+  requestAnimationFrame(visualLoop);
+}
+
+function stop() {
+  playing = false;
+  if (schedulerTimer) clearInterval(schedulerTimer);
+  schedulerTimer = null;
+  transportBtn.textContent = '▶ PLAY';
+  transportBtn.classList.remove('active');
+  for (const el of gridEl.children) el.classList.remove('playing');
+  visualStep = -1;
+  killAllVoices();
+}
+
+function clearGrid() {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) grid[r][c] = false;
+  }
+  for (const el of gridEl.children) el.classList.remove('active');
+}
+
+// ---- MIDI EXPORT ----
+function pushVLQ(arr, value) {
+  const bytes = [];
+  bytes.unshift(value & 0x7F);
+  value >>= 7;
+  while (value > 0) {
+    bytes.unshift((value & 0x7F) | 0x80);
+    value >>= 7;
+  }
+  for (const b of bytes) arr.push(b);
+}
+
+function buildMidiBytes() {
+  const PPQ = 480;
+  const TICKS_PER_STEP = PPQ / 4;
+  const NOTE_DURATION_TICKS = Math.floor(TICKS_PER_STEP * 0.9);
+
+  const events = [];
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      if (grid[r][c]) {
+        const note = ROW_MIDI[r];
+        events.push({ tick: c * TICKS_PER_STEP,                       status: 0x90, note, velocity: 100, order: 1 });
+        events.push({ tick: c * TICKS_PER_STEP + NOTE_DURATION_TICKS, status: 0x80, note, velocity: 0,   order: 0 });
+        break;
+      }
+    }
+  }
+  events.sort((a, b) => (a.tick - b.tick) || (a.order - b.order));
+
+  const track = [];
+
+  // Tempo meta
+  const tempoUs = Math.round(60000000 / tempo);
+  track.push(0x00, 0xFF, 0x51, 0x03,
+    (tempoUs >> 16) & 0xFF,
+    (tempoUs >>  8) & 0xFF,
+     tempoUs        & 0xFF);
+
+  // Time signature meta (4/4)
+  track.push(0x00, 0xFF, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08);
+
+  let lastTick = 0;
+  for (const ev of events) {
+    const delta = ev.tick - lastTick;
+    lastTick = ev.tick;
+    pushVLQ(track, delta);
+    track.push(ev.status, ev.note, ev.velocity);
+  }
+
+  const endTick = COLS * TICKS_PER_STEP;
+  pushVLQ(track, Math.max(0, endTick - lastTick));
+  track.push(0xFF, 0x2F, 0x00);
+
+  const header = [
+    0x4D, 0x54, 0x68, 0x64,
+    0x00, 0x00, 0x00, 0x06,
+    0x00, 0x00,
+    0x00, 0x01,
+    (PPQ >> 8) & 0xFF, PPQ & 0xFF
+  ];
+  const trackLen = track.length;
+  const trackHeader = [
+    0x4D, 0x54, 0x72, 0x6B,
+    (trackLen >> 24) & 0xFF,
+    (trackLen >> 16) & 0xFF,
+    (trackLen >>  8) & 0xFF,
+     trackLen        & 0xFF
+  ];
+
+  return new Uint8Array(header.concat(trackHeader, track));
+}
+
+const exportEl = document.getElementById('exportBtn');
+let currentBlobUrl = null;
+
+function refreshExportUrl() {
+  const bytes = buildMidiBytes();
+  const blob = new Blob([bytes], { type: 'audio/midi' });
+  if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+  currentBlobUrl = URL.createObjectURL(blob);
+  exportEl.href = currentBlobUrl;
+}
+
+exportEl.addEventListener('mousedown', refreshExportUrl);
+exportEl.addEventListener('touchstart', refreshExportUrl, { passive: true });
+exportEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') refreshExportUrl();
+});
+refreshExportUrl();
+
+// ---- EVENT WIRING ----
+transportBtn.addEventListener('click', () => {
+  if (playing) stop();
+  else start();
+});
+document.getElementById('clearBtn').addEventListener('click', clearGrid);
+document.getElementById('tempoSlider').addEventListener('input', (e) => {
+  tempo = parseInt(e.target.value, 10);
+  document.getElementById('tempoReadout').textContent = tempo + ' BPM';
+});
+</script>
+</body>
+</html>
