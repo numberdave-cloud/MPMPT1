@@ -358,7 +358,7 @@ select:focus {
 // ============================================================
 
 const KEY_TONIC_PC = 9; // A
-const A3_MIDI = 57;      // tonic anchor
+const A2_MIDI = 45;      // tonic anchor — chord roots live in octave 2/3, bass drops to octave 1/2
 
 // Each roman numeral: scale-degree offset from tonic, plus interval stacks
 // for each extension setting (relative to chord's own root).
@@ -395,46 +395,41 @@ const PROGRESSIONS = [
   { name: 'i – VI – iv – v',       sub: 'folk minor',           chords: ['i', 'VI', 'iv', 'v'] }
 ];
 
-// Tones for a given chord & extension, as absolute MIDI numbers, root in octave 3.
+// Tones for a given chord & extension, as absolute MIDI numbers, root in octave 2.
 function getChordTones(roman, ext) {
   const def = ROMAN_DEFS[roman];
-  const rootMidi = A3_MIDI + def.offset;
+  const rootMidi = A2_MIDI + def.offset;
   return def[ext].map(i => rootMidi + i);
 }
 
-// Build voicing for given chord/extension/inversion.
-// Bass = inversion's bass note, octave below the tone.
-// Upper voices = the other tones, octave-shifted to lie above the bass note,
-// plus (for triads) a doubled bass-tone an octave up to make 3 upper voices.
+// Build voicing.
+// Bass: always the chord root, ONE OCTAVE BELOW the chord's own root tone.
+// Upper voicing: 3 chord tones rotated into close position per inversion (0, 1, 2).
+//   Triads:        upper uses [root, 3rd, 5th]            (root is doubled vs bass)
+//   7th chords:    upper uses [3rd, 5th, 7th]             (root omitted — bass has it)
+//   9th-drop5:     upper uses [3rd, 7th, 9th]             (root omitted)
 function buildVoicing(roman, ext, inversion, octaveShift = 0) {
-  const tones = getChordTones(roman, ext);
-  const numTones = tones.length;
-  if (inversion >= numTones) inversion = 0;
+  if (inversion < 0 || inversion > 2) inversion = 0;
+  const tones = getChordTones(roman, ext); // canonical order: root, 3rd, 5th, (7th), (9th)
+  const root = tones[0];
+  const bass = root - 12;
 
-  const bassPivot = tones[inversion];
-  const bass = bassPivot - 12;
-
+  const upperTones = ext === 'triad' ? tones.slice(0, 3) : tones.slice(1, 4);
+  // Rotate by inversion, lifting rotated-off tones an octave to maintain close-position ascent.
   const upper = [];
-  for (let i = 0; i < numTones; i++) {
-    if (i === inversion) continue;
-    let v = tones[i];
-    while (v < bassPivot) v += 12;
-    upper.push(v);
+  for (let i = 0; i < 3; i++) {
+    const idx = (inversion + i) % 3;
+    const lift = (inversion + i >= 3) ? 12 : 0;
+    upper.push(upperTones[idx] + lift);
   }
-  if (upper.length === 2) {
-    upper.push(bassPivot + 12); // triad: double the bass tone an octave up
-  }
-  upper.sort((a, b) => a - b);
   const shifted = upper.map(v => v + 12 * octaveShift);
   return { bass, upperVoices: shifted };
 }
 
-// Voice leading: pick inversion + octave shift that minimises voice movement.
+// Voice leading: pick inversion (0/1/2) + octave shift that minimises upper-voice movement.
 function pickInversionVL(roman, ext, prevUpperVoices) {
-  const tones = getChordTones(roman, ext);
-  const numInversions = tones.length;
   let best = { inversion: 0, octaveShift: 0, score: Infinity };
-  for (let inv = 0; inv < numInversions; inv++) {
+  for (let inv = 0; inv < 3; inv++) {
     for (let shift = -1; shift <= 1; shift++) {
       const { upperVoices, bass } = buildVoicing(roman, ext, inv, shift);
       // Don't let upper voices collide with or fall below the bass.
@@ -473,7 +468,7 @@ function initAudio() {
   if (audioCtx) return;
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   masterGain = audioCtx.createGain();
-  masterGain.gain.value = 0.55;
+  masterGain.gain.value = 0.17;  // -10 dB vs previous 0.55
   masterGain.connect(audioCtx.destination);
 
   // Plate-ish reverb via synthesised IR
@@ -500,10 +495,23 @@ function makeImpulseResponse(duration, decay) {
   return buf;
 }
 
+// 1000ms release tail after note "duration" ends.
+const RELEASE_SEC = 1.0;
+
+// Voice manager — caps polyphony and supports stealing when chords change.
+const activeVoices = [];
+
+function killAllActiveAt(when) {
+  const toKill = activeVoices.slice();
+  activeVoices.length = 0;
+  toKill.forEach(v => { try { v.kill(when); } catch (e) {} });
+}
+
 // FM Rhodes-ish voice: sine carrier, sine modulator at 1:1 ratio with quick-decay modulation index.
-function playNote(midi, when, duration, velocity = 0.55) {
+function playNote(midi, when, duration, velocity = 0.5) {
   const freq = 440 * Math.pow(2, (midi - 69) / 12);
   const t = when;
+  const totalLen = duration + RELEASE_SEC;
 
   const carrier = audioCtx.createOscillator();
   carrier.type = 'sine';
@@ -523,10 +531,10 @@ function playNote(midi, when, duration, velocity = 0.55) {
 
   const env = audioCtx.createGain();
   env.gain.setValueAtTime(0, t);
-  env.gain.linearRampToValueAtTime(velocity, t + 0.006);
-  env.gain.exponentialRampToValueAtTime(velocity * 0.55, t + 0.25);
-  env.gain.exponentialRampToValueAtTime(velocity * 0.25, t + Math.max(0.3, duration * 0.85));
-  env.gain.exponentialRampToValueAtTime(0.0005, t + duration);
+  env.gain.linearRampToValueAtTime(velocity, t + 0.006);                          // attack
+  env.gain.exponentialRampToValueAtTime(velocity * 0.55, t + 0.25);               // initial decay
+  env.gain.exponentialRampToValueAtTime(velocity * 0.30, t + Math.max(0.3, duration)); // sustain decay
+  env.gain.exponentialRampToValueAtTime(0.0005, t + totalLen);                    // 1s release
 
   const filter = audioCtx.createBiquadFilter();
   filter.type = 'lowpass';
@@ -540,8 +548,28 @@ function playNote(midi, when, duration, velocity = 0.55) {
 
   modulator.start(t);
   carrier.start(t);
-  modulator.stop(t + duration + 0.15);
-  carrier.stop(t + duration + 0.15);
+  modulator.stop(t + totalLen + 0.1);
+  carrier.stop(t + totalLen + 0.1);
+
+  const voice = {
+    kill(killTime) {
+      const safeKill = Math.max(killTime, t + 0.005);
+      try {
+        env.gain.cancelScheduledValues(safeKill);
+        env.gain.exponentialRampToValueAtTime(0.0005, safeKill + 0.025);
+        modulator.stop(safeKill + 0.04);
+        carrier.stop(safeKill + 0.04);
+      } catch (e) { /* already stopped */ }
+    }
+  };
+  activeVoices.push(voice);
+
+  // Auto-remove after natural decay
+  const cleanupMs = Math.max(0, (when - audioCtx.currentTime + totalLen + 0.2)) * 1000;
+  setTimeout(() => {
+    const idx = activeVoices.indexOf(voice);
+    if (idx >= 0) activeVoices.splice(idx, 1);
+  }, cleanupMs);
 }
 
 // ============================================================
@@ -568,10 +596,9 @@ function currentChord(i) {
 
 function recompute() {
   const ext = state.extension;
-  // Clamp any inversions that are out of range for the new extension.
+  // Clamp any stale inversions to 0..2.
   for (let i = 0; i < 4; i++) {
-    const tones = getChordTones(currentChord(i), ext);
-    if (state.inversions[i] >= tones.length) state.inversions[i] = 0;
+    if (state.inversions[i] < 0 || state.inversions[i] > 2) state.inversions[i] = 0;
   }
 
   if (state.voiceLeading) {
@@ -617,7 +644,6 @@ function render() {
   for (let i = 0; i < 4; i++) {
     const roman = currentChord(i);
     const voicing = currentVoicings[i];
-    const numInversions = getChordTones(roman, ext).length;
 
     const card = document.createElement('div');
     card.className = 'chord-card';
@@ -646,7 +672,7 @@ function render() {
     invLabel.className = 'inv-label';
     invLabel.textContent = 'INV';
     invRow.appendChild(invLabel);
-    for (let inv = 0; inv < numInversions; inv++) {
+    for (let inv = 0; inv < 3; inv++) {
       const btn = document.createElement('button');
       btn.className = 'inv-btn';
       btn.textContent = inv;
@@ -699,6 +725,7 @@ function stopPlayback() {
   schedulerInterval = null;
   highlightTimers.forEach(t => clearTimeout(t));
   highlightTimers = [];
+  if (audioCtx) killAllActiveAt(audioCtx.currentTime);
   document.querySelectorAll('.chord-card').forEach(el => el.classList.remove('active'));
   const btn = document.getElementById('play-btn');
   btn.classList.remove('playing');
@@ -716,6 +743,9 @@ function schedulerTick() {
 }
 
 function scheduleChord(idx, when) {
+  // Voice stealing: kill previous chord's voices as the new chord starts.
+  killAllActiveAt(when);
+
   const voicing = currentVoicings[idx];
   const duration = SEC_PER_BAR * 0.95;
   playNote(voicing.bass, when, duration, 0.5);
@@ -737,6 +767,10 @@ function auditionChord(idx) {
   audioCtx.resume();
   const voicing = currentVoicings[idx];
   const now = audioCtx.currentTime + 0.02;
+
+  // Cut anything currently ringing
+  killAllActiveAt(now);
+
   const duration = 1.8;
   playNote(voicing.bass, now, duration, 0.5);
   voicing.upperVoices.forEach(v => playNote(v, now, duration, 0.42));
