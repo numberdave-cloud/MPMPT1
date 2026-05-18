@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Minor Chord Sequencer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1E1A17;
+  --text: #EAE0D0;
+  --text-dim: rgba(234, 224, 208, 0.55);
+  --accent: #C07838;
+  --accent-glow: #D8904A;
+  --border: rgba(234, 224, 208, 0.14);
+  --border-soft: rgba(234, 224, 208, 0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  padding: 24px;
+}
+
+.container {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: 28px;
+  color: var(--text);
+}
+
+h1 .key {
+  color: var(--accent);
+}
+
+.label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.progression-row {
+  margin-bottom: 24px;
+}
+
+select {
+  background-color: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 10px 32px 10px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  width: 100%;
+  max-width: 420px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3e%3cpath fill='none' stroke='%23EAE0D0' stroke-opacity='0.55' stroke-width='1.4' d='M1 1l4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 10px 6px;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.chord-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.chord-card {
+  border: 1px solid var(--border);
+  padding: 14px;
+  background: rgba(234, 224, 208, 0.015);
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+  cursor: pointer;
+  position: relative;
+}
+
+.chord-card:hover {
+  border-color: var(--border);
+  background: rgba(234, 224, 208, 0.03);
+}
+
+.chord-card.active {
+  border-color: var(--accent);
+  background: rgba(192, 120, 56, 0.06);
+  box-shadow: 0 0 18px rgba(216, 144, 74, 0.18);
+}
+
+.chord-card .roman {
+  font-size: 26px;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  margin-bottom: 2px;
+  line-height: 1;
+}
+
+.chord-card .chord-name {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+
+.chord-card .voicing {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: 0.04em;
+}
+
+.chord-card .voicing .bass {
+  color: var(--accent-glow);
+  display: inline-block;
+  min-width: 26px;
+}
+
+.chord-card .voicing .upper {
+  color: var(--text);
+  display: inline-block;
+  min-width: 26px;
+}
+
+.inversion-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.inversion-row .inv-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  margin-right: 4px;
+}
+
+.inv-btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 22px;
+}
+
+.inv-btn:hover:not(:disabled):not(.selected) {
+  border-color: var(--accent-glow);
+  color: var(--accent-glow);
+}
+
+.inv-btn.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+.inv-btn:disabled {
+  cursor: not-allowed;
+}
+
+.inv-btn:disabled:not(.selected) {
+  opacity: 0.4;
+}
+
+.inv-btn.vl-selected {
+  background: rgba(192, 120, 56, 0.55);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.controls-row {
+  display: flex;
+  gap: 36px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.toggle-group {
+  display: flex;
+  gap: 4px;
+}
+
+.toggle-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.toggle-btn:hover:not(.selected) {
+  border-color: var(--accent-glow);
+  color: var(--accent-glow);
+}
+
+.toggle-btn.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.transport-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-soft);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.transport-left { display: flex; gap: 12px; align-items: center; }
+
+.play-btn, .export-btn {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 10px 22px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 110px;
+}
+
+.play-btn:hover, .export-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.play-btn.playing {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.tempo-readout {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+}
+
+.footnote {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 16px;
+  letter-spacing: 0.06em;
+  line-height: 1.6;
+}
+
+@media (max-width: 720px) {
+  .chord-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .controls-row { gap: 20px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>A Minor <span class="key">Chord Sequencer</span></h1>
+
+  <div class="progression-row">
+    <label class="label" for="progression-select">Progression</label>
+    <select id="progression-select"></select>
+  </div>
+
+  <div class="chord-grid" id="chord-grid"></div>
+
+  <div class="controls-row">
+    <div class="control-group">
+      <span class="label">Extensions</span>
+      <div class="toggle-group" id="extension-toggle">
+        <button class="toggle-btn selected" data-ext="triad">Triads</button>
+        <button class="toggle-btn" data-ext="7">7ths</button>
+        <button class="toggle-btn" data-ext="9">9ths</button>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <span class="label">Voice Leading</span>
+      <div class="toggle-group" id="vl-toggle">
+        <button class="toggle-btn selected" data-vl="off">Off</button>
+        <button class="toggle-btn" data-vl="on">On</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="transport-row">
+    <div class="transport-left">
+      <button class="play-btn" id="play-btn">▶ Play</button>
+      <span class="tempo-readout" id="tempo-readout">75 BPM</span>
+    </div>
+    <button class="export-btn" id="export-btn">Export MIDI</button>
+  </div>
+
+  <p class="footnote">Click any chord card to audition it. Inversion buttons disabled while voice leading is on.</p>
+
+</div>
+
+<script>
+// ============================================================
+// THEORY CORE — A MINOR, NATURAL
+// ============================================================
+
+const KEY_TONIC_PC = 9; // A
+const A3_MIDI = 57;      // tonic anchor
+
+// Each roman numeral: scale-degree offset from tonic, plus interval stacks
+// for each extension setting (relative to chord's own root).
+// 9th chords drop the 5th to stay at 4 tones.
+const ROMAN_DEFS = {
+  'i':   { offset: 0,  triad: [0, 3, 7],     '7': [0, 3, 7, 10],  '9': [0, 3, 10, 14] },
+  'ii°': { offset: 2,  triad: [0, 3, 6],     '7': [0, 3, 6, 10],  '9': [0, 3, 10, 13] },
+  'III': { offset: 3,  triad: [0, 4, 7],     '7': [0, 4, 7, 11],  '9': [0, 4, 11, 14] },
+  'iv':  { offset: 5,  triad: [0, 3, 7],     '7': [0, 3, 7, 10],  '9': [0, 3, 10, 14] },
+  'v':   { offset: 7,  triad: [0, 3, 7],     '7': [0, 3, 7, 10],  '9': [0, 3, 10, 13] },
+  'VI':  { offset: 8,  triad: [0, 4, 7],     '7': [0, 4, 7, 11],  '9': [0, 4, 11, 14] },
+  'VII': { offset: 10, triad: [0, 4, 7],     '7': [0, 4, 7, 10],  '9': [0, 4, 10, 14] }
+};
+
+const CHORD_NAMES = {
+  'i':   { triad: 'Am',     '7': 'Am7',         '9': 'Am9' },
+  'ii°': { triad: 'B°',     '7': 'Bm7♭5',       '9': 'Bm7♭5(♭9)' },
+  'III': { triad: 'C',      '7': 'Cmaj7',       '9': 'Cmaj9' },
+  'iv':  { triad: 'Dm',     '7': 'Dm7',         '9': 'Dm9' },
+  'v':   { triad: 'Em',     '7': 'Em7',         '9': 'Em7(♭9)' },
+  'VI':  { triad: 'F',      '7': 'Fmaj7',       '9': 'Fmaj9' },
+  'VII': { triad: 'G',      '7': 'G7',          '9': 'G9' }
+};
+
+const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+const PROGRESSIONS = [
+  { name: 'i – VI – III – VII',    sub: 'pop minor descent',    chords: ['i', 'VI', 'III', 'VII'] },
+  { name: 'i – VII – VI – VII',    sub: 'Stray Cat Strut',      chords: ['i', 'VII', 'VI', 'VII'] },
+  { name: 'VI – VII – i – i',      sub: 'epic trailer',         chords: ['VI', 'VII', 'i', 'i'] },
+  { name: 'i – III – VII – VI',    sub: 'pop ballad',           chords: ['i', 'III', 'VII', 'VI'] },
+  { name: 'i – iv – VII – III',    sub: 'modal jam',            chords: ['i', 'iv', 'VII', 'III'] },
+  { name: 'i – iv – v – i',        sub: 'natural minor cadence',chords: ['i', 'iv', 'v', 'i'] },
+  { name: 'i – VI – iv – v',       sub: 'folk minor',           chords: ['i', 'VI', 'iv', 'v'] }
+];
+
+// Tones for a given chord & extension, as absolute MIDI numbers, root in octave 3.
+function getChordTones(roman, ext) {
+  const def = ROMAN_DEFS[roman];
+  const rootMidi = A3_MIDI + def.offset;
+  return def[ext].map(i => rootMidi + i);
+}
+
+// Build voicing for given chord/extension/inversion.
+// Bass = inversion's bass note, octave below the tone.
+// Upper voices = the other tones, octave-shifted to lie above the bass note,
+// plus (for triads) a doubled bass-tone an octave up to make 3 upper voices.
+function buildVoicing(roman, ext, inversion, octaveShift = 0) {
+  const tones = getChordTones(roman, ext);
+  const numTones = tones.length;
+  if (inversion >= numTones) inversion = 0;
+
+  const bassPivot = tones[inversion];
+  const bass = bassPivot - 12;
+
+  const upper = [];
+  for (let i = 0; i < numTones; i++) {
+    if (i === inversion) continue;
+    let v = tones[i];
+    while (v < bassPivot) v += 12;
+    upper.push(v);
+  }
+  if (upper.length === 2) {
+    upper.push(bassPivot + 12); // triad: double the bass tone an octave up
+  }
+  upper.sort((a, b) => a - b);
+  const shifted = upper.map(v => v + 12 * octaveShift);
+  return { bass, upperVoices: shifted };
+}
+
+// Voice leading: pick inversion + octave shift that minimises voice movement.
+function pickInversionVL(roman, ext, prevUpperVoices) {
+  const tones = getChordTones(roman, ext);
+  const numInversions = tones.length;
+  let best = { inversion: 0, octaveShift: 0, score: Infinity };
+  for (let inv = 0; inv < numInversions; inv++) {
+    for (let shift = -1; shift <= 1; shift++) {
+      const { upperVoices, bass } = buildVoicing(roman, ext, inv, shift);
+      // Don't let upper voices collide with or fall below the bass.
+      if (Math.min(...upperVoices) <= bass) continue;
+      const score = voicingDistance(prevUpperVoices, upperVoices);
+      if (score < best.score) best = { inversion: inv, octaveShift: shift, score };
+    }
+  }
+  return best;
+}
+
+function voicingDistance(a, b) {
+  const A = [...a].sort((x, y) => x - y);
+  const B = [...b].sort((x, y) => x - y);
+  let sum = 0;
+  const n = Math.min(A.length, B.length);
+  for (let i = 0; i < n; i++) sum += Math.abs(A[i] - B[i]);
+  return sum;
+}
+
+function midiToName(midi) {
+  const octave = Math.floor(midi / 12) - 1;
+  return NOTE_NAMES[midi % 12] + octave;
+}
+
+// ============================================================
+// AUDIO — FM RHODES + REVERB
+// ============================================================
+
+let audioCtx = null;
+let masterGain = null;
+let reverbWet = null;
+let convolver = null;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.55;
+  masterGain.connect(audioCtx.destination);
+
+  // Plate-ish reverb via synthesised IR
+  convolver = audioCtx.createConvolver();
+  convolver.buffer = makeImpulseResponse(2.4, 2.5);
+  reverbWet = audioCtx.createGain();
+  reverbWet.gain.value = 0.35;
+  convolver.connect(reverbWet);
+  reverbWet.connect(masterGain);
+}
+
+function makeImpulseResponse(duration, decay) {
+  const sr = audioCtx.sampleRate;
+  const length = Math.floor(sr * duration);
+  const buf = audioCtx.createBuffer(2, length, sr);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = buf.getChannelData(ch);
+    for (let i = 0; i < length; i++) {
+      const t = i / length;
+      // Slight pre-delay shape, exponential decay, mild high-cut by smoothing
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, decay) * (i < sr * 0.01 ? i / (sr * 0.01) : 1);
+    }
+  }
+  return buf;
+}
+
+// FM Rhodes-ish voice: sine carrier, sine modulator at 1:1 ratio with quick-decay modulation index.
+function playNote(midi, when, duration, velocity = 0.55) {
+  const freq = 440 * Math.pow(2, (midi - 69) / 12);
+  const t = when;
+
+  const carrier = audioCtx.createOscillator();
+  carrier.type = 'sine';
+  carrier.frequency.value = freq;
+
+  const modulator = audioCtx.createOscillator();
+  modulator.type = 'sine';
+  modulator.frequency.value = freq;
+
+  const modGain = audioCtx.createGain();
+  // Less FM index = less bright. We want mellow Rhodes, not 80s electric piano patch.
+  const modAmount = 700 * velocity * (300 / (freq + 80)); // less brightness on high notes
+  modGain.gain.setValueAtTime(modAmount, t);
+  modGain.gain.exponentialRampToValueAtTime(0.5, t + 0.45);
+  modulator.connect(modGain);
+  modGain.connect(carrier.frequency);
+
+  const env = audioCtx.createGain();
+  env.gain.setValueAtTime(0, t);
+  env.gain.linearRampToValueAtTime(velocity, t + 0.006);
+  env.gain.exponentialRampToValueAtTime(velocity * 0.55, t + 0.25);
+  env.gain.exponentialRampToValueAtTime(velocity * 0.25, t + Math.max(0.3, duration * 0.85));
+  env.gain.exponentialRampToValueAtTime(0.0005, t + duration);
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 2200;
+  filter.Q.value = 0.6;
+
+  carrier.connect(env);
+  env.connect(filter);
+  filter.connect(masterGain);
+  filter.connect(convolver);
+
+  modulator.start(t);
+  carrier.start(t);
+  modulator.stop(t + duration + 0.15);
+  carrier.stop(t + duration + 0.15);
+}
+
+// ============================================================
+// STATE & RENDERING
+// ============================================================
+
+const BPM = 75;
+const BEATS_PER_BAR = 4;
+const SEC_PER_BAR = (60 / BPM) * BEATS_PER_BAR;
+
+const state = {
+  progression: 0,
+  extension: 'triad',
+  voiceLeading: false,
+  inversions: [0, 0, 0, 0],
+  octaveShifts: [0, 0, 0, 0]
+};
+
+let currentVoicings = [];
+
+function currentChord(i) {
+  return PROGRESSIONS[state.progression].chords[i];
+}
+
+function recompute() {
+  const ext = state.extension;
+  // Clamp any inversions that are out of range for the new extension.
+  for (let i = 0; i < 4; i++) {
+    const tones = getChordTones(currentChord(i), ext);
+    if (state.inversions[i] >= tones.length) state.inversions[i] = 0;
+  }
+
+  if (state.voiceLeading) {
+    // Chord 0 fixed at root, no shift. Greedy from there.
+    state.inversions[0] = 0;
+    state.octaveShifts[0] = 0;
+    let prev = buildVoicing(currentChord(0), ext, 0, 0).upperVoices;
+    for (let i = 1; i < 4; i++) {
+      const pick = pickInversionVL(currentChord(i), ext, prev);
+      state.inversions[i] = pick.inversion;
+      state.octaveShifts[i] = pick.octaveShift;
+      prev = buildVoicing(currentChord(i), ext, pick.inversion, pick.octaveShift).upperVoices;
+    }
+  } else {
+    // Manual mode — don't auto-shift octaves.
+    state.octaveShifts = [0, 0, 0, 0];
+  }
+
+  currentVoicings = [];
+  for (let i = 0; i < 4; i++) {
+    currentVoicings.push(buildVoicing(currentChord(i), ext, state.inversions[i], state.octaveShifts[i]));
+  }
+  render();
+}
+
+function render() {
+  // Progression options
+  const sel = document.getElementById('progression-select');
+  if (!sel.options.length) {
+    PROGRESSIONS.forEach((p, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${p.name}  —  ${p.sub}`;
+      sel.appendChild(opt);
+    });
+  }
+  sel.value = state.progression;
+
+  // Chord cards
+  const grid = document.getElementById('chord-grid');
+  grid.innerHTML = '';
+  const ext = state.extension;
+  for (let i = 0; i < 4; i++) {
+    const roman = currentChord(i);
+    const voicing = currentVoicings[i];
+    const numInversions = getChordTones(roman, ext).length;
+
+    const card = document.createElement('div');
+    card.className = 'chord-card';
+    card.dataset.idx = i;
+
+    const romanEl = document.createElement('div');
+    romanEl.className = 'roman';
+    romanEl.textContent = roman;
+    card.appendChild(romanEl);
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'chord-name';
+    nameEl.textContent = CHORD_NAMES[roman][ext];
+    card.appendChild(nameEl);
+
+    const voicingEl = document.createElement('div');
+    voicingEl.className = 'voicing';
+    const bassStr = `<span class="bass">${midiToName(voicing.bass)}</span>`;
+    const upperStrs = voicing.upperVoices.map(v => `<span class="upper">${midiToName(v)}</span>`).join('');
+    voicingEl.innerHTML = `${bassStr}${upperStrs}`;
+    card.appendChild(voicingEl);
+
+    const invRow = document.createElement('div');
+    invRow.className = 'inversion-row';
+    const invLabel = document.createElement('span');
+    invLabel.className = 'inv-label';
+    invLabel.textContent = 'INV';
+    invRow.appendChild(invLabel);
+    for (let inv = 0; inv < numInversions; inv++) {
+      const btn = document.createElement('button');
+      btn.className = 'inv-btn';
+      btn.textContent = inv;
+      if (inv === state.inversions[i]) {
+        btn.classList.add('selected');
+        if (state.voiceLeading) btn.classList.add('vl-selected');
+      }
+      if (state.voiceLeading) btn.disabled = true;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (state.voiceLeading) return;
+        state.inversions[i] = inv;
+        recompute();
+      });
+      invRow.appendChild(btn);
+    }
+    card.appendChild(invRow);
+
+    card.addEventListener('click', () => auditionChord(i));
+    grid.appendChild(card);
+  }
+}
+
+// ============================================================
+// PLAYBACK
+// ============================================================
+
+let isPlaying = false;
+let nextChordTime = 0;
+let nextChordIdx = 0;
+let schedulerInterval = null;
+let highlightTimers = [];
+
+function startPlayback() {
+  if (isPlaying) return;
+  initAudio();
+  audioCtx.resume();
+  isPlaying = true;
+  nextChordTime = audioCtx.currentTime + 0.08;
+  nextChordIdx = 0;
+  document.getElementById('play-btn').classList.add('playing');
+  document.getElementById('play-btn').textContent = '■ Stop';
+  schedulerTick();
+  schedulerInterval = setInterval(schedulerTick, 80);
+}
+
+function stopPlayback() {
+  isPlaying = false;
+  clearInterval(schedulerInterval);
+  schedulerInterval = null;
+  highlightTimers.forEach(t => clearTimeout(t));
+  highlightTimers = [];
+  document.querySelectorAll('.chord-card').forEach(el => el.classList.remove('active'));
+  const btn = document.getElementById('play-btn');
+  btn.classList.remove('playing');
+  btn.textContent = '▶ Play';
+}
+
+function schedulerTick() {
+  if (!isPlaying) return;
+  const lookahead = 0.25;
+  while (nextChordTime < audioCtx.currentTime + lookahead) {
+    scheduleChord(nextChordIdx, nextChordTime);
+    nextChordTime += SEC_PER_BAR;
+    nextChordIdx = (nextChordIdx + 1) % 4;
+  }
+}
+
+function scheduleChord(idx, when) {
+  const voicing = currentVoicings[idx];
+  const duration = SEC_PER_BAR * 0.95;
+  playNote(voicing.bass, when, duration, 0.5);
+  voicing.upperVoices.forEach(v => playNote(v, when, duration, 0.42));
+
+  // Visual highlight at exact playback moment
+  const delayMs = Math.max(0, (when - audioCtx.currentTime) * 1000);
+  const timer = setTimeout(() => {
+    if (!isPlaying) return;
+    document.querySelectorAll('.chord-card').forEach((el, i) => {
+      el.classList.toggle('active', i === idx);
+    });
+  }, delayMs);
+  highlightTimers.push(timer);
+}
+
+function auditionChord(idx) {
+  initAudio();
+  audioCtx.resume();
+  const voicing = currentVoicings[idx];
+  const now = audioCtx.currentTime + 0.02;
+  const duration = 1.8;
+  playNote(voicing.bass, now, duration, 0.5);
+  voicing.upperVoices.forEach(v => playNote(v, now, duration, 0.42));
+
+  // Brief flash
+  const cards = document.querySelectorAll('.chord-card');
+  cards.forEach((el, i) => el.classList.toggle('active', i === idx));
+  setTimeout(() => {
+    if (!isPlaying) cards.forEach(el => el.classList.remove('active'));
+  }, 400);
+}
+
+// ============================================================
+// MIDI EXPORT
+// ============================================================
+
+function exportMIDI() {
+  const ppqn = 480;
+  const bpm = BPM;
+  const usPerQuarter = Math.round(60000000 / bpm);
+
+  const header = [
+    0x4D, 0x54, 0x68, 0x64,
+    0x00, 0x00, 0x00, 0x06,
+    0x00, 0x00,            // format 0
+    0x00, 0x01,            // 1 track
+    (ppqn >> 8) & 0xFF, ppqn & 0xFF
+  ];
+
+  const events = [];
+  events.push([0, 0xFF, 0x51, 0x03,
+               (usPerQuarter >> 16) & 0xFF,
+               (usPerQuarter >> 8) & 0xFF,
+                usPerQuarter & 0xFF]);
+  events.push([0, 0xFF, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08]);
+
+  const ticksPerBar = ppqn * 4;
+  for (let bar = 0; bar < 4; bar++) {
+    const voicing = currentVoicings[bar];
+    const notes = [voicing.bass, ...voicing.upperVoices];
+    // Note ons
+    notes.forEach(n => events.push([0, 0x90, n, 80]));
+    // Note offs — first one gets the bar delta, rest delta 0
+    notes.forEach((n, i) => events.push([i === 0 ? ticksPerBar : 0, 0x80, n, 0]));
+  }
+  events.push([0, 0xFF, 0x2F, 0x00]);
+
+  const trackData = [];
+  for (const ev of events) {
+    const [delta, ...bytes] = ev;
+    trackData.push(...variableLength(delta));
+    trackData.push(...bytes);
+  }
+
+  const trackLen = trackData.length;
+  const trackHeader = [
+    0x4D, 0x54, 0x72, 0x6B,
+    (trackLen >>> 24) & 0xFF,
+    (trackLen >>> 16) & 0xFF,
+    (trackLen >>> 8) & 0xFF,
+     trackLen        & 0xFF
+  ];
+
+  const all = new Uint8Array(header.length + trackHeader.length + trackData.length);
+  let offset = 0;
+  all.set(header, offset); offset += header.length;
+  all.set(trackHeader, offset); offset += trackHeader.length;
+  all.set(trackData, offset);
+
+  // Convert to base64 to bypass CSP on blob/createObjectURL.
+  let binary = '';
+  for (let i = 0; i < all.length; i++) binary += String.fromCharCode(all[i]);
+  const base64 = btoa(binary);
+
+  const progName = PROGRESSIONS[state.progression].chords.join('-');
+  const extLabel = state.extension === 'triad' ? '' : '-' + state.extension;
+  const vlLabel = state.voiceLeading ? '-VL' : '';
+  const filename = `A-minor-${progName}${extLabel}${vlLabel}.mid`;
+
+  const a = document.createElement('a');
+  a.href = `data:audio/midi;base64,${base64}`;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function variableLength(value) {
+  const bytes = [];
+  bytes.push(value & 0x7F);
+  value >>>= 7;
+  while (value > 0) {
+    bytes.unshift(0x80 | (value & 0x7F));
+    value >>>= 7;
+  }
+  return bytes;
+}
+
+// ============================================================
+// EVENT WIRING
+// ============================================================
+
+document.getElementById('progression-select').addEventListener('change', (e) => {
+  state.progression = parseInt(e.target.value, 10);
+  state.inversions = [0, 0, 0, 0];
+  state.octaveShifts = [0, 0, 0, 0];
+  recompute();
+});
+
+document.querySelectorAll('#extension-toggle .toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.extension = btn.dataset.ext;
+    document.querySelectorAll('#extension-toggle .toggle-btn').forEach(b => b.classList.toggle('selected', b === btn));
+    recompute();
+  });
+});
+
+document.querySelectorAll('#vl-toggle .toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.voiceLeading = btn.dataset.vl === 'on';
+    document.querySelectorAll('#vl-toggle .toggle-btn').forEach(b => b.classList.toggle('selected', b === btn));
+    recompute();
+  });
+});
+
+document.getElementById('play-btn').addEventListener('click', () => {
+  if (isPlaying) stopPlayback(); else startPlayback();
+});
+
+document.getElementById('export-btn').addEventListener('click', exportMIDI);
+
+// Init
+recompute();
+</script>
+</body>
+</html>
