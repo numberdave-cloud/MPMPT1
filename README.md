@@ -14,6 +14,7 @@ Each MOTE is a single self-contained HTML file. Web Audio API only, no external 
 | [`step-sequencer/`](./step-sequencer) | Step Sequencer — 16-step grid with kick/snare/hat/side-stick, preset patterns (disco / rock / garage), step/count label toggle, and hover-driven theory info |
 | [`mix-balance-industrial/`](./mix-balance-industrial) | Mix Balance [Industrial] — multi-channel fader mix balance exercise on an industrial stem set |
 | [`mix-balance-reggae/`](./mix-balance-reggae) | Mix Balance [Reggae] — multi-channel fader mix balance exercise on a reggae stem set |
+| [`quantise/`](./quantise) | Quantisation — drum hits on a 16th-note grid with a quantise-strength slider that snaps them to the grid in real time |
 
 ## Live URLs
 
@@ -23,6 +24,7 @@ Each MOTE is a single self-contained HTML file. Web Audio API only, no external 
 - https://numberdave-cloud.github.io/MPMPT1/step-sequencer/
 - https://numberdave-cloud.github.io/MPMPT1/mix-balance-industrial/
 - https://numberdave-cloud.github.io/MPMPT1/mix-balance-reggae/
+- https://numberdave-cloud.github.io/MPMPT1/quantise/
 
 ## Embedding in Canvas
 
