@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Song Structure Analyser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    padding: 20px 24px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .title {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+
+  .mode-tabs {
+    display: flex;
+    border: 1px solid var(--border);
+  }
+
+  .mode-tab {
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-right: 1px solid var(--border);
+    transition: color 0.1s, background 0.1s;
+  }
+  .mode-tab:last-child { border-right: none; }
+  .mode-tab:hover { color: var(--text); }
+  .mode-tab.active {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* ─── SECTION BUTTONS ─── */
+  .section-buttons-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .section-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .section-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: background 0.08s, border-color 0.08s, transform 0.05s;
+    min-width: 80px;
+  }
+  .section-btn:hover { border-color: var(--border-bright); }
+  .section-btn:active { transform: translateY(1px); }
+  .section-btn.flash {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* ─── TIMELINE ─── */
+  .timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+
+  .timeline-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .bar-count {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .bar-count strong {
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  .timeline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    min-height: 64px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 6px;
+    align-content: flex-start;
+  }
+
+  .timeline.empty {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .timeline.empty::after {
+    content: "Click a section button as each bar plays in the music.";
+    color: var(--text-faint);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    font-style: italic;
+  }
+
+  .group {
+    height: 44px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: var(--bg);
+    transition: filter 0.08s, outline-offset 0.08s;
+    position: relative;
+    user-select: none;
+    padding: 0 6px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .group:hover { filter: brightness(1.15); }
+  .group.selected {
+    outline: 2px solid var(--text);
+    outline-offset: -2px;
+    z-index: 1;
+  }
+
+  .group-name {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    line-height: 1.1;
+  }
+  .group-bars {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    opacity: 0.75;
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+
+  .hint {
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    margin-bottom: 18px;
+    font-style: italic;
+  }
+
+  /* ─── INFO PANEL ─── */
+  .info-panel {
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    min-height: 88px;
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .info-section-name {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .info-description {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text);
+  }
+
+  .info-placeholder {
+    font-size: 12px;
+    color: var(--text-faint);
+    font-style: italic;
+    letter-spacing: 0.02em;
+  }
+
+  /* ─── ACTIONS ─── */
+  .actions {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 9px 14px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: border-color 0.08s, background 0.08s;
+  }
+  .action-btn:hover:not(:disabled) { border-color: var(--border-bright); }
+  .action-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .action-btn.primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .action-btn.primary:hover:not(:disabled) { background: var(--accent-glow); border-color: var(--accent-glow); }
+  .action-btn.danger:hover:not(:disabled) {
+    border-color: #B85542;
+    color: #B85542;
+  }
+
+  /* ─── SUMMARY ─── */
+  .summary {
+    border: 1px solid var(--accent);
+    padding: 18px 20px;
+    margin-top: 8px;
+    display: none;
+  }
+  .summary.active { display: block; }
+
+  .summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .summary-title {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .summary-mode {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .stat-value strong {
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  .summary-list {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    margin: 8px 0 16px;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  .summary-observations {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border-left: 2px solid var(--accent);
+    background: rgba(192, 120, 56, 0.06);
+  }
+  .summary-observations strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .copy-btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: background 0.1s;
+  }
+  .copy-btn:hover { background: var(--accent-glow); }
+  .copy-btn.copied { background: #6F8A50; }
+
+  /* responsive */
+  @media (max-width: 600px) {
+    body { padding: 16px; }
+    .section-btn { font-size: 9px; padding: 8px 10px; min-width: 0; }
+    .action-btn { font-size: 9px; padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">SONG STRUCTURE ANALYSER</div>
+    <div class="mode-tabs" id="modeTabs">
+      <button class="mode-tab active" data-mode="pop">Pop / Rock</button>
+      <button class="mode-tab" data-mode="hiphop">Hip-Hop / Rap</button>
+      <button class="mode-tab" data-mode="electronic">Electronic</button>
+    </div>
+  </div>
+
+  <div class="section-buttons-label">Tap a section once per bar</div>
+  <div class="section-buttons" id="sectionButtons"></div>
+
+  <div class="timeline-header">
+    <div class="timeline-label">Timeline</div>
+    <div class="bar-count" id="barCount"><strong>0</strong> bars</div>
+  </div>
+  <div class="timeline empty" id="timeline"></div>
+  <div class="hint">Click a block to select it, then click a section button to reassign.</div>
+
+  <div class="info-panel" id="infoPanel">
+    <div class="info-placeholder">Hover or click a section button to see what it does.</div>
+  </div>
+
+  <div class="actions">
+    <button class="action-btn" id="undoBtn" disabled>Undo Last</button>
+    <button class="action-btn" id="deleteBtn" disabled>Delete Selected</button>
+    <button class="action-btn danger" id="clearBtn" disabled>Clear All</button>
+    <button class="action-btn primary" id="endBtn" disabled>Finish</button>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+<script>
+  // ─── DATA ────────────────────────────────────────────────────────
+  const SECTIONS = {
+    pop: [
+      { name: 'INTRO',       color: '#8FA37E', desc: 'Sets the mood and key. Often introduces a chord progression or riff that recurs through the song. Builds anticipation for the first verse.' },
+      { name: 'VERSE',       color: '#C07838', desc: 'Tells the story. Usually the same melody each time but with different lyrics. Lower energy than the chorus — sets up the payoff.' },
+      { name: 'PRE-CHORUS',  color: '#C8A04A', desc: 'Builds tension before the chorus. Often climbs in pitch, harmony or energy to create lift into the hook.' },
+      { name: 'CHORUS',      color: '#B85542', desc: 'The main hook. Catchiest melody, the song title often appears here. The most memorable part — the bit you hum after one listen.' },
+      { name: 'POST-CHORUS', color: '#B07878', desc: 'Extends the chorus energy. Often a wordless hook ("oh-oh-oh"), an instrumental tag, or a vocal chop.' },
+      { name: 'BRIDGE',      color: '#8B6A8B', desc: 'Provides contrast. New chords, new melody, often the emotional peak. Breaks the verse-chorus pattern so the final chorus hits harder.' },
+      { name: 'SOLO',        color: '#8A8540', desc: 'Instrumental feature, usually guitar or keys, played over the verse or chorus chords. Shows off a player or a melodic idea.' },
+      { name: 'OUTRO',       color: '#8A7A6A', desc: 'Brings the song to a close. Can fade out, repeat the chorus, return to the intro, or have a definitive ending.' },
+    ],
+    hiphop: [
+      { name: 'INTRO',       color: '#8FA37E', desc: 'Sets the vibe with a beat, vocal sample, ad-lib or DJ tag. Often shorter than in pop — the beat takes centre stage quickly.' },
+      { name: 'VERSE',       color: '#C07838', desc: 'Usually 16 bars of rapping (sometimes 8 or 32). Carries the lyrical content, storytelling and flow. Where the rapper does their actual work.' },
+      { name: 'PRE-HOOK',    color: '#C8A04A', desc: 'Short build into the hook. Not always present — many tracks go straight from verse to hook with no setup.' },
+      { name: 'HOOK',        color: '#B85542', desc: 'The catchy refrain — the hip-hop equivalent of the chorus. Often sung rather than rapped. Repeats the song title or main phrase.' },
+      { name: 'BRIDGE',      color: '#8B6A8B', desc: 'Less common in hip-hop but provides contrast. Often a beat switch, a feature artist, or a change of tempo.' },
+      { name: 'BREAK',       color: '#5C8A8A', desc: 'Instrumental section, often just the beat. Lets the production breathe and reminds you the beat itself is doing serious work.' },
+      { name: 'OUTRO',       color: '#8A7A6A', desc: 'Closes the track. May feature an ad-lib, DJ tag, beat fade, or one final hook.' },
+    ],
+    electronic: [
+      { name: 'INTRO',       color: '#8FA37E', desc: 'Loops a sparse element or two to establish tempo. DJ-friendly so the next track can be beat-matched into it.' },
+      { name: 'BUILD',       color: '#C8A04A', desc: 'Tension rises. Filter sweeps, snare rolls, risers, white noise, pitch-bent synths. Energy climbs toward the drop.' },
+      { name: 'DROP',        color: '#B85542', desc: 'The release. Full energy, main hook, bassline drops in. The payoff after the build — the reason the build existed.' },
+      { name: 'GROOVE',      color: '#C07838', desc: 'The steady main section of a house or techno track. Loops the core elements without dramatic peaks — the body of the track.' },
+      { name: 'BREAKDOWN',   color: '#5C8A8A', desc: 'Strips the energy back. Often removes drums, leaving melodic or atmospheric elements. Resets the listener for another build.' },
+      { name: 'FAKE DROP',   color: '#8B6A8B', desc: 'Pretends to drop but pulls back at the last moment. Plays with expectation — the second drop hits harder because of it.' },
+      { name: 'OUTRO',       color: '#8A7A6A', desc: 'Mirrors the intro. Strips back the elements so a DJ can mix the next track in cleanly.' },
+    ]
+  };
+
+  const MODE_LABELS = {
+    pop: 'Pop / Rock',
+    hiphop: 'Hip-Hop / Rap',
+    electronic: 'Electronic'
+  };
+
+  // ─── STATE ───────────────────────────────────────────────────────
+  let state = {
+    mode: 'pop',
+    bars: [],            // array of section names, one entry per bar
+    selectedGroupIdx: null, // index into groupedBars()
+    finalized: false,
+    lastInfoSection: null,
+  };
+
+  // ─── DOM REFS ────────────────────────────────────────────────────
+  const $modeTabs = document.getElementById('modeTabs');
+  const $sectionButtons = document.getElementById('sectionButtons');
+  const $timeline = document.getElementById('timeline');
+  const $barCount = document.getElementById('barCount');
+  const $infoPanel = document.getElementById('infoPanel');
+  const $undoBtn = document.getElementById('undoBtn');
+  const $deleteBtn = document.getElementById('deleteBtn');
+  const $clearBtn = document.getElementById('clearBtn');
+  const $endBtn = document.getElementById('endBtn');
+  const $summary = document.getElementById('summary');
+
+  // ─── HELPERS ─────────────────────────────────────────────────────
+  function currentSections() {
+    return SECTIONS[state.mode];
+  }
+
+  function sectionByName(name) {
+    return currentSections().find(s => s.name === name) ||
+           // fallback: search all modes (in case mode changed mid-session)
+           Object.values(SECTIONS).flat().find(s => s.name === name);
+  }
+
+  // group contiguous same-name bars
+  function groupedBars() {
+    const groups = [];
+    for (const name of state.bars) {
+      const last = groups[groups.length - 1];
+      if (last && last.name === name) {
+        last.count++;
+      } else {
+        groups.push({ name, count: 1 });
+      }
+    }
+    return groups;
+  }
+
+  // ─── RENDERING ───────────────────────────────────────────────────
+  function renderModeTabs() {
+    $modeTabs.querySelectorAll('.mode-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.mode === state.mode);
+    });
+  }
+
+  function renderSectionButtons() {
+    $sectionButtons.innerHTML = '';
+    currentSections().forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'section-btn';
+      btn.textContent = s.name;
+      btn.style.borderLeftColor = s.color;
+      btn.addEventListener('click', () => handleSectionClick(s.name, btn));
+      btn.addEventListener('mouseenter', () => showInfo(s.name));
+      $sectionButtons.appendChild(btn);
+    });
+  }
+
+  function renderTimeline() {
+    const groups = groupedBars();
+    $timeline.innerHTML = '';
+    $timeline.classList.toggle('empty', groups.length === 0);
+
+    groups.forEach((g, idx) => {
+      const section = sectionByName(g.name);
+      const el = document.createElement('div');
+      el.className = 'group';
+      if (idx === state.selectedGroupIdx) el.classList.add('selected');
+      el.style.background = section ? section.color : '#888';
+      // width scales with bar count
+      const width = Math.max(48, g.count * 36);
+      el.style.minWidth = width + 'px';
+      el.style.flexGrow = g.count;
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'group-name';
+      nameEl.textContent = g.name;
+      el.appendChild(nameEl);
+
+      const barsEl = document.createElement('div');
+      barsEl.className = 'group-bars';
+      barsEl.textContent = g.count + ' BAR' + (g.count > 1 ? 'S' : '');
+      el.appendChild(barsEl);
+
+      el.addEventListener('click', () => handleGroupClick(idx));
+      $timeline.appendChild(el);
+    });
+
+    $barCount.innerHTML = '<strong>' + state.bars.length + '</strong> bars';
+  }
+
+  function renderActions() {
+    $undoBtn.disabled = state.bars.length === 0 || state.finalized;
+    $deleteBtn.disabled = state.selectedGroupIdx === null || state.finalized;
+    $clearBtn.disabled = state.bars.length === 0;
+    $endBtn.disabled = state.bars.length === 0 || state.finalized;
+  }
+
+  function showInfo(sectionName) {
+    const section = sectionByName(sectionName);
+    if (!section) return;
+    state.lastInfoSection = sectionName;
+    $infoPanel.innerHTML = `
+      <div class="info-section-name" style="color: ${section.color};">${section.name}</div>
+      <div class="info-description">${section.desc}</div>
+    `;
+  }
+
+  function renderAll() {
+    renderModeTabs();
+    renderSectionButtons();
+    renderTimeline();
+    renderActions();
+  }
+
+  // ─── EVENT HANDLERS ──────────────────────────────────────────────
+  function handleModeChange(newMode) {
+    if (newMode === state.mode) return;
+    if (state.bars.length > 0) {
+      if (!confirm('Switching mode will clear your current timeline. Continue?')) return;
+    }
+    state.mode = newMode;
+    state.bars = [];
+    state.selectedGroupIdx = null;
+    state.finalized = false;
+    state.lastInfoSection = null;
+    $summary.classList.remove('active');
+    $infoPanel.innerHTML = '<div class="info-placeholder">Hover or click a section button to see what it does.</div>';
+    renderAll();
+  }
+
+  function handleSectionClick(name, btnEl) {
+    showInfo(name);
+
+    // flash the button
+    if (btnEl) {
+      btnEl.classList.add('flash');
+      setTimeout(() => btnEl.classList.remove('flash'), 120);
+    }
+
+    if (state.finalized) return;
+
+    if (state.selectedGroupIdx !== null) {
+      // reassign whole group
+      const groups = groupedBars();
+      const target = groups[state.selectedGroupIdx];
+      if (target) {
+        // find start index in bars
+        let startIdx = 0;
+        for (let i = 0; i < state.selectedGroupIdx; i++) startIdx += groups[i].count;
+        for (let i = 0; i < target.count; i++) state.bars[startIdx + i] = name;
+      }
+      state.selectedGroupIdx = null;
+    } else {
+      // add one bar
+      state.bars.push(name);
+    }
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleGroupClick(idx) {
+    if (state.finalized) return;
+    state.selectedGroupIdx = (state.selectedGroupIdx === idx) ? null : idx;
+    // show info for that group's section
+    const groups = groupedBars();
+    if (state.selectedGroupIdx !== null && groups[idx]) {
+      showInfo(groups[idx].name);
+    }
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleUndo() {
+    if (state.bars.length === 0) return;
+    state.bars.pop();
+    state.selectedGroupIdx = null;
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleDelete() {
+    if (state.selectedGroupIdx === null) return;
+    const groups = groupedBars();
+    const target = groups[state.selectedGroupIdx];
+    if (!target) return;
+    let startIdx = 0;
+    for (let i = 0; i < state.selectedGroupIdx; i++) startIdx += groups[i].count;
+    state.bars.splice(startIdx, target.count);
+    state.selectedGroupIdx = null;
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleClear() {
+    if (state.bars.length === 0) return;
+    if (!confirm('Clear the entire timeline?')) return;
+    state.bars = [];
+    state.selectedGroupIdx = null;
+    state.finalized = false;
+    $summary.classList.remove('active');
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleEnd() {
+    if (state.bars.length === 0) return;
+    state.finalized = true;
+    state.selectedGroupIdx = null;
+    renderSummary();
+    renderTimeline();
+    renderActions();
+    $summary.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ─── SUMMARY ─────────────────────────────────────────────────────
+  function toTitleCase(name) {
+    // 'PRE-CHORUS' -> 'Pre-Chorus'
+    return name.split('-').map(part => part.charAt(0) + part.slice(1).toLowerCase()).join('-');
+  }
+
+  function buildObservations(groups) {
+    const obs = [];
+    const counts = {};
+    const totalBarsPerSection = {};
+    groups.forEach(g => {
+      counts[g.name] = (counts[g.name] || 0) + 1;
+      totalBarsPerSection[g.name] = (totalBarsPerSection[g.name] || 0) + g.count;
+    });
+
+    const totalBars = state.bars.length;
+    const distinctSections = Object.keys(counts).length;
+
+    // most repeated section (by appearance count, not bar count)
+    let mostRepeated = null;
+    let mostRepeatedCount = 0;
+    Object.entries(counts).forEach(([name, c]) => {
+      if (c > mostRepeatedCount) { mostRepeated = name; mostRepeatedCount = c; }
+    });
+
+    // longest single section
+    let longest = null;
+    let longestBars = 0;
+    groups.forEach(g => {
+      if (g.count > longestBars) { longest = g.name; longestBars = g.count; }
+    });
+
+    if (mostRepeated && mostRepeatedCount > 1) {
+      const percent = Math.round((totalBarsPerSection[mostRepeated] / totalBars) * 100);
+      obs.push(`<strong>${toTitleCase(mostRepeated)}</strong> appears ${mostRepeatedCount} times (${totalBarsPerSection[mostRepeated]} bars / ${percent}% of the song).`);
+    }
+
+    if (longest) {
+      obs.push(`Longest single section: <strong>${toTitleCase(longest)}</strong> at ${longestBars} bars.`);
+    }
+
+    // pattern-y observations per mode
+    const sequence = groups.map(g => g.name);
+    if (state.mode === 'pop') {
+      const hasVerseChorus = sequence.some((s, i) => s === 'VERSE' && sequence[i+1] === 'CHORUS');
+      const hasBridge = sequence.includes('BRIDGE');
+      if (hasVerseChorus && hasBridge) {
+        obs.push(`Classic <strong>verse-chorus form with a bridge</strong> — the bread and butter of pop songwriting.`);
+      } else if (hasVerseChorus) {
+        obs.push(`Verse-chorus form — the foundation of most pop songs.`);
+      }
+    } else if (state.mode === 'hiphop') {
+      const verseCount = counts['VERSE'] || 0;
+      const hookCount = counts['HOOK'] || 0;
+      if (verseCount >= 2 && hookCount >= 2) {
+        obs.push(`Standard hip-hop form: <strong>verse — hook — verse — hook</strong> arrangement.`);
+      }
+    } else if (state.mode === 'electronic') {
+      const dropCount = counts['DROP'] || 0;
+      const hasFakeDrop = counts['FAKE DROP'] > 0;
+      if (dropCount >= 2) {
+        obs.push(`<strong>Two drops</strong> — classic festival EDM arrangement. The second drop usually hits hardest.`);
+      }
+      if (hasFakeDrop) {
+        obs.push(`Includes a <strong>fake drop</strong> — a structural fake-out that makes the real drop land harder.`);
+      }
+    }
+
+    obs.push(`Total: <strong>${totalBars} bars</strong> across <strong>${groups.length} sections</strong> (${distinctSections} distinct).`);
+
+    return obs;
+  }
+
+  function buildCopyText(groups) {
+    const lines = [];
+    lines.push(`SONG STRUCTURE — ${MODE_LABELS[state.mode]}`);
+    lines.push(`Total: ${state.bars.length} bars`);
+    lines.push('');
+    groups.forEach(g => {
+      lines.push(`${toTitleCase(g.name)} - ${g.count} ${g.count === 1 ? 'bar' : 'bars'}`);
+    });
+    return lines.join('\n');
+  }
+
+  function renderSummary() {
+    const groups = groupedBars();
+    if (groups.length === 0) return;
+
+    const observations = buildObservations(groups);
+    const flow = groups.map(g => `${toTitleCase(g.name)}(${g.count})`).join('  →  ');
+
+    $summary.innerHTML = `
+      <div class="summary-header">
+        <div class="summary-title">YOUR SONG STRUCTURE</div>
+        <div class="summary-mode">${MODE_LABELS[state.mode]}</div>
+      </div>
+
+      <div class="summary-stats">
+        <div>
+          <div class="stat-label">Total Bars</div>
+          <div class="stat-value"><strong>${state.bars.length}</strong></div>
+        </div>
+        <div>
+          <div class="stat-label">Sections</div>
+          <div class="stat-value"><strong>${groups.length}</strong></div>
+        </div>
+        <div>
+          <div class="stat-label">Distinct</div>
+          <div class="stat-value"><strong>${Object.keys(groups.reduce((a, g) => (a[g.name] = 1, a), {})).length}</strong></div>
+        </div>
+      </div>
+
+      <div class="stat-label" style="margin-bottom: 6px;">Flow</div>
+      <div class="summary-list">${flow}</div>
+
+      <div class="summary-observations">
+        ${observations.map(o => `<div>• ${o}</div>`).join('')}
+      </div>
+
+      <button class="copy-btn" id="copyBtn">Copy to Clipboard</button>
+    `;
+    $summary.classList.add('active');
+
+    document.getElementById('copyBtn').addEventListener('click', handleCopy);
+  }
+
+  async function handleCopy() {
+    const groups = groupedBars();
+    const text = buildCopyText(groups);
+    const btn = document.getElementById('copyBtn');
+
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy to Clipboard';
+        btn.classList.remove('copied');
+      }, 2000);
+    } catch (err) {
+      // fallback for older browsers / restricted contexts
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        btn.textContent = 'Copied ✓';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy to Clipboard';
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch (e) {
+        btn.textContent = 'Copy failed — select & copy manually';
+      }
+      document.body.removeChild(ta);
+    }
+  }
+
+  // ─── WIRE UP ─────────────────────────────────────────────────────
+  $modeTabs.addEventListener('click', (e) => {
+    if (e.target.matches('.mode-tab')) handleModeChange(e.target.dataset.mode);
+  });
+  $undoBtn.addEventListener('click', handleUndo);
+  $deleteBtn.addEventListener('click', handleDelete);
+  $clearBtn.addEventListener('click', handleClear);
+  $endBtn.addEventListener('click', handleEnd);
+
+  // deselect when clicking empty timeline area
+  $timeline.addEventListener('click', (e) => {
+    if (e.target === $timeline) {
+      state.selectedGroupIdx = null;
+      renderTimeline();
+      renderActions();
+    }
+  });
+
+  // keyboard: ESC deselects, Backspace removes selected
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      state.selectedGroupIdx = null;
+      renderTimeline();
+      renderActions();
+    }
+  });
+
+  renderAll();
+</script>
+</body>
+</html>
