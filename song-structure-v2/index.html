@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Song Structure Analyser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    padding: 20px 24px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .title {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+
+  .mode-tabs {
+    display: flex;
+    border: 1px solid var(--border);
+  }
+
+  .mode-tab {
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-right: 1px solid var(--border);
+    transition: color 0.1s, background 0.1s;
+  }
+  .mode-tab:last-child { border-right: none; }
+  .mode-tab:hover { color: var(--text); }
+  .mode-tab.active {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* ─── SECTION BUTTONS ─── */
+  .section-buttons-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .section-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .section-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: background 0.08s, border-color 0.08s, transform 0.05s;
+    min-width: 80px;
+  }
+  .section-btn:hover { border-color: var(--border-bright); }
+  .section-btn:active { transform: translateY(1px); }
+  .section-btn.flash {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* ─── TIMELINE ─── */
+  .timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+
+  .timeline-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .bar-count {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .bar-count strong {
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  .timeline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    min-height: 64px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 6px;
+    align-content: flex-start;
+  }
+
+  .timeline.empty {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .timeline.empty::after {
+    content: "Click a section button as each bar plays in the music.";
+    color: var(--text-faint);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    font-style: italic;
+  }
+
+  .group {
+    height: 44px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: var(--bg);
+    transition: filter 0.08s, outline-offset 0.08s;
+    position: relative;
+    user-select: none;
+    padding: 0 6px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .group:hover { filter: brightness(1.15); }
+  .group.selected {
+    outline: 2px solid var(--text);
+    outline-offset: -2px;
+    z-index: 1;
+  }
+
+  .group-name {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    line-height: 1.1;
+  }
+  .group-bars {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    opacity: 0.75;
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+
+  .hint {
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    margin-bottom: 18px;
+    font-style: italic;
+  }
+
+  /* ─── INFO PANEL ─── */
+  .info-panel {
+    border: 1px solid var(--border);
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    min-height: 100px;
+  }
+
+  .info-placeholder {
+    font-size: 12px;
+    color: var(--text-faint);
+    font-style: italic;
+    letter-spacing: 0.02em;
+    text-align: center;
+    padding: 22px 0;
+  }
+
+  .info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .info-section-name {
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    font-weight: 600;
+  }
+
+  .info-view-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+  }
+  .info-view-toggle button {
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    padding: 4px 10px;
+    font-family: inherit;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-right: 1px solid var(--border);
+    transition: color 0.1s, background 0.1s;
+  }
+  .info-view-toggle button:last-child { border-right: none; }
+  .info-view-toggle button:hover { color: var(--text); }
+  .info-view-toggle button.active {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .info-block {
+    margin-bottom: 14px;
+  }
+  .info-block:last-child { margin-bottom: 0; }
+
+  .info-block-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .info-block-body {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text);
+  }
+
+  .info-features-intro {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .info-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .info-features li {
+    font-size: 13px;
+    line-height: 1.55;
+    padding: 3px 0 3px 12px;
+    color: var(--text);
+    position: relative;
+  }
+  .info-features li::before {
+    content: "·";
+    position: absolute;
+    left: 0;
+    color: var(--text-dim);
+    font-weight: bold;
+  }
+  .info-features strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .info-quote {
+    border-left: 2px solid var(--accent);
+    padding: 8px 12px;
+    margin: 0 0 8px 0;
+    background: rgba(192, 120, 56, 0.06);
+  }
+  .info-quote:last-child { margin-bottom: 0; }
+  .quote-text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+    font-style: italic;
+    margin-bottom: 4px;
+  }
+  .quote-attribution {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+  }
+
+  .info-examples {
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+  .example-item {
+    font-style: italic;
+  }
+  .example-year {
+    color: var(--text-dim);
+    font-style: normal;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    margin-left: 2px;
+  }
+  .example-sep {
+    color: var(--text-faint);
+    margin: 0 6px;
+  }
+
+  .info-note {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-style: italic;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+  }
+
+  .info-upsell {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    font-style: italic;
+    padding: 8px 0 4px 0;
+  }
+
+  /* ─── ACTIONS ─── */
+  .actions {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 9px 14px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: border-color 0.08s, background 0.08s;
+  }
+  .action-btn:hover:not(:disabled) { border-color: var(--border-bright); }
+  .action-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .action-btn.primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .action-btn.primary:hover:not(:disabled) { background: var(--accent-glow); border-color: var(--accent-glow); }
+  .action-btn.danger:hover:not(:disabled) {
+    border-color: #B85542;
+    color: #B85542;
+  }
+
+  /* ─── SUMMARY ─── */
+  .summary {
+    border: 1px solid var(--accent);
+    padding: 18px 20px;
+    margin-top: 8px;
+    display: none;
+  }
+  .summary.active { display: block; }
+
+  .summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .summary-title {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .summary-mode {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .stat-value strong {
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  .summary-list {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    margin: 8px 0 16px;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  .summary-observations {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border-left: 2px solid var(--accent);
+    background: rgba(192, 120, 56, 0.06);
+  }
+  .summary-observations strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .copy-btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: background 0.1s;
+  }
+  .copy-btn:hover { background: var(--accent-glow); }
+  .copy-btn.copied { background: #6F8A50; }
+
+  /* responsive */
+  @media (max-width: 600px) {
+    body { padding: 16px; }
+    .section-btn { font-size: 9px; padding: 8px 10px; min-width: 0; }
+    .action-btn { font-size: 9px; padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">SONG STRUCTURE ANALYSER</div>
+    <div class="mode-tabs" id="modeTabs">
+      <button class="mode-tab active" data-mode="pop">Verse-Chorus</button>
+      <button class="mode-tab" data-mode="hiphop">Verse-Hook</button>
+      <button class="mode-tab" data-mode="electronic">Build-Drop</button>
+    </div>
+  </div>
+
+  <div class="section-buttons-label">Tap a section once per bar</div>
+  <div class="section-buttons" id="sectionButtons"></div>
+
+  <div class="timeline-header">
+    <div class="timeline-label">Timeline</div>
+    <div class="bar-count" id="barCount"><strong>0</strong> bars</div>
+  </div>
+  <div class="timeline empty" id="timeline"></div>
+  <div class="hint">Click a block to select it, then click a section button to reassign.</div>
+
+  <div class="info-panel" id="infoPanel"></div>
+
+  <div class="actions">
+    <button class="action-btn" id="undoBtn" disabled>Undo Last</button>
+    <button class="action-btn" id="deleteBtn" disabled>Delete Selected</button>
+    <button class="action-btn danger" id="clearBtn" disabled>Clear All</button>
+    <button class="action-btn primary" id="endBtn" disabled>Finish</button>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+<script>
+  // ─── SECTION DATA ────────────────────────────────────────────────
+  // Schema:
+  //   content.simple    : required, short info shown by default
+  //   content.detailed  : optional, full info shown when DETAILED toggled
+  //   Each view has: function (string), features (optional list), quotes (optional list), examples (optional list)
+
+  const SECTIONS = {
+    pop: [
+      {
+        name: 'INTRO',
+        color: '#8FA37E',
+        content: {
+          simple: {
+            function: "The song's front door. Its job is to grab attention in the first few seconds and tell the listener what world the song lives in: key, tempo, mood, genre."
+          },
+          detailed: {
+            function: "The intro is the song's front door. Producers from the 1960s radio era onward have treated the opening seconds as the most valuable real estate on a record, and the streaming era hasn't relaxed that. Its job: grab attention fast, establish the key, tempo and mood, signal the genre and production aesthetic, and create anticipation for the moment the vocal enters. The best intros also work as the song's audio logo, a few notes that announce the entire track before a word is sung.",
+            featuresIntro: "A few patterns worth knowing about the intro:",
+            features: [
+              "Most intros run for four, eight, or sixteen bars.",
+              "A riff-led intro uses a signature instrumental hook as the song's identity (Seven Nation Army, Sweet Child O' Mine).",
+              "A chord vamp loops a progression without a melodic hook to set the feel and key (Get Lucky).",
+              "A sparse-to-full build starts with one element and layers up to the first verse (Rolling in the Deep, Anti-Hero).",
+              "A cold open skips the intro entirely, with the vocal landing on bar one (Mr. Brightside, Help!)."
+            ],
+            quotes: [
+              { text: "You had to get people's attention in the first ten seconds.", attribution: "George Martin, producer of The Beatles" },
+              { text: "It was me trying to write a song without a chorus and still get people's attention… 'I'm not gonna have a chorus in this song. See if I can get away with it.' And on that one, we really did get away with it.", attribution: "Jack White, on the Seven Nation Army riff" }
+            ]
+          }
+        }
+      },
+      {
+        name: 'VERSE',
+        color: '#C07838',
+        content: {
+          simple: {
+            function: "The verse is the songwriter's main tool for developing a song. Same melody, different lyrics each time around. The music stays as a familiar frame while the words carry the song forward."
+          },
+          detailed: {
+            function: "The verse is the song's developmental engine. The melodic frame stays constant across verses so the listener can latch onto the music as familiar territory, while the lyric carries new information each time. Verses usually sit lower and sparser than the chorus, which serves two purposes at once: it gives the chorus somewhere to climb to, and it puts the words in front of the listener without the production fighting them. Skilled writers also use the verse to plant short fragments of the chorus melody, so by the time the hook arrives it already sounds familiar.",
+            featuresIntro: "A few patterns worth knowing about verses:",
+            features: [
+              "Usually 8 or 16 bars.",
+              "Same melody each time, different lyrics. The music acts as the familiar frame; the words do the changing.",
+              "Verses usually sit lower in pitch and sparser in arrangement than the chorus, leaving room for the chorus to feel bigger.",
+              "Verse two often has more layers than verse one. Extra percussion, harmonies, or instruments arrive as the song builds.",
+              "Most songs have two or three verses total, though some have more."
+            ],
+            quotes: [
+              { text: "I needed to learn how to telescope things, ideas. Things were too big to see all at once, like all the books in the library, everything laying around on all the tables. You might be able to put it all into one paragraph or into one verse of a song if you could get it right.", attribution: "Bob Dylan" },
+              { text: "You might come up with situations where you write a verse and wonder, 'Where can I go from here?' If you can't see your way clear, you might ask: 'What if this was the second verse? Where would I have come from?' That gives you two ways to develop the idea. That verse might even be the chorus of your song, you don't know!", attribution: "Pat Pattison, songwriting professor" }
+            ]
+          }
+        }
+      },
+      {
+        name: 'PRE-CHORUS',
+        color: '#C8A04A',
+        content: {
+          simple: {
+            function: "The pre-chorus is the songwriter's tool for getting from the verse to the chorus when the jump between them needs help. Not every song has one. When a song does, the pre-chorus usually changes chords, lifts the melody, or shifts the rhythm to bridge the verse's quieter feel into the chorus's bigger one."
+          },
+          detailed: {
+            function: "The pre-chorus is the songwriter's tool for getting from the verse to the chorus when the jump between them needs help. Not every song has one. When a song does, the pre-chorus usually changes chords, lifts the melody, or shifts the rhythm, bridging the verse's quieter feel into the chorus's bigger one. The same pre-chorus lyrics usually return across the song, even though the verses change, which gives the listener a marker that the chorus is about to hit.",
+            featuresIntro: "A few patterns worth knowing about pre-choruses:",
+            features: [
+              "Usually 4 or 8 bars, shorter than the verse and chorus around it.",
+              "Optional. Many songs go straight from verse to chorus with no pre-chorus at all.",
+              "Often introduces a new chord progression that doesn't appear elsewhere in the song.",
+              "The lyrics usually stay the same each time the section returns, even though the verses change.",
+              "The melody often climbs upward, sometimes through several scale steps, to land on the first note of the chorus."
+            ],
+            quotes: [
+              { text: "You definitely want to lay out the reason why you're saying whatever you're saying.", attribution: "Nija Charles, songwriter, on the role of the pre-chorus" },
+              { text: "The way a verse flows into a chorus is everything. I'll spend days just working on transitions to get that perfect lift.", attribution: "Daniel Nigro, producer for Olivia Rodrigo and Chappell Roan" }
+            ]
+          }
+        }
+      },
+      {
+        name: 'CHORUS',
+        color: '#B85542',
+        content: {
+          simple: {
+            function: "The chorus is the song's release. It sits higher in pitch and runs with a fuller arrangement than the verse, which is what makes its arrival feel like a payoff. The same melody and lyric come back each time the chorus returns."
+          },
+          detailed: {
+            function: "The chorus is the song's payoff. By the time it arrives, the verse has set up tension that the chorus releases. Choruses usually sit higher in pitch than the verse and run with a fuller arrangement. Vocal harmonies that the verse held back often arrive here. They repeat unchanged across the song so the listener can latch onto them, and they almost always contain the song's title and main melodic hook. Producers also vary the production around each chorus repeat, so the section feels bigger each time even when the notes are the same.",
+            featuresIntro: "A few patterns worth knowing about choruses:",
+            features: [
+              "Usually 8 or 16 bars.",
+              "Higher in pitch and fuller in arrangement than the verse, which is what makes its arrival feel like release.",
+              "Repeats unchanged each time, with the same melody and lyric, so the listener can latch onto it.",
+              "Vocal harmonies that the verse held back often arrive here for the first time.",
+              "Producers usually vary the production around each chorus repeat so the section feels bigger as the song progresses."
+            ],
+            quotes: [
+              { text: "A song is just an excuse to go to the chorus, and the chorus is just an excuse to go to the breakdown.", attribution: "Nile Rodgers" },
+              { text: "The 'victim to victory' theory is that, if you listen to the radio, a large percentage of the hits are about victim to victory, like, 'I'm having a terrible time.' And then the pre-chorus is, 'I don't know what's gonna happen next.' And the chorus is, 'Now I'm brilliant, and everything is great, because something happened to make it great.'", attribution: "Sia" }
+            ]
+          }
+        }
+      },
+      {
+        name: 'BRIDGE',
+        color: '#8B6A8B',
+        content: {
+          simple: {
+            function: "The bridge is the moment a song looks up from itself. It steps outside the verse and chorus loop with new music and often a new lyrical perspective on the song's subject. The job is to change the listener's relationship with the chorus by the time it returns, so the final repetitions land with extra weight."
+          },
+          detailed: {
+            function: "The bridge is the moment a song looks up from itself. It steps outside the verse and chorus loop with new music and often a new lyrical perspective on the song's subject. The job is to change the listener's relationship with the chorus by the time it returns, so the final repetitions land with extra weight.",
+            featuresIntro: "A few patterns worth knowing about the bridge:",
+            features: [
+              "Appears once in a song, usually after the second chorus.",
+              "Optional, since not every song uses one.",
+              "Often introduces new chords or a new melody.",
+              "Lyrics may shift perspective, introduce a new speaker, or reveal something the verses didn't.",
+              'Usually shorter than a verse or chorus, often four or eight bars (which is why the Beatles called it the "middle eight").'
+            ],
+            quotes: [
+              { text: "You can use the bridge to reveal something hidden or add a twist or just come right out and say what you feel instead of expressing it in images.", attribution: "Robin Frederick, songwriter and author of Shortcuts to Hit Songwriting" },
+              { text: "You've set up a pattern. You've established your hook and your verse and your chorus. We get it. But then, two-thirds of the way through, after that second chorus, there is an exit on the highway. And you take it for eight bars. The chords change. A new melody enters. The rhythm of the lyrics changes. The narrator introduces a new clue in the case. That's when you learn what the song is really about.", attribution: "Matt Ruby, on what Tom Petty taught him about bridges" }
+            ]
+          }
+        }
+      },
+      {
+        name: 'SOLO',
+        color: '#8A8540',
+        content: {
+          simple: {
+            function: "The solo is the section where the song hands the mic to an instrument. Whatever the vocalist would sing, a lead instrument sings instead, with notes instead of words. The solo usually plays over the chord changes of the verse or chorus and lasts somewhere between eight and thirty-two bars."
+          },
+          detailed: {
+            function: "The solo is the section where the song hands the mic to an instrument. Whatever the vocalist would sing, a lead instrument sings instead, with notes instead of words. The solo usually plays over the chord changes of the verse or chorus and lasts somewhere between eight and thirty-two bars.",
+            featuresIntro: "A few patterns worth knowing about the solo:",
+            features: [
+              "A single instrument takes the lead, usually over the verse or chorus chord changes.",
+              "Often replaces a vocal section or sits where a bridge would.",
+              "Length varies wildly, from eight bars to several minutes.",
+              "The choice of solo instrument is a strong genre signal: saxophone for 80s pop, electric guitar for rock, synth lead for synthwave, harmonica for blues.",
+              "Many solos quote or vary the chorus vocal melody, which is why a great solo often feels like singing without words."
+            ],
+            quotes: [
+              { text: "When I sing, I play in my mind; the minute I stop singing orally, I start to sing by playing Lucille.", attribution: "B.B. King" },
+              { text: "Let me do what great blues players have done for a century and sing something and then play something.", attribution: "St. Vincent" }
+            ]
+          }
+        }
+      },
+      {
+        name: 'OUTRO',
+        color: '#8A7A6A',
+        content: {
+          simple: {
+            function: "The outro is the section that ends a song. Its job is to leave the listener with whatever the song wants them to remember last. That might be the chorus on repeat, a single sustained note, a fade to silence, or a hard stop on a downbeat. Whatever choice gets made, it's the last thing the listener hears before silence."
+          },
+          detailed: {
+            function: "The outro is the section that ends a song. Its job is to leave the listener with whatever the song wants them to remember last. That might be the chorus on repeat, a single sustained note, a fade to silence, or a hard stop on a downbeat. Whatever choice gets made, it's the last thing the listener hears before silence.",
+            featuresIntro: "A few patterns worth knowing about the outro:",
+            features: [
+              "Comes after the final chorus and brings the song to a close.",
+              "Common forms include a final chorus on repeat, a fade-out, a hard cold stop, or a return to intro material.",
+              "Usually one of the shortest sections, though jam bands and dance tracks can stretch them indefinitely.",
+              'The coda of "Hey Jude" repeats one sung phrase for more than four minutes, longer than many entire pop songs.',
+              "Fade-outs became popular partly as a recording-era convention. They give the engineer control over length and let a chorus repeat indefinitely without committing to a final note."
+            ]
+          }
+        }
+      }
+    ],
+    hiphop: [
+      { name: 'INTRO',    color: '#8FA37E', content: { simple: { function: "Sets the vibe with a beat, vocal sample, ad-lib or DJ tag. Often shorter than in pop, since the beat takes centre stage quickly." } } },
+      { name: 'VERSE',    color: '#C07838', content: { simple: { function: "Usually 16 bars of rapping (sometimes 8 or 32). Carries the lyrical content, storytelling and flow. Where the rapper does their actual work." } } },
+      { name: 'PRE-HOOK', color: '#C8A04A', content: { simple: { function: "Short build into the hook. Not always present, since many tracks go straight from verse to hook with no setup." } } },
+      { name: 'HOOK',     color: '#B85542', content: { simple: { function: "The catchy refrain, the hip-hop equivalent of the chorus. Often sung rather than rapped. Repeats the song title or main phrase." } } },
+      { name: 'BRIDGE',   color: '#8B6A8B', content: { simple: { function: "Less common in hip-hop but provides contrast. Often a beat switch, a feature artist, or a change of tempo." } } },
+      { name: 'BREAK',    color: '#5C8A8A', content: { simple: { function: "Instrumental section, often just the beat. Lets the production breathe and reminds you the beat itself is doing serious work." } } },
+      { name: 'OUTRO',    color: '#8A7A6A', content: { simple: { function: "Closes the track. May feature an ad-lib, DJ tag, beat fade, or one final hook." } } }
+    ],
+    electronic: [
+      { name: 'INTRO',     color: '#8FA37E', content: { simple: { function: "Loops a sparse element or two to establish tempo. DJ-friendly so the next track can be beat-matched into it." } } },
+      { name: 'BUILD',     color: '#C8A04A', content: { simple: { function: "Tension rises. Filter sweeps, snare rolls, risers, white noise, pitch-bent synths. Energy climbs toward the drop." } } },
+      { name: 'DROP',      color: '#B85542', content: { simple: { function: "The release. Full energy, main hook, bassline drops in. The payoff after the build, the reason the build existed." } } },
+      { name: 'GROOVE',    color: '#C07838', content: { simple: { function: "The steady main section of a house or techno track. Loops the core elements without dramatic peaks, the body of the track." } } },
+      { name: 'BREAKDOWN', color: '#5C8A8A', content: { simple: { function: "Strips the energy back. Often removes drums, leaving melodic or atmospheric elements. Resets the listener for another build." } } },
+      { name: 'FAKE DROP', color: '#8B6A8B', content: { simple: { function: "Pretends to drop but pulls back at the last moment. Plays with expectation, since the second drop hits harder because of it." } } },
+      { name: 'OUTRO',     color: '#8A7A6A', content: { simple: { function: "Mirrors the intro. Strips back the elements so a DJ can mix the next track in cleanly." } } }
+    ]
+  };
+
+  const MODE_LABELS = {
+    pop: 'Verse-Chorus',
+    hiphop: 'Verse-Hook',
+    electronic: 'Build-Drop'
+  };
+
+  // ─── STATE ───────────────────────────────────────────────────────
+  let state = {
+    mode: 'pop',
+    bars: [],
+    selectedGroupIdx: null,
+    finalized: false,
+    lastInfoSection: null,
+    infoView: 'simple',    // 'simple' | 'detailed'
+  };
+
+  // ─── DOM REFS ────────────────────────────────────────────────────
+  const $modeTabs = document.getElementById('modeTabs');
+  const $sectionButtons = document.getElementById('sectionButtons');
+  const $timeline = document.getElementById('timeline');
+  const $barCount = document.getElementById('barCount');
+  const $infoPanel = document.getElementById('infoPanel');
+  const $undoBtn = document.getElementById('undoBtn');
+  const $deleteBtn = document.getElementById('deleteBtn');
+  const $clearBtn = document.getElementById('clearBtn');
+  const $endBtn = document.getElementById('endBtn');
+  const $summary = document.getElementById('summary');
+
+  // ─── HELPERS ─────────────────────────────────────────────────────
+  function currentSections() {
+    return SECTIONS[state.mode];
+  }
+
+  function sectionByName(name) {
+    return currentSections().find(s => s.name === name) ||
+           Object.values(SECTIONS).flat().find(s => s.name === name);
+  }
+
+  function groupedBars() {
+    const groups = [];
+    for (const name of state.bars) {
+      const last = groups[groups.length - 1];
+      if (last && last.name === name) {
+        last.count++;
+      } else {
+        groups.push({ name, count: 1 });
+      }
+    }
+    return groups;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  // ─── INFO PANEL RENDERING ───────────────────────────────────────
+  function renderInfoPanel() {
+    if (!state.lastInfoSection) {
+      $infoPanel.innerHTML = '<div class="info-placeholder">Hover or click a section button to see what it does.</div>';
+      return;
+    }
+
+    const section = sectionByName(state.lastInfoSection);
+    if (!section || !section.content) {
+      $infoPanel.innerHTML = '<div class="info-placeholder">No info available.</div>';
+      return;
+    }
+
+    const hasDetailed = !!section.content.detailed;
+    const view = state.infoView;
+    const content = (view === 'detailed' && hasDetailed) ? section.content.detailed : section.content.simple;
+    const showInProgressNote = view === 'detailed' && !hasDetailed;
+
+    let html = '';
+
+    // Header: section name + view toggle
+    html += `<div class="info-header">
+      <div class="info-section-name" style="color: ${section.color};">${escapeHtml(section.name)}</div>
+      <div class="info-view-toggle" id="infoViewToggle">
+        <button data-view="simple" class="${view === 'simple' ? 'active' : ''}">Simple</button>
+        <button data-view="detailed" class="${view === 'detailed' ? 'active' : ''}">Detailed</button>
+      </div>
+    </div>`;
+
+    if (showInProgressNote) {
+      // Detailed clicked on a section without detailed content: show only the upsell message
+      html += `<div class="info-upsell">Detailed view is only available for VERSE-CHORUS currently. If you're enjoying the extra info, let DJ know and he'll update it for all styles.</div>`;
+    } else {
+      // Function
+      if (content.function) {
+        html += `<div class="info-block">
+          <div class="info-block-label">Function</div>
+          <div class="info-block-body">${escapeHtml(content.function)}</div>
+        </div>`;
+      }
+
+      // Features
+      if (content.features && content.features.length) {
+        html += `<div class="info-block">
+          <div class="info-block-label">Features</div>`;
+        if (content.featuresIntro) {
+          html += `<div class="info-features-intro">${escapeHtml(content.featuresIntro)}</div>`;
+        }
+        html += `<ul class="info-features">`;
+        content.features.forEach(f => {
+          if (typeof f === 'string') {
+            html += `<li>${escapeHtml(f)}</li>`;
+          } else {
+            html += `<li><strong>${escapeHtml(f.label)}:</strong> ${escapeHtml(f.desc)}</li>`;
+          }
+        });
+        html += `</ul></div>`;
+      }
+
+      // Quotes
+      if (content.quotes && content.quotes.length) {
+        const label = content.quotes.length > 1 ? 'Quotes' : 'Quote';
+        html += `<div class="info-block">
+          <div class="info-block-label">${label}</div>`;
+        content.quotes.forEach(q => {
+          html += `<blockquote class="info-quote">
+            <div class="quote-text">"${escapeHtml(q.text)}"</div>
+            <div class="quote-attribution">${escapeHtml(q.attribution)}</div>
+          </blockquote>`;
+        });
+        html += `</div>`;
+      }
+
+      // Examples
+      if (content.examples && content.examples.length) {
+        html += `<div class="info-block">
+          <div class="info-block-label">Famous Examples</div>
+          <div class="info-examples">`;
+        const items = content.examples.map(e => {
+          if (typeof e === 'string') {
+            return `<span class="example-item">${escapeHtml(e)}</span>`;
+          }
+          return `<span class="example-item">${escapeHtml(e.song)}<span class="example-year">(${escapeHtml(e.year)})</span></span>`;
+        });
+        html += items.join('<span class="example-sep">·</span>');
+        html += `</div></div>`;
+      }
+    }
+
+    $infoPanel.innerHTML = html;
+
+    // Wire toggle
+    const $toggle = document.getElementById('infoViewToggle');
+    if ($toggle) {
+      $toggle.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-view]');
+        if (!btn) return;
+        state.infoView = btn.dataset.view;
+        renderInfoPanel();
+      });
+    }
+  }
+
+  // ─── OTHER RENDERING ─────────────────────────────────────────────
+  function renderModeTabs() {
+    $modeTabs.querySelectorAll('.mode-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.mode === state.mode);
+    });
+  }
+
+  function renderSectionButtons() {
+    $sectionButtons.innerHTML = '';
+    currentSections().forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'section-btn';
+      btn.textContent = s.name;
+      btn.style.borderLeftColor = s.color;
+      btn.addEventListener('click', () => handleSectionClick(s.name, btn));
+      btn.addEventListener('mouseenter', () => showInfo(s.name));
+      $sectionButtons.appendChild(btn);
+    });
+  }
+
+  function renderTimeline() {
+    const groups = groupedBars();
+    $timeline.innerHTML = '';
+    $timeline.classList.toggle('empty', groups.length === 0);
+
+    groups.forEach((g, idx) => {
+      const section = sectionByName(g.name);
+      const el = document.createElement('div');
+      el.className = 'group';
+      if (idx === state.selectedGroupIdx) el.classList.add('selected');
+      el.style.background = section ? section.color : '#888';
+      const width = Math.max(48, g.count * 36);
+      el.style.minWidth = width + 'px';
+      el.style.flexGrow = g.count;
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'group-name';
+      nameEl.textContent = g.name;
+      el.appendChild(nameEl);
+
+      const barsEl = document.createElement('div');
+      barsEl.className = 'group-bars';
+      barsEl.textContent = g.count + ' BAR' + (g.count > 1 ? 'S' : '');
+      el.appendChild(barsEl);
+
+      el.addEventListener('click', () => handleGroupClick(idx));
+      $timeline.appendChild(el);
+    });
+
+    $barCount.innerHTML = '<strong>' + state.bars.length + '</strong> bars';
+  }
+
+  function renderActions() {
+    $undoBtn.disabled = state.bars.length === 0 || state.finalized;
+    $deleteBtn.disabled = state.selectedGroupIdx === null || state.finalized;
+    $clearBtn.disabled = state.bars.length === 0;
+    $endBtn.disabled = state.bars.length === 0 || state.finalized;
+  }
+
+  function showInfo(sectionName) {
+    state.lastInfoSection = sectionName;
+    renderInfoPanel();
+  }
+
+  function renderAll() {
+    renderModeTabs();
+    renderSectionButtons();
+    renderTimeline();
+    renderActions();
+    renderInfoPanel();
+  }
+
+  // ─── EVENT HANDLERS ──────────────────────────────────────────────
+  function handleModeChange(newMode) {
+    if (newMode === state.mode) return;
+    if (state.bars.length > 0) {
+      if (!confirm('Switching mode will clear your current timeline. Continue?')) return;
+    }
+    state.mode = newMode;
+    state.bars = [];
+    state.selectedGroupIdx = null;
+    state.finalized = false;
+    state.lastInfoSection = null;
+    $summary.classList.remove('active');
+    renderAll();
+  }
+
+  function handleSectionClick(name, btnEl) {
+    showInfo(name);
+    if (btnEl) {
+      btnEl.classList.add('flash');
+      setTimeout(() => btnEl.classList.remove('flash'), 120);
+    }
+    if (state.finalized) return;
+
+    if (state.selectedGroupIdx !== null) {
+      const groups = groupedBars();
+      const target = groups[state.selectedGroupIdx];
+      if (target) {
+        let startIdx = 0;
+        for (let i = 0; i < state.selectedGroupIdx; i++) startIdx += groups[i].count;
+        for (let i = 0; i < target.count; i++) state.bars[startIdx + i] = name;
+      }
+      state.selectedGroupIdx = null;
+    } else {
+      state.bars.push(name);
+    }
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleGroupClick(idx) {
+    if (state.finalized) return;
+    state.selectedGroupIdx = (state.selectedGroupIdx === idx) ? null : idx;
+    const groups = groupedBars();
+    if (state.selectedGroupIdx !== null && groups[idx]) {
+      showInfo(groups[idx].name);
+    }
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleUndo() {
+    if (state.bars.length === 0) return;
+    state.bars.pop();
+    state.selectedGroupIdx = null;
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleDelete() {
+    if (state.selectedGroupIdx === null) return;
+    const groups = groupedBars();
+    const target = groups[state.selectedGroupIdx];
+    if (!target) return;
+    let startIdx = 0;
+    for (let i = 0; i < state.selectedGroupIdx; i++) startIdx += groups[i].count;
+    state.bars.splice(startIdx, target.count);
+    state.selectedGroupIdx = null;
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleClear() {
+    if (state.bars.length === 0) return;
+    if (!confirm('Clear the entire timeline?')) return;
+    state.bars = [];
+    state.selectedGroupIdx = null;
+    state.finalized = false;
+    $summary.classList.remove('active');
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleEnd() {
+    if (state.bars.length === 0) return;
+    state.finalized = true;
+    state.selectedGroupIdx = null;
+    renderSummary();
+    renderTimeline();
+    renderActions();
+    $summary.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ─── SUMMARY ─────────────────────────────────────────────────────
+  function toTitleCase(name) {
+    return name.split('-').map(part => part.charAt(0) + part.slice(1).toLowerCase()).join('-');
+  }
+
+  function buildObservations(groups) {
+    const obs = [];
+    const counts = {};
+    const totalBarsPerSection = {};
+    groups.forEach(g => {
+      counts[g.name] = (counts[g.name] || 0) + 1;
+      totalBarsPerSection[g.name] = (totalBarsPerSection[g.name] || 0) + g.count;
+    });
+
+    const totalBars = state.bars.length;
+    const distinctSections = Object.keys(counts).length;
+
+    let mostRepeated = null;
+    let mostRepeatedCount = 0;
+    Object.entries(counts).forEach(([name, c]) => {
+      if (c > mostRepeatedCount) { mostRepeated = name; mostRepeatedCount = c; }
+    });
+
+    let longest = null;
+    let longestBars = 0;
+    groups.forEach(g => {
+      if (g.count > longestBars) { longest = g.name; longestBars = g.count; }
+    });
+
+    if (mostRepeated && mostRepeatedCount > 1) {
+      const percent = Math.round((totalBarsPerSection[mostRepeated] / totalBars) * 100);
+      obs.push(`<strong>${toTitleCase(mostRepeated)}</strong> appears ${mostRepeatedCount} times (${totalBarsPerSection[mostRepeated]} bars / ${percent}% of the song).`);
+    }
+
+    if (longest) {
+      obs.push(`Longest single section: <strong>${toTitleCase(longest)}</strong> at ${longestBars} bars.`);
+    }
+
+    const sequence = groups.map(g => g.name);
+    if (state.mode === 'pop') {
+      const hasVerseChorus = sequence.some((s, i) => s === 'VERSE' && sequence[i+1] === 'CHORUS');
+      const hasBridge = sequence.includes('BRIDGE');
+      if (hasVerseChorus && hasBridge) {
+        obs.push(`Classic <strong>verse-chorus form with a bridge</strong>: the bread and butter of pop songwriting.`);
+      } else if (hasVerseChorus) {
+        obs.push(`Verse-chorus form: the foundation of most pop songs.`);
+      }
+    } else if (state.mode === 'hiphop') {
+      const verseCount = counts['VERSE'] || 0;
+      const hookCount = counts['HOOK'] || 0;
+      if (verseCount >= 2 && hookCount >= 2) {
+        obs.push(`Standard hip-hop form: <strong>verse, hook, verse, hook</strong> arrangement.`);
+      }
+    } else if (state.mode === 'electronic') {
+      const dropCount = counts['DROP'] || 0;
+      const hasFakeDrop = counts['FAKE DROP'] > 0;
+      if (dropCount >= 2) {
+        obs.push(`<strong>Two drops</strong>: classic festival EDM arrangement. The second drop usually hits hardest.`);
+      }
+      if (hasFakeDrop) {
+        obs.push(`Includes a <strong>fake drop</strong>: a structural fake-out that makes the real drop land harder.`);
+      }
+    }
+
+    obs.push(`Total: <strong>${totalBars} bars</strong> across <strong>${groups.length} sections</strong> (${distinctSections} distinct).`);
+    return obs;
+  }
+
+  function buildCopyText(groups) {
+    const lines = [];
+    lines.push(`SONG STRUCTURE: ${MODE_LABELS[state.mode]}`);
+    lines.push(`Total: ${state.bars.length} bars`);
+    lines.push('');
+    groups.forEach(g => {
+      lines.push(`${toTitleCase(g.name)} - ${g.count} ${g.count === 1 ? 'bar' : 'bars'}`);
+    });
+    return lines.join('\n');
+  }
+
+  function renderSummary() {
+    const groups = groupedBars();
+    if (groups.length === 0) return;
+
+    const observations = buildObservations(groups);
+    const flow = groups.map(g => `${toTitleCase(g.name)}(${g.count})`).join('  →  ');
+
+    $summary.innerHTML = `
+      <div class="summary-header">
+        <div class="summary-title">YOUR SONG STRUCTURE</div>
+        <div class="summary-mode">${MODE_LABELS[state.mode]}</div>
+      </div>
+
+      <div class="summary-stats">
+        <div>
+          <div class="stat-label">Total Bars</div>
+          <div class="stat-value"><strong>${state.bars.length}</strong></div>
+        </div>
+        <div>
+          <div class="stat-label">Sections</div>
+          <div class="stat-value"><strong>${groups.length}</strong></div>
+        </div>
+        <div>
+          <div class="stat-label">Distinct</div>
+          <div class="stat-value"><strong>${Object.keys(groups.reduce((a, g) => (a[g.name] = 1, a), {})).length}</strong></div>
+        </div>
+      </div>
+
+      <div class="stat-label" style="margin-bottom: 6px;">Flow</div>
+      <div class="summary-list">${flow}</div>
+
+      <div class="summary-observations">
+        ${observations.map(o => `<div>• ${o}</div>`).join('')}
+      </div>
+
+      <button class="copy-btn" id="copyBtn">Copy to Clipboard</button>
+    `;
+    $summary.classList.add('active');
+
+    document.getElementById('copyBtn').addEventListener('click', handleCopy);
+  }
+
+  async function handleCopy() {
+    const groups = groupedBars();
+    const text = buildCopyText(groups);
+    const btn = document.getElementById('copyBtn');
+
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy to Clipboard';
+        btn.classList.remove('copied');
+      }, 2000);
+    } catch (err) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        btn.textContent = 'Copied ✓';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy to Clipboard';
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch (e) {
+        btn.textContent = 'Copy failed, select & copy manually';
+      }
+      document.body.removeChild(ta);
+    }
+  }
+
+  // ─── WIRE UP ─────────────────────────────────────────────────────
+  $modeTabs.addEventListener('click', (e) => {
+    if (e.target.matches('.mode-tab')) handleModeChange(e.target.dataset.mode);
+  });
+  $undoBtn.addEventListener('click', handleUndo);
+  $deleteBtn.addEventListener('click', handleDelete);
+  $clearBtn.addEventListener('click', handleClear);
+  $endBtn.addEventListener('click', handleEnd);
+
+  $timeline.addEventListener('click', (e) => {
+    if (e.target === $timeline) {
+      state.selectedGroupIdx = null;
+      renderTimeline();
+      renderActions();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      state.selectedGroupIdx = null;
+      renderTimeline();
+      renderActions();
+    }
+  });
+
+  renderAll();
+</script>
+</body>
+</html>
