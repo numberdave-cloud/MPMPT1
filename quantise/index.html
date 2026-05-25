@@ -419,6 +419,7 @@ function schedulerTick() {
   if (!isPlaying || !samplesReady) return;
   const now = audioCtx.currentTime;
   const elapsed = now - playStartTime;
+  if (elapsed < 0) return; // playback hasn't started yet (head-start offset)
   const loopIndex = Math.floor(elapsed / BAR_DURATION);
   const loopPos = elapsed - loopIndex * BAR_DURATION;
   const loopStartAbs = playStartTime + loopIndex * BAR_DURATION;
@@ -426,6 +427,25 @@ function schedulerTick() {
   if (loopIndex !== currentLoopIndex) {
     resetTriggered();
     currentLoopIndex = loopIndex;
+    // Catch-up: rAF can run a few ms past the loop boundary, so a hit at
+    // exactly position 0 (kick[0] at 100% quantise) would fall behind the
+    // scheduler's trailing window and never fire. Fire any hits whose
+    // intended time has already passed since the loop started. Capped at
+    // 100ms to avoid dumping stale hits after a tab pause / long stall.
+    if (loopPos > 0 && loopPos < 0.100) {
+      for (const lane of LANES) {
+        const pat = PATTERN[lane];
+        for (let i = 0; i < pat.length; i++) {
+          const pos16 = getHitPosition(lane, i);
+          const hitTimeInLoop = (pos16 / SIXTEENTHS_PER_BAR) * BAR_DURATION;
+          if (hitTimeInLoop >= 0 && hitTimeInLoop < loopPos) {
+            playSample(lane, now);
+            triggered[lane][i] = true;
+            flashCircle(lane, i);
+          }
+        }
+      }
+    }
   }
 
   for (const lane of LANES) {
