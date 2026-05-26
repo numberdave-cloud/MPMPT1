@@ -554,6 +554,32 @@ function stopPlayback() {
 }
 playBtn.addEventListener('click', () => { isPlaying ? stopPlayback() : startPlayback(); });
 
+// ----- AUTO-RESIZE -----
+// Report content height to parent so the embed iframe can match it.
+// The parent must opt in by listening for messages of type "mote-resize"
+// (no-op without a listener). Height is measured from actual rendered
+// content, not body min-height.
+function reportHeight() {
+  if (window.parent === window) return;
+  let bottom = 0;
+  document.querySelectorAll('body > *').forEach(el => {
+    const r = el.getBoundingClientRect();
+    if (r.bottom > bottom) bottom = r.bottom;
+  });
+  // Include body's bottom padding (28px from CSS)
+  const height = Math.ceil(bottom + 28);
+  try {
+    window.parent.postMessage({ type: 'mote-resize', mote: 'quantise', height: height }, '*');
+  } catch (_) { /* sandboxed; fall back to fixed iframe height */ }
+}
+
+window.addEventListener('load', reportHeight);
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(reportHeight, 100);
+});
+
 </script>
 </body>
 </html>
