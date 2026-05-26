@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browser Sanity Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.35);
+    --pass: #7BA968;
+    --fail: #C04838;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    padding: 20px 24px 32px;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .title {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+
+  .subtitle {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* ENV BLOCK */
+  .env-block {
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 11.5px;
+    line-height: 1.7;
+    color: var(--text-dim);
+  }
+
+  .env-row {
+    display: flex;
+    gap: 12px;
+  }
+
+  .env-key {
+    color: var(--text-faint);
+    min-width: 120px;
+    letter-spacing: 0.05em;
+  }
+
+  .env-val {
+    color: var(--text);
+    word-break: break-all;
+    flex: 1;
+  }
+
+  /* RUN AREA */
+  .run-area {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: background 0.08s, border-color 0.08s, color 0.08s;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--border-bright); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .btn.primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .btn.primary:hover:not(:disabled) {
+    background: var(--accent-glow);
+    border-color: var(--accent-glow);
+  }
+
+  /* TESTS LIST */
+  .tests {
+    border: 1px solid var(--border);
+    margin-bottom: 18px;
+  }
+
+  .test {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+  .test:last-child { border-bottom: none; }
+
+  .test-status {
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--text-faint);
+    margin-top: 4px;
+    background: transparent;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .test[data-status="running"] .test-status {
+    background: var(--accent);
+    border-color: var(--accent);
+    animation: pulse 0.8s ease-in-out infinite;
+  }
+  .test[data-status="pass"] .test-status {
+    background: var(--pass);
+    border-color: var(--pass);
+  }
+  .test[data-status="fail"] .test-status {
+    background: var(--fail);
+    border-color: var(--fail);
+  }
+  .test[data-status="warn"] .test-status {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  .test-main {
+    min-width: 0;
+  }
+
+  .test-name {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .test-detail {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  .test-result {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+  .test[data-status="pass"] .test-result { color: var(--pass); }
+  .test[data-status="fail"] .test-result { color: var(--fail); }
+  .test[data-status="warn"] .test-result { color: var(--accent); }
+  .test[data-status="running"] .test-result { color: var(--accent); }
+
+  /* SUMMARY */
+  .summary {
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    display: none;
+  }
+  .summary.active { display: block; }
+
+  .summary.pass { border-color: var(--pass); }
+  .summary.fail { border-color: var(--fail); }
+
+  .summary-line {
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .summary-line strong {
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+  .summary.pass .summary-line strong { color: var(--pass); }
+  .summary.fail .summary-line strong { color: var(--fail); }
+
+  .summary-detail {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    font-size: 10.5px;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 16px; }
+    .test { grid-template-columns: 22px 1fr; }
+    .test-result { grid-column: 2; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="title">BROWSER SANITY CHECK</div>
+    <div class="subtitle">MOTE compatibility test</div>
+  </div>
+
+  <div class="env-block" id="envBlock">
+    <div class="env-row"><div class="env-key">BROWSER</div><div class="env-val" id="envBrowser">—</div></div>
+    <div class="env-row"><div class="env-key">PLATFORM</div><div class="env-val" id="envPlatform">—</div></div>
+    <div class="env-row"><div class="env-key">USER AGENT</div><div class="env-val" id="envUA">—</div></div>
+    <div class="env-row"><div class="env-key">EMBEDDED</div><div class="env-val" id="envIframe">—</div></div>
+  </div>
+
+  <div class="run-area">
+    <button class="btn primary" id="runBtn">Run Audio Tests</button>
+    <button class="btn" id="toneBtn" disabled>Play Test Tone</button>
+    <button class="btn" id="copyBtn">Copy Report</button>
+  </div>
+
+  <div class="tests" id="tests">
+    <div class="test" data-status="pending" data-key="atob">
+      <div class="test-status"></div>
+      <div class="test-main">
+        <div class="test-name">atob() Decoding</div>
+        <div class="test-detail">Decodes a 10KB base64 string and times it</div>
+      </div>
+      <div class="test-result">Pending</div>
+    </div>
+    <div class="test" data-status="pending" data-key="audioctx">
+      <div class="test-status"></div>
+      <div class="test-main">
+        <div class="test-name">AudioContext</div>
+        <div class="test-detail">Creates an AudioContext and reports its state</div>
+      </div>
+      <div class="test-result">Pending</div>
+    </div>
+    <div class="test" data-status="pending" data-key="wav">
+      <div class="test-status"></div>
+      <div class="test-main">
+        <div class="test-name">WAV Decode</div>
+        <div class="test-detail">decodeAudioData() on a 4KB embedded WAV file</div>
+      </div>
+      <div class="test-result">Pending</div>
+    </div>
+    <div class="test" data-status="pending" data-key="ogg">
+      <div class="test-status"></div>
+      <div class="test-main">
+        <div class="test-name">OGG Vorbis Decode</div>
+        <div class="test-detail">decodeAudioData() on a 4KB embedded OGG Vorbis file</div>
+      </div>
+      <div class="test-result">Pending</div>
+    </div>
+    <div class="test" data-status="pending" data-key="playback">
+      <div class="test-status"></div>
+      <div class="test-main">
+        <div class="test-name">Audio Playback</div>
+        <div class="test-detail">Schedules a brief 440Hz tone via the AudioContext (press "Play Test Tone")</div>
+      </div>
+      <div class="test-result">Pending</div>
+    </div>
+  </div>
+
+  <div class="summary" id="summary">
+    <div class="summary-line" id="summaryLine"></div>
+    <div class="summary-detail" id="summaryDetail"></div>
+  </div>
+
+  <div class="footer">
+    Open this page in each browser before launching a new MOTE. If WAV or OGG decode fails, that browser will not play any MOTE using that format.
+  </div>
+
+<script>
+  // ─── EMBEDDED AUDIO ───────────────────────────────────────────────
+  const WAV_B64 = "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";
+  const OGG_B64 = "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";
+
+  // ─── BROWSER DETECTION ────────────────────────────────────────────
+  function detectBrowser() {
+    const ua = navigator.userAgent;
+    let name = 'Unknown', version = '';
+
+    // Order matters — Edge contains "Chrome", Chrome contains "Safari"
+    if (/Edg\//.test(ua)) {
+      name = 'Edge';
+      version = (ua.match(/Edg\/([\d.]+)/) || [])[1] || '';
+    } else if (/Firefox\//.test(ua)) {
+      name = 'Firefox';
+      version = (ua.match(/Firefox\/([\d.]+)/) || [])[1] || '';
+    } else if (/Chrome\//.test(ua) && !/Edg\//.test(ua)) {
+      name = 'Chrome';
+      version = (ua.match(/Chrome\/([\d.]+)/) || [])[1] || '';
+    } else if (/Safari\//.test(ua) && /Version\//.test(ua)) {
+      name = 'Safari';
+      version = (ua.match(/Version\/([\d.]+)/) || [])[1] || '';
+    }
+
+    let platform = 'Unknown';
+    if (/iPhone|iPad|iPod/.test(ua)) platform = 'iOS';
+    else if (/Android/.test(ua)) platform = 'Android';
+    else if (/Mac OS X/.test(ua)) platform = 'macOS';
+    else if (/Windows/.test(ua)) platform = 'Windows';
+    else if (/Linux/.test(ua)) platform = 'Linux';
+
+    return { name, version, platform, ua };
+  }
+
+  function renderEnv() {
+    const b = detectBrowser();
+    document.getElementById('envBrowser').textContent = b.name + (b.version ? ' ' + b.version : '');
+    document.getElementById('envPlatform').textContent = b.platform;
+    document.getElementById('envUA').textContent = b.ua;
+    const embedded = (window.self !== window.top);
+    document.getElementById('envIframe').textContent = embedded ? 'Yes (inside iframe)' : 'No (top window)';
+    return b;
+  }
+
+  // ─── TEST UTILITIES ───────────────────────────────────────────────
+  function setStatus(key, status, resultText, detailText) {
+    const el = document.querySelector(`.test[data-key="${key}"]`);
+    if (!el) return;
+    el.dataset.status = status;
+    el.querySelector('.test-result').textContent = resultText || '';
+    if (detailText !== undefined) {
+      el.querySelector('.test-detail').textContent = detailText;
+    }
+  }
+
+  function base64ToArrayBuffer(b64) {
+    const bin = atob(b64);
+    const buf = new ArrayBuffer(bin.length);
+    const view = new Uint8Array(buf);
+    for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i);
+    return buf;
+  }
+
+  // ─── TESTS ────────────────────────────────────────────────────────
+  let audioCtx = null;
+  let decodedToneBuffer = null;
+  const results = {};
+
+  async function testAtob() {
+    setStatus('atob', 'running', 'Running…');
+    try {
+      // Decode our WAV base64 a few times to measure throughput
+      const start = performance.now();
+      let totalBytes = 0;
+      for (let i = 0; i < 10; i++) {
+        const buf = base64ToArrayBuffer(WAV_B64);
+        totalBytes += buf.byteLength;
+      }
+      const elapsed = performance.now() - start;
+      const mbPerSec = ((totalBytes / 1024 / 1024) / (elapsed / 1000)).toFixed(1);
+      results.atob = { pass: true, elapsed, mbPerSec };
+      setStatus('atob', 'pass', 'Pass',
+        `Decoded ${(totalBytes/1024).toFixed(1)}KB in ${elapsed.toFixed(1)}ms (${mbPerSec} MB/s)`);
+      return true;
+    } catch (e) {
+      results.atob = { pass: false, error: String(e) };
+      setStatus('atob', 'fail', 'Fail', 'Error: ' + e.message);
+      return false;
+    }
+  }
+
+  async function testAudioContext() {
+    setStatus('audioctx', 'running', 'Running…');
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) throw new Error('AudioContext not available');
+      audioCtx = new Ctx();
+      // Resume if suspended (autoplay policy)
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+      const usedPrefix = !window.AudioContext && !!window.webkitAudioContext;
+      const detail = `Sample rate: ${audioCtx.sampleRate}Hz · State: ${audioCtx.state}` +
+                     (usedPrefix ? ' · prefixed (webkit)' : '');
+      results.audioctx = { pass: true, sampleRate: audioCtx.sampleRate, state: audioCtx.state, prefixed: usedPrefix };
+      setStatus('audioctx', 'pass', 'Pass', detail);
+      return true;
+    } catch (e) {
+      results.audioctx = { pass: false, error: String(e) };
+      setStatus('audioctx', 'fail', 'Fail', 'Error: ' + e.message);
+      return false;
+    }
+  }
+
+  async function decodeFormat(key, label, b64) {
+    setStatus(key, 'running', 'Running…');
+    try {
+      if (!audioCtx) throw new Error('AudioContext not initialised');
+      const arrayBuf = base64ToArrayBuffer(b64);
+      const start = performance.now();
+      const audioBuf = await audioCtx.decodeAudioData(arrayBuf);
+      const elapsed = performance.now() - start;
+      const detail = `${label} decoded · ${audioBuf.duration.toFixed(3)}s · ` +
+                     `${audioBuf.sampleRate}Hz · ${audioBuf.numberOfChannels}ch · ` +
+                     `decode took ${elapsed.toFixed(1)}ms`;
+      results[key] = { pass: true, elapsed, duration: audioBuf.duration };
+      setStatus(key, 'pass', 'Pass', detail);
+      // Keep one buffer around for the playback test
+      if (key === 'wav') decodedToneBuffer = audioBuf;
+      return true;
+    } catch (e) {
+      results[key] = { pass: false, error: String(e) };
+      const msg = e.message || String(e);
+      setStatus(key, 'fail', 'Fail',
+        `${label} decode failed: ${msg}`);
+      return false;
+    }
+  }
+
+  // ─── PLAYBACK (separate button) ──────────────────────────────────
+  async function playTestTone() {
+    setStatus('playback', 'running', 'Running…');
+    try {
+      if (!audioCtx) throw new Error('AudioContext not initialised');
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+      // Synthesise a short 440Hz tone so playback isn't dependent on decode success
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.value = 440;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 0.02);
+      gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.4);
+
+      results.playback = { pass: true };
+      setStatus('playback', 'pass', 'Pass',
+        'A 440Hz sine wave was scheduled. If you heard it, audio output works in this environment.');
+    } catch (e) {
+      results.playback = { pass: false, error: String(e) };
+      setStatus('playback', 'fail', 'Fail', 'Error: ' + e.message);
+    }
+  }
+
+  // ─── RUN SEQUENCE ─────────────────────────────────────────────────
+  async function runAll() {
+    const btn = document.getElementById('runBtn');
+    btn.disabled = true;
+    btn.textContent = 'Running…';
+
+    // Reset states
+    ['atob','audioctx','wav','ogg','playback'].forEach(k => {
+      setStatus(k, 'pending', 'Pending');
+    });
+
+    await testAtob();
+    const ctxOk = await testAudioContext();
+
+    if (ctxOk) {
+      await decodeFormat('wav', 'WAV', WAV_B64);
+      await decodeFormat('ogg', 'OGG Vorbis', OGG_B64);
+      document.getElementById('toneBtn').disabled = false;
+    } else {
+      setStatus('wav', 'fail', 'Skipped', 'Skipped: AudioContext not available');
+      setStatus('ogg', 'fail', 'Skipped', 'Skipped: AudioContext not available');
+    }
+
+    btn.textContent = 'Run Again';
+    btn.disabled = false;
+
+    renderSummary();
+  }
+
+  function renderSummary() {
+    const sum = document.getElementById('summary');
+    const line = document.getElementById('summaryLine');
+    const detail = document.getElementById('summaryDetail');
+
+    const critical = ['atob','audioctx','wav','ogg'];
+    const failed = critical.filter(k => results[k] && !results[k].pass);
+    const passed = critical.filter(k => results[k] && results[k].pass);
+
+    sum.classList.add('active');
+    sum.classList.remove('pass','fail');
+
+    if (failed.length === 0) {
+      sum.classList.add('pass');
+      line.innerHTML = '<strong>READY.</strong> All required MOTE features are supported in this browser.';
+      detail.textContent = 'WAV and OGG both decode. Audio playback should work after a user gesture.';
+    } else {
+      sum.classList.add('fail');
+      const labelMap = { atob: 'atob()', audioctx: 'AudioContext', wav: 'WAV decode', ogg: 'OGG Vorbis decode' };
+      const failNames = failed.map(k => labelMap[k]).join(', ');
+      line.innerHTML = '<strong>BLOCKED.</strong> The following required features failed: ' + failNames + '.';
+      if (failed.includes('ogg') && !failed.includes('wav')) {
+        detail.textContent = 'OGG decode failed but WAV works. This browser will not play MOTEs that use OGG audio. Common cause: Safari older than v17.';
+      } else {
+        detail.textContent = 'See the test details above for the specific failure.';
+      }
+    }
+  }
+
+  // ─── COPY REPORT ──────────────────────────────────────────────────
+  function buildReport() {
+    const b = detectBrowser();
+    const lines = [];
+    lines.push('BROWSER SANITY CHECK REPORT');
+    lines.push('Generated: ' + new Date().toISOString());
+    lines.push('');
+    lines.push('Browser:   ' + b.name + ' ' + b.version);
+    lines.push('Platform:  ' + b.platform);
+    lines.push('Embedded:  ' + (window.self !== window.top ? 'iframe' : 'top window'));
+    lines.push('User Agent: ' + b.ua);
+    lines.push('');
+    lines.push('TEST RESULTS');
+    document.querySelectorAll('.test').forEach(t => {
+      const name = t.querySelector('.test-name').textContent;
+      const status = t.dataset.status.toUpperCase();
+      const detail = t.querySelector('.test-detail').textContent;
+      lines.push(`  [${status.padEnd(7)}] ${name}`);
+      lines.push(`            ${detail}`);
+    });
+    return lines.join('\n');
+  }
+
+  async function copyReport() {
+    const btn = document.getElementById('copyBtn');
+    const text = buildReport();
+    try {
+      await navigator.clipboard.writeText(text);
+      const original = btn.textContent;
+      btn.textContent = 'Copied ✓';
+      setTimeout(() => btn.textContent = original, 1800);
+    } catch (e) {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); btn.textContent = 'Copied ✓'; setTimeout(() => btn.textContent = 'Copy Report', 1800); }
+      catch (_) { btn.textContent = 'Copy failed'; }
+      document.body.removeChild(ta);
+    }
+  }
+
+  // ─── WIRE UP ──────────────────────────────────────────────────────
+  document.getElementById('runBtn').addEventListener('click', runAll);
+  document.getElementById('toneBtn').addEventListener('click', playTestTone);
+  document.getElementById('copyBtn').addEventListener('click', copyReport);
+
+  renderEnv();
+</script>
+</body>
+</html>
