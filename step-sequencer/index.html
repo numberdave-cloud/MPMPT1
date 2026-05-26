@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Step Sequencer</title>
+<title>Step Sequencer - Drums</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter:ital,wght@1,400&display=swap');
 
@@ -162,12 +162,17 @@ body {
   box-shadow: 0 0 8px rgba(216,144,74,0.55);
 }
 
-/* ── Controls panel ─────────────────────────────────────────────────────── */
+/* ── Controls panel: now two rows ───────────────────────────────────────── */
 .controls-panel {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 3px;
   padding: 0.9rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.controls-row {
   display: flex;
   align-items: center;
   gap: 1.25rem;
@@ -194,7 +199,9 @@ body {
 }
 
 .tempo-group { display: flex; align-items: center; gap: 10px; }
-.tempo-label {
+.tempo-label,
+.master-label,
+.presets-label {
   font-family: 'Inter', sans-serif;
   font-size: 10px;
   font-weight: 500;
@@ -231,15 +238,71 @@ body {
   letter-spacing: 0.08em;
 }
 
-.presets-group { display: flex; align-items: center; gap: 10px; }
-.presets-label {
-  font-family: 'Inter', sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-dim);
+/* Master fader */
+.master-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
+.master-fader {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 110px;
+  height: 4px;
+  background: var(--surface-3);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.master-fader::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 22px;
+  background:
+    linear-gradient(
+      to right,
+      transparent 0,
+      transparent calc(50% - 0.5px),
+      rgba(0,0,0,0.5) calc(50% - 0.5px),
+      rgba(0,0,0,0.5) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px),
+      transparent 100%
+    ),
+    var(--accent);
+  border-radius: 2px;
+  border: none;
+  cursor: grab;
+  transition: background 0.12s;
+}
+.master-fader::-webkit-slider-thumb:active { cursor: grabbing; }
+.master-fader::-moz-range-thumb {
+  width: 14px;
+  height: 22px;
+  background:
+    linear-gradient(
+      to right,
+      transparent 0,
+      transparent calc(50% - 0.5px),
+      rgba(0,0,0,0.5) calc(50% - 0.5px),
+      rgba(0,0,0,0.5) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px),
+      transparent 100%
+    ),
+    var(--accent);
+  border-radius: 2px;
+  border: none;
+  cursor: grab;
+}
+.master-value {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--accent-glow);
+  min-width: 50px;
+  text-align: right;
+  letter-spacing: 0.02em;
+}
+
+.presets-group { display: flex; align-items: center; gap: 10px; }
 .preset-btns { display: flex; gap: 4px; }
 
 .action-btn, .preset-btn {
@@ -268,9 +331,9 @@ body {
   border-color: var(--accent);
 }
 
-.clear-spacer { margin-left: auto; }
+.push-right { margin-left: auto; }
 
-/* ── Info panel — fixed height, centered, quieter than other text ───────── */
+/* ── Info panel ─────────────────────────────────────────────────────────── */
 .info-panel {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -302,14 +365,14 @@ body {
 <div class="widget">
 
   <div class="header">
-    <div class="header-title">Step Sequencer</div>
+    <div class="header-title">Step Sequencer - Drums</div>
   </div>
 
   <div class="seq-panel">
 
-    <div class="step-numbers" data-info="Each bar has 16 steps — 4 beats × 4 sixteenth-note subdivisions. The brighter numbers mark the start of each beat.">
+    <div class="step-numbers" data-info="Each bar has 16 steps: 4 beats × 4 sixteenth-note subdivisions. The brighter numbers mark the start of each beat.">
       <div class="mode-toggle-wrap">
-        <button class="mode-toggle" id="modeToggle" aria-label="Toggle step / count mode" data-info="Switch between step numbers (1-16) and drummer counting (1 e & a · 2 e & a...). Drummer counting names each 16th-note subdivision so you can speak the rhythm out loud.">Count</button>
+        <button class="mode-toggle" id="modeToggle" aria-label="Toggle step / count mode" data-info="Switch between step numbers (1-16) and rhythmic counting (1 e & a · 2 e & a...). Rhythmic counting names each 16th-note subdivision so you can speak the rhythm out loud.">Count</button>
       </div>
       <div class="step-num beat">1</div>
       <div class="step-num">2</div>
@@ -333,10 +396,10 @@ body {
       <div class="track-label" data-info="You can place a kick anywhere but the most important place is going to be the downbeat (the first beat of the bar).">Kick</div>
     </div>
     <div class="track" data-track="snare" id="track-snare">
-      <div class="track-label" data-info="Snares work best when they are placed on the backbeat in each bar. This is the second and fourth quarter note of each bar.">Snare</div>
+      <div class="track-label" data-info="Snares work best when they are placed on the backbeats. This is the second and fourth quarter note of each bar.">Snare</div>
     </div>
     <div class="track" data-track="hihat" id="track-hihat">
-      <div class="track-label" data-info="Hi-hats work best as timekeepers. Try placing them on every 8th note (every other step) for a steady rock feel, or on the offbeats between the kicks for a disco feel.">Hi-Hat</div>
+      <div class="track-label" data-info="Hi-hats work best as timekeepers. Try placing them on every 8th note (every odd numbered step) for a steady rock feel, or on the offbeats between the kicks for a disco feel.">Hi-Hat</div>
     </div>
     <div class="track" data-track="stick" id="track-stick">
       <div class="track-label" data-info="The side stick is a quieter accent, often used for ghost notes between the main snare hits, or as a softer alternative to the snare in mellower grooves like bossa nova or ballads.">Side Stick</div>
@@ -345,30 +408,46 @@ body {
   </div>
 
   <div class="controls-panel">
-    <button class="play-btn" id="playBtn" aria-label="Play / Stop" data-info="Start or stop playback. The grid loops continuously until stopped.">
-      <svg id="playIcon" width="16" height="16" viewBox="0 0 18 18" fill="none">
-        <polygon points="5,3 15,9 5,15" fill="currentColor"/>
-      </svg>
-    </button>
 
-    <div class="tempo-group" data-info="Tempo in beats per minute (BPM) — the speed of the underlying pulse. Around 60-80 for ballads, 90-120 for pop, 120-140 for dance, 140+ for fast rock and electronic.">
-      <span class="tempo-label">Tempo</span>
-      <div class="tempo-input-wrap">
-        <input type="number" class="tempo-input" id="tempoInput" min="40" max="300" value="120">
-        <span class="tempo-unit">BPM</span>
+    <!-- Row 1: transport (play, tempo, master, clear) -->
+    <div class="controls-row">
+      <button class="play-btn" id="playBtn" aria-label="Play / Stop" data-info="Start or stop playback. The grid loops continuously until stopped.">
+        <svg id="playIcon" width="16" height="16" viewBox="0 0 18 18" fill="none">
+          <polygon points="5,3 15,9 5,15" fill="currentColor"/>
+        </svg>
+      </button>
+
+      <div class="tempo-group" data-info="Tempo in beats per minute. Try out the BPM you discovered in the module on Tempo.">
+        <span class="tempo-label">Tempo</span>
+        <div class="tempo-input-wrap">
+          <input type="number" class="tempo-input" id="tempoInput" min="40" max="300" value="120">
+          <span class="tempo-unit">BPM</span>
+        </div>
       </div>
+
+      <div class="master-group" data-info="Master volume in decibels (dB). 0 dB is unity gain (no change to the original level), and negative values reduce. Defaults to -10 dB to leave headroom when multiple drums play together.">
+        <span class="master-label">Master</span>
+        <input type="range" class="master-fader" id="masterFader" min="-60" max="0" step="1" value="-10" aria-label="Master volume">
+        <span class="master-value" id="masterValue">-10 dB</span>
+      </div>
+
+      <button class="action-btn push-right" id="clearBtn" data-info="Clears all active steps from the grid, leaving a blank sequence to build from scratch.">Clear</button>
     </div>
 
-    <div class="presets-group">
-      <span class="presets-label">Presets</span>
-      <div class="preset-btns">
-        <button class="preset-btn" data-preset="disco" data-info="Disco beat — kick on every beat (four-on-the-floor), snare on the backbeat (2 and 4), and hi-hat on the offbeats. The classic late-70s dance pattern at 110 BPM.">Disco</button>
-        <button class="preset-btn" data-preset="rock" data-info="Hard rock beat — eighth-note kicks with the snare punching the backbeat, and steady eighth-note hi-hats driving the pulse. Fast, dense, and aggressive.">Rock</button>
-        <button class="preset-btn" data-preset="garage" data-info="UK garage — broken, syncopated kicks instead of four-on-the-floor, backbeat snare, skippy 16th hi-hats, and side-stick ghost notes. The syncopation is the signature of the style.">Garage</button>
+    <!-- Row 2: patterns (presets, export) -->
+    <div class="controls-row">
+      <div class="presets-group">
+        <span class="presets-label">Presets</span>
+        <div class="preset-btns">
+          <button class="preset-btn" data-preset="disco" data-info="Disco beat: kick on every beat (four-on-the-floor), snare on the backbeat (2 and 4), and hi-hat on the offbeats. The classic late-70s dance pattern at 110 BPM.">Disco</button>
+          <button class="preset-btn" data-preset="rock" data-info="Hard rock beat: eighth-note kicks with the snare punching the backbeat, and steady eighth-note hi-hats driving the pulse. Fast, dense, and aggressive.">Rock</button>
+          <button class="preset-btn" data-preset="garage" data-info="UK garage: broken, syncopated kicks instead of four-on-the-floor, backbeat snare, skippy 16th hi-hats, and side-stick ghost notes. The syncopation is the signature of the style.">Garage</button>
+        </div>
       </div>
+
+      <button class="action-btn push-right" id="exportBtn" data-info="Download the current pattern as a Standard MIDI File. Drop it onto a Drum Rack track in Ableton (or any DAW) to play it back with your own sounds.">Export MIDI</button>
     </div>
 
-    <button class="action-btn clear-spacer" id="clearBtn" data-info="Clears all active steps from the grid, leaving a blank sequence to build from scratch.">Clear</button>
   </div>
 
   <div class="info-panel">
@@ -392,11 +471,13 @@ const grid = {
 const volumes = { kick: 0.9, snare: 0.8, hihat: 0.65, stick: 0.7 };
 
 let bpm = 120;
+let masterDb = -10;
 let playing = false;
 let currentStep = 0;
 let schedulerTimer = null;
 let nextNoteTime = 0;
 let audioCtx = null;
+let masterGainNode = null;
 
 // ── Step/Count label modes ─────────────────────────────────────────────────
 const STEP_LABELS  = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16'];
@@ -449,12 +530,30 @@ TRACKS.forEach(track => {
   }
 });
 
-// ── Audio synthesis ────────────────────────────────────────────────────────
+// ── Audio context + master gain ────────────────────────────────────────────
+function dbToGain(db) {
+  if (db <= -60) return 0;
+  return Math.pow(10, db / 20);
+}
+
 function getCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGainNode = audioCtx.createGain();
+    masterGainNode.gain.value = dbToGain(masterDb);
+    masterGainNode.connect(audioCtx.destination);
+  }
   return audioCtx;
 }
 
+function setMasterDb(db) {
+  masterDb = db;
+  if (masterGainNode) {
+    masterGainNode.gain.setTargetAtTime(dbToGain(db), audioCtx.currentTime, 0.01);
+  }
+}
+
+// ── Audio synthesis ────────────────────────────────────────────────────────
 function playKick(time, vol) {
   const ctx = getCtx();
   const osc = ctx.createOscillator();
@@ -475,8 +574,8 @@ function playKick(time, vol) {
   gain2.gain.setValueAtTime(vol * 0.6, time);
   gain2.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
 
-  osc.connect(gain); gain.connect(ctx.destination);
-  osc2.connect(gain2); gain2.connect(ctx.destination);
+  osc.connect(gain); gain.connect(masterGainNode);
+  osc2.connect(gain2); gain2.connect(masterGainNode);
   osc.start(time); osc.stop(time + 0.85);
   osc2.start(time); osc2.stop(time + 0.06);
 }
@@ -509,8 +608,8 @@ function playSnare(time, vol) {
   oscGain.gain.setValueAtTime(vol * 0.5, time);
   oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
 
-  noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(ctx.destination);
-  osc.connect(oscGain); oscGain.connect(ctx.destination);
+  noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(masterGainNode);
+  osc.connect(oscGain); oscGain.connect(masterGainNode);
   noise.start(time); noise.stop(time + 0.25);
   osc.start(time); osc.stop(time + 0.12);
 }
@@ -538,7 +637,7 @@ function playHihat(time, vol) {
   gain.gain.setValueAtTime(vol * 0.6, time);
   gain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
 
-  noise.connect(hiFilter); hiFilter.connect(peakFilter); peakFilter.connect(gain); gain.connect(ctx.destination);
+  noise.connect(hiFilter); hiFilter.connect(peakFilter); peakFilter.connect(gain); gain.connect(masterGainNode);
   noise.start(time); noise.stop(time + 0.12);
 }
 
@@ -570,8 +669,8 @@ function playSideStick(time, vol) {
   oscGain.gain.setValueAtTime(vol * 0.9, time);
   oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.035);
 
-  noise.connect(bandFilter); bandFilter.connect(noiseGain); noiseGain.connect(ctx.destination);
-  osc.connect(oscGain); oscGain.connect(ctx.destination);
+  noise.connect(bandFilter); bandFilter.connect(noiseGain); noiseGain.connect(masterGainNode);
+  osc.connect(oscGain); oscGain.connect(masterGainNode);
   noise.start(time); noise.stop(time + 0.06);
   osc.start(time); osc.stop(time + 0.04);
 }
@@ -666,6 +765,103 @@ function stopSequencer() {
   displayStep = -1;
 }
 
+// ── MIDI export ────────────────────────────────────────────────────────────
+// Standard MIDI File, format 0, single track. GM drum channel (10 = ch 9 zero-indexed).
+// Note numbers: kick=36, snare=38, hihat=42, side-stick=37 (General MIDI).
+
+const DRUM_NOTES = { kick: 36, snare: 38, hihat: 42, stick: 37 };
+
+function varLenBytes(value) {
+  if (value < 0) value = 0;
+  const result = [value & 0x7F];
+  value >>>= 7;
+  while (value > 0) {
+    result.unshift((value & 0x7F) | 0x80);
+    value >>>= 7;
+  }
+  return result;
+}
+
+function generateMIDI() {
+  const TPQ = 480;
+  const TICKS_PER_16TH = TPQ / 4;
+  const NOTE_DUR = 60;
+  const VELOCITY = 100;
+
+  const events = [];
+
+  // Tempo at tick 0
+  const microsPerQuarter = Math.round(60000000 / bpm);
+  events.push({ tick: 0, type: 'tempo', value: microsPerQuarter });
+
+  // Drum hits
+  TRACKS.forEach(track => {
+    for (let s = 0; s < STEPS; s++) {
+      if (grid[track][s]) {
+        const tick = s * TICKS_PER_16TH;
+        events.push({ tick, type: 'noteOn', note: DRUM_NOTES[track], velocity: VELOCITY });
+        events.push({ tick: tick + NOTE_DUR, type: 'noteOff', note: DRUM_NOTES[track] });
+      }
+    }
+  });
+
+  // End of track at end of bar
+  events.push({ tick: STEPS * TICKS_PER_16TH, type: 'endOfTrack' });
+
+  // Sort by tick, with stable ordering at same tick (tempo → noteOff → noteOn → EOT)
+  const order = { tempo: 0, noteOff: 1, noteOn: 2, endOfTrack: 3 };
+  events.sort((a, b) => a.tick !== b.tick ? a.tick - b.tick : order[a.type] - order[b.type]);
+
+  // Emit track bytes
+  const track = [];
+  let prevTick = 0;
+  for (const ev of events) {
+    const delta = ev.tick - prevTick;
+    varLenBytes(delta).forEach(b => track.push(b));
+    prevTick = ev.tick;
+
+    if (ev.type === 'tempo') {
+      track.push(0xFF, 0x51, 0x03);
+      track.push((ev.value >> 16) & 0xFF, (ev.value >> 8) & 0xFF, ev.value & 0xFF);
+    } else if (ev.type === 'noteOn') {
+      track.push(0x99, ev.note, ev.velocity); // Note On, channel 10 (0x99 = 0x90 | 0x09)
+    } else if (ev.type === 'noteOff') {
+      track.push(0x89, ev.note, 0x40); // Note Off, channel 10, release vel 64
+    } else if (ev.type === 'endOfTrack') {
+      track.push(0xFF, 0x2F, 0x00);
+    }
+  }
+
+  // Assemble file
+  const bytes = [];
+  // MThd
+  bytes.push(0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06);
+  bytes.push(0x00, 0x00); // format 0
+  bytes.push(0x00, 0x01); // 1 track
+  bytes.push((TPQ >> 8) & 0xFF, TPQ & 0xFF);
+  // MTrk
+  bytes.push(0x4D, 0x54, 0x72, 0x6B);
+  const tlen = track.length;
+  bytes.push((tlen >> 24) & 0xFF, (tlen >> 16) & 0xFF, (tlen >> 8) & 0xFF, tlen & 0xFF);
+  track.forEach(b => bytes.push(b));
+
+  return new Uint8Array(bytes);
+}
+
+function exportMIDI() {
+  const midiBytes = generateMIDI();
+  let binary = '';
+  for (let i = 0; i < midiBytes.length; i++) binary += String.fromCharCode(midiBytes[i]);
+  const dataUrl = 'data:audio/midi;base64,' + btoa(binary);
+
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = 'drum-pattern-' + bpm + 'bpm.mid';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => document.body.removeChild(a), 100);
+}
+
 // ── Controls ───────────────────────────────────────────────────────────────
 const playBtn = document.getElementById('playBtn');
 const playIcon = document.getElementById('playIcon');
@@ -700,6 +896,14 @@ tempoInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') { applyTempo(); tempoInput.blur(); }
 });
 
+const masterFader = document.getElementById('masterFader');
+const masterValue = document.getElementById('masterValue');
+masterFader.addEventListener('input', () => {
+  const db = parseInt(masterFader.value, 10);
+  setMasterDb(db);
+  masterValue.textContent = db + ' dB';
+});
+
 document.querySelectorAll('.preset-btn').forEach(btn => {
   btn.addEventListener('click', () => loadPreset(btn.dataset.preset));
 });
@@ -710,6 +914,8 @@ document.getElementById('clearBtn').addEventListener('click', () => {
     stepEls[t].forEach(el => el.classList.remove('on'));
   });
 });
+
+document.getElementById('exportBtn').addEventListener('click', exportMIDI);
 
 const modeToggle = document.getElementById('modeToggle');
 modeToggle.addEventListener('click', () => {
