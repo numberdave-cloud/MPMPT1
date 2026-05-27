@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Song Structure Navigator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --border: rgba(234, 224, 208, 0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 900px;
+  }
+
+  /* ─── PLAYER ───────────────────────────────────────────────── */
+  .player-wrap {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;   /* 16:9 */
+    background: #000;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    overflow: hidden;
+  }
+  .player-wrap iframe,
+  .player-wrap #player {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .player-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  /* ─── SECTION BLOCKS ───────────────────────────────────────── */
+  .sections-row {
+    display: flex;
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .section-block {
+    flex: 1;
+    min-width: 0;
+    height: 76px;
+    border: none;
+    border-right: 1px solid rgba(30, 26, 23, 0.45);
+    background: transparent;
+    color: var(--bg);
+    font-family: inherit;
+    cursor: pointer;
+    padding: 8px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+    transition: filter 0.1s ease, box-shadow 0.18s ease;
+  }
+  .section-block:last-child { border-right: none; }
+  .section-block:hover { filter: brightness(1.12); }
+  .section-block:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: -4px;
+  }
+  .section-block.active {
+    box-shadow:
+      inset 0 0 0 2px rgba(234, 224, 208, 0.9),
+      0 0 16px rgba(234, 224, 208, 0.45);
+    z-index: 2;
+  }
+
+  .section-name {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .section-meta {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    opacity: 0.78;
+    letter-spacing: 0.02em;
+    font-weight: 400;
+  }
+
+  /* ─── RESPONSIVE ───────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    body { padding: 10px; }
+    .section-block { height: 62px; padding: 6px 3px; }
+    .section-name { font-size: 9px; letter-spacing: 0.04em; }
+    .section-meta { font-size: 8.5px; }
+  }
+  @media (max-width: 400px) {
+    .section-block { height: 56px; }
+    .section-name { font-size: 8.5px; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="player-wrap">
+      <div class="player-loading">Loading…</div>
+      <div id="player"></div>
+    </div>
+    <div class="sections-row" id="sectionsRow"></div>
+  </div>
+
+<script>
+  /* ─── CONFIG ───────────────────────────────────────────────────
+     This is the only block to edit when adapting the template to
+     a new song. Replace videoId, sections, and (optionally) bpm.
+     -----------------------------------------------------------
+     section.type controls the colour and uses the same vocabulary
+     as the structure-analyser MOTE. Supported types:
+       intro, verse, pre-chorus, chorus, post-chorus, bridge,
+       solo, outro, hook, pre-hook, break, build, drop, groove,
+       breakdown, fake-drop
+  */
+  const CONFIG = {
+    videoId: '5z5HJRC9F_0',
+    title: 'Therapy?, "Nowhere"',
+    bpm: null,   // optional; if set, blocks show bar counts
+    sections: [
+      { name: 'Intro',        type: 'intro',      start: 0,   end: 15  },
+      { name: 'Verse 1',      type: 'verse',      start: 15,  end: 25  },
+      { name: 'Pre-Chorus 1', type: 'pre-chorus', start: 25,  end: 35  },
+      { name: 'Chorus 1',     type: 'chorus',     start: 35,  end: 45  },
+      { name: 'Verse 2',      type: 'verse',      start: 45,  end: 55  },
+      { name: 'Pre-Chorus 2', type: 'pre-chorus', start: 55,  end: 65  },
+      { name: 'Chorus 2',     type: 'chorus',     start: 65,  end: 75  },
+      { name: 'Bridge',       type: 'bridge',     start: 75,  end: 96  },
+      { name: 'Solo',         type: 'solo',       start: 96,  end: 106 },
+      { name: 'Pre-Chorus 3', type: 'pre-chorus', start: 106, end: 117 },
+      { name: 'Chorus 3',     type: 'chorus',     start: 117, end: 138 },
+      { name: 'Outro',        type: 'outro',      start: 138, end: 146 }
+    ]
+  };
+
+  /* ─── TYPE → COLOUR ────────────────────────────────────────────
+     Matches the structure-analyser MOTE palette so colour code
+     vocabulary carries between the two widgets.
+  */
+  const TYPE_COLORS = {
+    'intro':       '#8FA37E',  // sage
+    'verse':       '#C07838',  // terracotta
+    'pre-chorus':  '#C8A04A',  // mustard
+    'chorus':      '#B85542',  // warm red
+    'post-chorus': '#B07878',  // dusty pink
+    'bridge':      '#8B6A8B',  // mauve
+    'solo':        '#8A8540',  // olive
+    'outro':       '#8A7A6A',  // warm grey
+    'hook':        '#B85542',  // hip-hop: same as chorus
+    'pre-hook':    '#C8A04A',  // hip-hop: same as pre-chorus
+    'break':       '#5C8A8A',  // teal
+    'build':       '#C8A04A',  // electronic: mustard
+    'drop':        '#B85542',  // electronic: warm red
+    'groove':      '#C07838',  // electronic: terracotta
+    'breakdown':   '#5C8A8A',  // electronic: teal
+    'fake-drop':   '#8B6A8B'   // electronic: mauve
+  };
+
+  /* ─── STATE ──────────────────────────────────────────────────── */
+  let player;
+  let pollHandle = null;
+  let currentActiveIdx = -1;
+
+  /* ─── YOUTUBE IFRAME API ─────────────────────────────────────── */
+  const tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player('player', {
+      host: 'https://www.youtube-nocookie.com',
+      videoId: CONFIG.videoId,
+      playerVars: {
+        autoplay: 0,
+        rel: 0,
+        modestbranding: 1,
+        playsinline: 1
+      },
+      events: {
+        onReady: onPlayerReady,
+        onStateChange: onPlayerStateChange
+      }
+    });
+  };
+
+  function onPlayerReady() {
+    const loading = document.querySelector('.player-loading');
+    if (loading) loading.remove();
+    renderSections();
+  }
+
+  function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.PLAYING) {
+      startPolling();
+    } else if (event.data === YT.PlayerState.PAUSED ||
+               event.data === YT.PlayerState.ENDED ||
+               event.data === YT.PlayerState.BUFFERING) {
+      stopPolling();
+    }
+  }
+
+  function startPolling() {
+    if (pollHandle) return;
+    pollHandle = setInterval(updateActive, 200);
+    updateActive();
+  }
+
+  function stopPolling() {
+    if (pollHandle) {
+      clearInterval(pollHandle);
+      pollHandle = null;
+    }
+  }
+
+  function updateActive() {
+    if (!player || !player.getCurrentTime) return;
+    const t = player.getCurrentTime();
+    let idx = -1;
+    for (let i = 0; i < CONFIG.sections.length; i++) {
+      const s = CONFIG.sections[i];
+      if (t >= s.start && t < s.end) { idx = i; break; }
+    }
+    if (idx !== currentActiveIdx) {
+      currentActiveIdx = idx;
+      applyActiveClass();
+    }
+  }
+
+  /* ─── RENDERING ──────────────────────────────────────────────── */
+  function renderSections() {
+    const row = document.getElementById('sectionsRow');
+    row.innerHTML = '';
+    const totalDuration = CONFIG.sections.reduce(
+      (sum, s) => sum + (s.end - s.start), 0
+    );
+
+    CONFIG.sections.forEach((section, idx) => {
+      const block = document.createElement('button');
+      block.className = 'section-block';
+      block.dataset.idx = idx;
+      block.style.flex = String((section.end - section.start) / totalDuration);
+      block.style.background = TYPE_COLORS[section.type] || '#888';
+      block.setAttribute('aria-label',
+        section.name + ', starts at ' + formatTime(section.start));
+
+      const name = document.createElement('div');
+      name.className = 'section-name';
+      name.textContent = section.name;
+      block.appendChild(name);
+
+      if (CONFIG.bpm) {
+        const durationSec = section.end - section.start;
+        const beats = (durationSec * CONFIG.bpm) / 60;
+        const bars = Math.round(beats / 4);
+        const meta = document.createElement('div');
+        meta.className = 'section-meta';
+        meta.textContent = bars + ' BAR' + (bars === 1 ? '' : 'S');
+        block.appendChild(meta);
+      }
+
+      block.addEventListener('click', () => seekToSection(idx));
+      row.appendChild(block);
+    });
+  }
+
+  function applyActiveClass() {
+    document.querySelectorAll('.section-block').forEach((el, idx) => {
+      el.classList.toggle('active', idx === currentActiveIdx);
+    });
+  }
+
+  /* ─── HELPERS ────────────────────────────────────────────────── */
+  function seekToSection(idx) {
+    const section = CONFIG.sections[idx];
+    if (!player || !section || !player.seekTo) return;
+    player.seekTo(section.start, true);
+    player.playVideo();
+  }
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+</script>
+</body>
+</html>
