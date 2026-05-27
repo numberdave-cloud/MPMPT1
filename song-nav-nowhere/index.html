@@ -155,6 +155,13 @@
   </div>
 
 <script>
+  /* ─── PLAYBACK ATTENUATION ────────────────────────────────────
+     YouTube embeds come through hot. We pin the player to ~-6 dB
+     so lessons don't blow students' ears off. 50 on the 0-100 scale
+     ≈ -6 dB. Adjust if a specific lesson needs louder/quieter.
+  */
+  const DEFAULT_VOLUME = 50;
+
   /* ─── CONFIG ───────────────────────────────────────────────────
      This is the only block to edit when adapting the template to
      a new song. Replace videoId, sections, and (optionally) bpm.
@@ -239,6 +246,7 @@
     const loading = document.querySelector('.player-loading');
     if (loading) loading.remove();
     renderSections();
+    if (player.setVolume) player.setVolume(DEFAULT_VOLUME);
   }
 
   function onPlayerStateChange(event) {
