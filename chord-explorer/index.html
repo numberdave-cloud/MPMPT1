@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chord Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.35);
+    --key-white: #E8DDC8;
+    --key-white-pressed: #C07838;
+    --key-black: #2A211C;
+    --key-black-pressed: #C07838;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    user-select: none;
+  }
+
+  body {
+    padding: 20px 24px 32px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .title {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+
+  .subtitle {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* ─── CHORD PANEL ─── */
+  .chord-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--border);
+    margin-bottom: 14px;
+    min-height: 96px;
+  }
+
+  .chord-cell {
+    padding: 14px 18px;
+  }
+  .chord-cell + .chord-cell {
+    border-left: 1px solid var(--border);
+  }
+
+  .cell-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .chord-name {
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+    min-height: 32px;
+    letter-spacing: -0.01em;
+  }
+  .chord-name.ligeti {
+    font-size: 18px;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+  }
+
+  .chord-notes {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 8px;
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+  }
+  .chord-notes::first-letter {
+    text-transform: uppercase;
+  }
+
+  .song-name {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.35;
+    min-height: 20px;
+    font-weight: 500;
+  }
+  .song-artist {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ─── NOTES PILLS ─── */
+  .notes-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    min-height: 26px;
+    margin-bottom: 14px;
+  }
+  .notes-row-label {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+  .notes-row.empty .notes-row-label {
+    color: var(--text-faint);
+  }
+  .pills-container {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .note-pill {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    padding: 3px 9px;
+    background: var(--accent);
+    color: var(--bg);
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  /* ─── KEYBOARD ─── */
+  .keyboard-wrap {
+    border: 1px solid var(--border);
+    padding: 18px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .piano {
+    position: relative;
+    height: 140px;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .white-key {
+    width: 42px;
+    height: 130px;
+    background: var(--key-white);
+    border: 1px solid #1E1A17;
+    border-radius: 0 0 3px 3px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.06s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 8px;
+    margin-right: 2px;
+    flex-shrink: 0;
+  }
+  .white-key:last-child { margin-right: 0; }
+  .white-key.pressed { background: var(--key-white-pressed); }
+  .white-key .key-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    color: rgba(30, 26, 23, 0.55);
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+  .white-key .kb-hint {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    color: rgba(30, 26, 23, 0.4);
+    margin-top: 3px;
+    font-weight: 600;
+  }
+  .white-key.pressed .key-label,
+  .white-key.pressed .kb-hint {
+    color: rgba(30, 26, 23, 0.85);
+  }
+
+  .black-key {
+    width: 28px;
+    height: 82px;
+    background: var(--key-black);
+    border-radius: 0 0 2px 2px;
+    position: absolute;
+    top: 0;
+    cursor: pointer;
+    z-index: 2;
+    transition: background 0.06s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 6px;
+    border: 1px solid #1E1A17;
+  }
+  .black-key.pressed { background: var(--key-black-pressed); }
+  .black-key .key-label {
+    font-family: 'Courier New', monospace;
+    font-size: 8px;
+    color: rgba(234, 224, 208, 0.45);
+  }
+  .black-key .kb-hint {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    color: rgba(234, 224, 208, 0.6);
+    margin-top: 2px;
+    font-weight: 600;
+  }
+  .black-key.pressed .key-label,
+  .black-key.pressed .kb-hint {
+    color: rgba(30, 26, 23, 0.85);
+  }
+
+  /* ─── KEYBOARD HINT ROW ─── */
+  .hint-row {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-align: center;
+    letter-spacing: 0.06em;
+    line-height: 1.6;
+  }
+  .hint-row .hint-key {
+    color: var(--text);
+  }
+
+  /* ─── CONTROLS ─── */
+  .controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding-top: 4px;
+  }
+
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ctrl-label {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .oct-val {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    min-width: 20px;
+    text-align: center;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 110px;
+    height: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 18px;
+    background: var(--accent);
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 12px;
+    height: 18px;
+    background: var(--accent);
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+  }
+
+  .vol-readout {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    min-width: 32px;
+    text-align: right;
+  }
+
+  /* ─── MOBILE ─── */
+  @media (max-width: 600px) {
+    body { padding: 14px; }
+    .white-key { width: 36px; }
+    .black-key { width: 24px; }
+    .chord-panel { grid-template-columns: 1fr; }
+    .chord-cell + .chord-cell {
+      border-left: none;
+      border-top: 1px solid var(--border);
+    }
+    .chord-name { font-size: 26px; }
+    .chord-name.ligeti { font-size: 15px; }
+    .hint-row { font-size: 9px; letter-spacing: 0.03em; }
+    .controls-row { gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="title">CHORD EXPLORER</div>
+    <div class="subtitle">PLAY NOTES TO DETECT CHORDS</div>
+  </div>
+
+  <!-- Chord display -->
+  <div class="chord-panel">
+    <div class="chord-cell">
+      <div class="cell-label">Chord Detected</div>
+      <div class="chord-name" id="chordName">—</div>
+      <div class="chord-notes" id="chordNotes">Play any three notes</div>
+    </div>
+    <div class="chord-cell">
+      <div class="cell-label">the first chord of:</div>
+      <div class="song-name" id="songName">—</div>
+      <div class="song-artist" id="songArtist"></div>
+    </div>
+  </div>
+
+  <!-- Active notes -->
+  <div class="notes-row empty" id="notesRow">
+    <span class="notes-row-label">NOTES HELD</span>
+    <div class="pills-container" id="pillsContainer"></div>
+  </div>
+
+  <!-- Piano keyboard -->
+  <div class="keyboard-wrap">
+    <div class="piano" id="piano"></div>
+    <div class="hint-row">
+      KEYS: A S D F G H J K · BLACK: W E · T Y U · O · OCTAVE: <span class="hint-key">Z</span> / <span class="hint-key">X</span>
+    </div>
+    <div class="controls-row">
+      <div class="ctrl-group">
+        <span class="ctrl-label">OCTAVE</span>
+        <span class="oct-val" id="octVal">4</span>
+      </div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">VOLUME</span>
+        <input type="range" id="volSlider" min="0" max="100" value="60">
+        <span class="vol-readout" id="volReadout">60%</span>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ── Note data ──────────────────────────────────────────────────────────────
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const ENHARMONIC = { 'C#':'Db','D#':'Eb','F#':'Gb','G#':'Ab','A#':'Bb' };
+
+const WHITE_NOTES = [
+  { note:'C', kb:'a' },
+  { note:'D', kb:'s' },
+  { note:'E', kb:'d' },
+  { note:'F', kb:'f' },
+  { note:'G', kb:'g' },
+  { note:'A', kb:'h' },
+  { note:'B', kb:'j' },
+];
+const WHITE_NOTES_2 = [
+  { note:'C', kb:'k' },
+];
+
+const BLACK_NOTES = [
+  { note:'C#', kb:'w', after:'C' },
+  { note:'D#', kb:'e', after:'D' },
+  { note:'F#', kb:'t', after:'F' },
+  { note:'G#', kb:'y', after:'G' },
+  { note:'A#', kb:'u', after:'A' },
+];
+const BLACK_NOTES_2 = [
+  { note:'C#', kb:'o', after:'C' },
+];
+
+// ── Interval names ─────────────────────────────────────────────────────────
+const INTERVAL_NAMES = {
+  1: 'minor second',
+  2: 'major second',
+  3: 'minor third',
+  4: 'major third',
+  5: 'perfect fourth',
+  6: 'tritone',
+  7: 'perfect fifth',
+  8: 'minor sixth',
+  9: 'major sixth',
+  10: 'minor seventh',
+  11: 'major seventh',
+};
+
+// ── Chord types ────────────────────────────────────────────────────────────
+const CHORD_TYPES = [
+  { name:'maj',      intervals:[0,4,7],       display:''         },
+  { name:'min',      intervals:[0,3,7],       display:'m'        },
+  { name:'dim',      intervals:[0,3,6],       display:'dim'      },
+  { name:'aug',      intervals:[0,4,8],       display:'+'        },
+  { name:'sus2',     intervals:[0,2,7],       display:'sus2'     },
+  { name:'sus4',     intervals:[0,5,7],       display:'sus4'     },
+  { name:'maj7',     intervals:[0,4,7,11],    display:'maj7'     },
+  { name:'dom7',     intervals:[0,4,7,10],    display:'7'        },
+  { name:'min7',     intervals:[0,3,7,10],    display:'m7'       },
+  { name:'dim7',     intervals:[0,3,6,9],     display:'dim7'     },
+  { name:'halfdim',  intervals:[0,3,6,10],    display:'ø7'       },
+  { name:'min-maj7', intervals:[0,3,7,11],    display:'m(maj7)'  },
+  { name:'maj6',     intervals:[0,4,7,9],     display:'6'        },
+  { name:'min6',     intervals:[0,3,7,9],     display:'m6'       },
+  { name:'add9',     intervals:[0,4,7,14],    display:'add9'     },
+  { name:'9',        intervals:[0,4,7,10,14], display:'9'        },
+  { name:'5',        intervals:[0,7],         display:'5'        },
+];
+
+const CHORD_TYPE_NAMES = {
+  'maj':      'Major',
+  'min':      'Minor',
+  'dim':      'Diminished',
+  'aug':      'Augmented',
+  'sus2':     'Suspended second',
+  'sus4':     'Suspended fourth',
+  'maj7':     'Major seventh',
+  'dom7':     'Dominant seventh',
+  'min7':     'Minor seventh',
+  'dim7':     'Diminished seventh',
+  'halfdim':  'Half-diminished seventh',
+  'min-maj7': 'Minor major seventh',
+  'maj6':     'Major sixth',
+  'min6':     'Minor sixth',
+  'add9':     'Added ninth',
+  '9':        'Dominant ninth',
+  '5':        'Power chord',
+};
+
+// ── Song database ──────────────────────────────────────────────────────────
+const SONGS = {
+  // ── Major triads ────────────────────────────────────────────────────────
+  'C-maj':  [
+    {song:"Don't Look Back in Anger", artist:'Oasis', year:1995},
+    {song:'Let It Be', artist:'The Beatles', year:1970}
+  ],
+  'Db-maj': [
+    {song:'Mr. Brightside', artist:'The Killers', year:2003}
+  ],
+  'D-maj':  [
+    {song:'Sweet Home Alabama', artist:'Lynyrd Skynyrd', year:1974},
+    {song:"Sweet Child O' Mine", artist:"Guns N' Roses", year:1987},
+    {song:'Last Christmas', artist:'Wham!', year:1984},
+    {song:'Fairytale of New York', artist:'The Pogues', year:1987}
+  ],
+  'Eb-maj': [
+    {song:'Clocks', artist:'Coldplay', year:2002}
+  ],
+  'E-maj':  [
+    {song:'Black', artist:'Pearl Jam', year:1991},
+    {song:"Don't Stop Believin'", artist:'Journey', year:1981}
+  ],
+  'F-maj':  [
+    {song:'Hey Jude', artist:'The Beatles', year:1968},
+    {song:'Yesterday', artist:'The Beatles', year:1965}
+  ],
+  'Gb-maj': [
+    {song:'9 to 5', artist:'Dolly Parton', year:1980}
+  ],
+  'G-maj':  [
+    {song:'Creep', artist:'Radiohead', year:1992},
+    {song:'Wonderful Tonight', artist:'Eric Clapton', year:1977},
+    {song:'Wake Me Up When September Ends', artist:'Green Day', year:2004},
+    {song:'Hey Ya!', artist:'OutKast', year:2003}
+  ],
+  'Ab-maj': [
+    {song:'Buddy Holly', artist:'Weezer', year:1994, chorus:true}
+  ],
+  'A-maj':  [
+    {song:'Friends in Low Places', artist:'Garth Brooks', year:1990},
+    {song:'Three Little Birds', artist:'Bob Marley', year:1977},
+    {song:'Happy Xmas (War Is Over)', artist:'John Lennon', year:1971}
+  ],
+  'Bb-maj': [
+    {song:'Bohemian Rhapsody', artist:'Queen', year:1975}
+  ],
+  'B-maj':  [
+    {song:'I Miss You', artist:'Blink-182', year:2003, chorus:true}
+  ],
+
+  // ── Minor triads ────────────────────────────────────────────────────────
+  'C-min':  [
+    {song:'Crazy', artist:'Gnarls Barkley', year:2006},
+    {song:'Game of Thrones Theme', artist:'Ramin Djawadi', year:2011}
+  ],
+  'Db-min': [
+    {song:'Moonlight Sonata (1st mvt)', artist:'Beethoven', year:1801}
+  ],
+  'D-min':  [
+    {song:'Layla (Unplugged)', artist:'Eric Clapton', year:1992},
+    {song:'Phantom of the Opera', artist:'Lloyd Webber', year:1986}
+  ],
+  'Eb-min': [
+    {song:'Take Five', artist:'Dave Brubeck', year:1959}
+  ],
+  'E-min':  [
+    {song:'Zombie', artist:'The Cranberries', year:1994}
+  ],
+  'F-min':  [
+    {song:'Boulevard of Broken Dreams', artist:'Green Day', year:2004},
+    {song:'Hello', artist:'Adele', year:2015},
+    {song:'Woke Up This Morning (Sopranos theme)', artist:'Alabama 3', year:1997}
+  ],
+  'Gb-min': [
+    {song:'Halloween Theme', artist:'John Carpenter', year:1978}
+  ],
+  'G-min':  [
+    {song:'Mission: Impossible', artist:'Lalo Schifrin', year:1967},
+    {song:'The Imperial March', artist:'John Williams', year:1980}
+  ],
+  'Ab-min': [
+    {song:'Poker Face', artist:'Lady Gaga', year:2008},
+    {song:'Vogue', artist:'Madonna', year:1990}
+  ],
+  'A-min':  [
+    {song:'House of the Rising Sun', artist:'The Animals', year:1964},
+    {song:'Stairway to Heaven', artist:'Led Zeppelin', year:1971}
+  ],
+  'Bb-min': [
+    {song:'Umbrella', artist:'Rihanna', year:2007, chorus:true}
+  ],
+  'B-min':  [
+    {song:'Exit Music (For a Film)', artist:'Radiohead', year:1997},
+    {song:'Hotel California', artist:'Eagles', year:1976}
+  ],
+
+  // ── Extended chords ─────────────────────────────────────────────────────
+  'C-maj7':     [{song:'Stranger Things', artist:'Dixon & Stein', year:2016}],
+  'Db-maj7':    [{song:'The Girl from Ipanema', artist:'Getz/Gilberto', year:1964}],
+  'E-maj7':     [{song:"What's Going On", artist:'Marvin Gaye', year:1971}],
+  'B-maj7':     [{song:'Wonderful Christmastime', artist:'Paul McCartney', year:1979}],
+  'E-min7':     [
+    {song:'Wonderwall', artist:'Oasis', year:1995},
+    {song:'Wish You Were Here', artist:'Pink Floyd', year:1975}
+  ],
+  'E-min-maj7': [{song:'James Bond Theme', artist:'Norman / Flick', year:1962}],
+  'E-sus4':     [{song:'Behind Blue Eyes', artist:'The Who', year:1971}],
+  'B-sus4':     [{song:'Pinball Wizard', artist:'The Who', year:1969}],
+  'G-add9':     [{song:'Every Breath You Take', artist:'The Police', year:1983}],
+  'E-aug':      [{song:'Oh! Darling', artist:'The Beatles', year:1969}],
+
+  // ── Power chords ────────────────────────────────────────────────────────
+  'A-5': [{song:'Highway to Hell', artist:'AC/DC', year:1979}],
+  'B-5': [{song:'Iron Man', artist:'Black Sabbath', year:1970}],
+  'D-5': [{song:"Summer of '69", artist:'Bryan Adams', year:1984}],
+  'E-5': [{song:'Back in Black', artist:'AC/DC', year:1980}],
+  'F-5': [{song:'Smells Like Teen Spirit', artist:'Nirvana', year:1991}],
+  'G-5': [{song:'Smoke on the Water', artist:'Deep Purple', year:1972}],
+};
+
+// ── Audio ──────────────────────────────────────────────────────────────────
+let audioCtx = null;
+const activeOscs = {};
+let volume = 0.6;
+let octave = 4;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function midiToFreq(midi) {
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+function noteToMidi(note, oct) {
+  return NOTE_NAMES.indexOf(note) + (oct + 1) * 12;
+}
+
+function playNote(noteId, freq) {
+  if (activeOscs[noteId]) return;
+  const ctx = getAudioCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const osc2 = ctx.createOscillator();
+
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  osc2.type = 'sine';
+  osc2.frequency.value = freq * 2;
+
+  gain.gain.setValueAtTime(0, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(volume * 0.2, ctx.currentTime + 0.01);
+
+  const gain2 = ctx.createGain();
+  gain2.gain.value = volume * 0.03;
+
+  osc.connect(gain);
+  osc2.connect(gain2);
+  gain.connect(ctx.destination);
+  gain2.connect(ctx.destination);
+
+  osc.start();
+  osc2.start();
+  activeOscs[noteId] = { osc, osc2, gain, gain2 };
+}
+
+function stopNote(noteId) {
+  const entry = activeOscs[noteId];
+  if (!entry) return;
+  const ctx = getAudioCtx();
+  const { osc, osc2, gain, gain2 } = entry;
+  const t = ctx.currentTime;
+  gain.gain.setValueAtTime(gain.gain.value, t);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+  gain2.gain.setValueAtTime(gain2.gain.value, t);
+  gain2.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+  osc.stop(t + 0.95);
+  osc2.stop(t + 0.95);
+  delete activeOscs[noteId];
+}
+
+// ── Chord detection ────────────────────────────────────────────────────────
+function detectChord(heldNotes) {
+  if (heldNotes.length < 2) return null;
+  const sorted = [...heldNotes].sort((a,b)=>a-b);
+  const lowestPc = sorted[0] % 12;
+  const pcs = [...new Set(sorted.map(n => n % 12))].sort((a,b)=>a-b);
+  if (pcs.length < 2) return null;
+
+  const candidates = [];
+  for (let r = 0; r < pcs.length; r++) {
+    const root = pcs[r];
+    const intervals = pcs.map(p => (p - root + 12) % 12).sort((a,b)=>a-b);
+    const intervalsSet = new Set(intervals);
+
+    for (const ct of CHORD_TYPES) {
+      const ctMod12 = [...new Set(ct.intervals.map(i => i % 12))];
+      const ctSet = new Set(ctMod12);
+
+      if (intervalsSet.size !== ctSet.size) continue;
+      let exact = true;
+      for (const x of intervalsSet) {
+        if (!ctSet.has(x)) { exact = false; break; }
+      }
+      if (!exact) continue;
+
+      candidates.push({
+        root,
+        rootName: NOTE_NAMES[root],
+        type: ct.name,
+        display: ct.display,
+        typeIntervals: ct.intervals,
+        isBassRoot: root === lowestPc,
+      });
+    }
+  }
+
+  if (candidates.length === 0) return null;
+
+  // Rank: more chord intervals = more specific = better; then prefer bass-root
+  candidates.sort((a, b) => {
+    if (b.typeIntervals.length !== a.typeIntervals.length) {
+      return b.typeIntervals.length - a.typeIntervals.length;
+    }
+    if (a.isBassRoot !== b.isBassRoot) {
+      return b.isBassRoot ? 1 : -1;
+    }
+    return 0;
+  });
+
+  return candidates[0];
+}
+
+function displayName(rootName, display) {
+  const en = ENHARMONIC[rootName];
+  return (en || rootName) + display;
+}
+
+// ── UI refs ────────────────────────────────────────────────────────────────
+const chordNameEl   = document.getElementById('chordName');
+const chordNotesEl  = document.getElementById('chordNotes');
+const songNameEl    = document.getElementById('songName');
+const songArtistEl  = document.getElementById('songArtist');
+const notesRowEl    = document.getElementById('notesRow');
+const pillsEl       = document.getElementById('pillsContainer');
+const octValEl      = document.getElementById('octVal');
+const volReadoutEl  = document.getElementById('volReadout');
+
+const heldKeys = new Set();   // computer keys held
+const heldMidi = new Set();   // midi numbers held
+
+// Song picker state — stable while chord is held, re-rolls on chord change
+let currentChordKey = null;
+let currentSongDisplay = null;
+
+function clearChordState() {
+  currentChordKey = null;
+  currentSongDisplay = null;
+}
+
+function displayNote(pc) {
+  const n = NOTE_NAMES[pc];
+  return ENHARMONIC[n] || n;
+}
+
+function updateDisplay() {
+  // Reset ligeti class
+  chordNameEl.classList.remove('ligeti');
+
+  const midiArr = [...heldMidi].sort((a,b)=>a-b);
+  const n = midiArr.length;
+  const uniquePcs = [...new Set(midiArr.map(m => m % 12))].sort((a,b)=>a-b);
+
+  // ── Pills ──
+  pillsEl.innerHTML = '';
+  uniquePcs.forEach(pc => {
+    const pill = document.createElement('div');
+    pill.className = 'note-pill';
+    pill.textContent = displayNote(pc);
+    pillsEl.appendChild(pill);
+  });
+  notesRowEl.classList.toggle('empty', n === 0);
+
+  // ── Empty ──
+  if (n === 0) {
+    chordNameEl.textContent = '—';
+    chordNotesEl.textContent = 'Play any three notes';
+    songNameEl.textContent = '—';
+    songArtistEl.textContent = '';
+    clearChordState();
+    return;
+  }
+
+  // ── 1 note OR all same pc (octave stacks) ──
+  if (n === 1 || uniquePcs.length === 1) {
+    chordNameEl.textContent = displayNote(uniquePcs[0]);
+    chordNotesEl.textContent = 'Single note';
+    songNameEl.textContent = '—';
+    songArtistEl.textContent = '';
+    clearChordState();
+    return;
+  }
+
+  // ── 2 notes ──
+  if (n === 2) {
+    const diff = Math.abs(midiArr[1] - midiArr[0]);
+    const reduced = diff % 12;
+    const d1 = displayNote(midiArr[0] % 12);
+    const d2 = displayNote(midiArr[1] % 12);
+    chordNameEl.textContent = `${d1} + ${d2}`;
+    const intervalName = (reduced === 0 && diff > 0) ? 'octave' : (INTERVAL_NAMES[reduced] || 'interval');
+    chordNotesEl.textContent = intervalName.charAt(0).toUpperCase() + intervalName.slice(1);
+    songNameEl.textContent = '—';
+    songArtistEl.textContent = '';
+    clearChordState();
+    return;
+  }
+
+  // ── 3+ notes — chord detection ──
+  const chord = detectChord(midiArr);
+  if (chord) {
+    chordNameEl.textContent = displayName(chord.rootName, chord.display);
+    chordNotesEl.textContent = CHORD_TYPE_NAMES[chord.type] || chord.type;
+
+    // Song lookup
+    const rootForLookup = ENHARMONIC[chord.rootName] || chord.rootName;
+    const key = rootForLookup + '-' + chord.type;
+    const altKey = chord.rootName + '-' + chord.type;
+    const songList = SONGS[key] || SONGS[altKey];
+
+    if (songList && songList.length) {
+      // Re-pick song only when chord key changes
+      if (currentChordKey !== key) {
+        currentChordKey = key;
+        currentSongDisplay = songList[Math.floor(Math.random() * songList.length)];
+      }
+      const s = currentSongDisplay;
+      songNameEl.textContent = s.song + (s.chorus ? ' (chorus)' : '');
+      songArtistEl.textContent = s.artist + ' · ' + s.year;
+    } else {
+      songNameEl.textContent = '—';
+      songArtistEl.textContent = '';
+      currentChordKey = key;
+      currentSongDisplay = null;
+    }
+    return;
+  }
+
+  // ── No chord match ──
+  // 2 unique pcs: show as interval
+  if (uniquePcs.length === 2) {
+    const diff = (uniquePcs[1] - uniquePcs[0] + 12) % 12;
+    const d1 = displayNote(uniquePcs[0]);
+    const d2 = displayNote(uniquePcs[1]);
+    chordNameEl.textContent = `${d1} + ${d2}`;
+    const intervalName = INTERVAL_NAMES[diff] || 'interval';
+    chordNotesEl.textContent = intervalName.charAt(0).toUpperCase() + intervalName.slice(1);
+    songNameEl.textContent = '—';
+    songArtistEl.textContent = '';
+    clearChordState();
+    return;
+  }
+
+  // 4+ notes within a 3-semitone span → tone cluster
+  const span = midiArr[midiArr.length - 1] - midiArr[0];
+  if (n >= 4 && span <= 3) {
+    chordNameEl.textContent = 'LIGETI MODE: ENGAGED';
+    chordNameEl.classList.add('ligeti');
+    chordNotesEl.textContent = 'Tone cluster';
+    songNameEl.textContent = '—';
+    songArtistEl.textContent = '';
+    clearChordState();
+    return;
+  }
+
+  // Wide-span no-match fallback
+  chordNameEl.textContent = uniquePcs.map(displayNote).join(' / ');
+  chordNotesEl.textContent = 'No chord match';
+  songNameEl.textContent = '—';
+  songArtistEl.textContent = '';
+  clearChordState();
+}
+
+// ── Build piano ────────────────────────────────────────────────────────────
+const piano = document.getElementById('piano');
+const WHITE_W = 42, WHITE_GAP = 2, BLACK_W = 28;
+const layout = [];
+
+function buildPiano() {
+  piano.innerHTML = '';
+  layout.length = 0;
+  const whiteKeys = [];
+
+  WHITE_NOTES.forEach(wn => {
+    whiteKeys.push({ note: wn.note, oct: octave, kb: wn.kb });
+  });
+  WHITE_NOTES_2.forEach(wn => {
+    whiteKeys.push({ note: wn.note, oct: octave + 1, kb: wn.kb });
+  });
+
+  const wEls = [];
+  whiteKeys.forEach((wk) => {
+    const el = document.createElement('div');
+    el.className = 'white-key';
+    el.innerHTML = `<span class="key-label">${ENHARMONIC[wk.note]||wk.note}${wk.oct}</span><span class="kb-hint">${wk.kb.toUpperCase()}</span>`;
+    piano.appendChild(el);
+    wEls.push({ el, ...wk });
+    const midi = noteToMidi(wk.note, wk.oct);
+    el.addEventListener('mousedown', e => { e.preventDefault(); triggerOn('m'+midi, midi); });
+    el.addEventListener('mouseup', () => triggerOff('m'+midi, midi));
+    el.addEventListener('mouseleave', () => { if (heldMidi.has(midi) && !heldKeys.has(wk.kb)) triggerOff('m'+midi, midi); });
+    el.addEventListener('touchstart', e => { e.preventDefault(); triggerOn('m'+midi, midi); }, {passive:false});
+    el.addEventListener('touchend', () => triggerOff('m'+midi, midi));
+    layout.push({ note: wk.note, oct: wk.oct, isBlack: false, kb: wk.kb, el, midi });
+  });
+
+  const allBlack = [
+    ...BLACK_NOTES.map(b => ({ ...b, oct: octave })),
+    ...BLACK_NOTES_2.map(b => ({ ...b, oct: octave + 1 })),
+  ];
+
+  allBlack.forEach(bk => {
+    const afterIdx = wEls.findIndex(w => w.note === bk.after && w.oct === bk.oct);
+    if (afterIdx < 0) return;
+    const leftBase = afterIdx * (WHITE_W + WHITE_GAP);
+    const leftOffset = leftBase + WHITE_W - Math.floor(BLACK_W / 2);
+
+    const el = document.createElement('div');
+    el.className = 'black-key';
+    el.style.left = leftOffset + 'px';
+    el.innerHTML = `<span class="key-label">${ENHARMONIC[bk.note]||bk.note}</span><span class="kb-hint">${bk.kb.toUpperCase()}</span>`;
+    piano.appendChild(el);
+
+    const midi = noteToMidi(bk.note, bk.oct);
+    el.addEventListener('mousedown', e => { e.preventDefault(); triggerOn('m'+midi, midi); });
+    el.addEventListener('mouseup', () => triggerOff('m'+midi, midi));
+    el.addEventListener('mouseleave', () => { if (heldMidi.has(midi) && !heldKeys.has(bk.kb)) triggerOff('m'+midi, midi); });
+    el.addEventListener('touchstart', e => { e.preventDefault(); triggerOn('m'+midi, midi); }, {passive:false});
+    el.addEventListener('touchend', () => triggerOff('m'+midi, midi));
+    layout.push({ note: bk.note, oct: bk.oct, isBlack: true, kb: bk.kb, el, midi });
+  });
+
+  const totalW = whiteKeys.length * (WHITE_W + WHITE_GAP) - WHITE_GAP;
+  piano.style.width = totalW + 'px';
+}
+
+function triggerOn(id, midi) {
+  if (heldMidi.has(midi)) return;
+  heldMidi.add(midi);
+  const freq = midiToFreq(midi);
+  playNote(id, freq);
+  const entry = layout.find(k => k.midi === midi);
+  if (entry) entry.el.classList.add('pressed');
+  updateDisplay();
+}
+
+function triggerOff(id, midi) {
+  heldMidi.delete(midi);
+  stopNote(id);
+  const entry = layout.find(k => k.midi === midi);
+  if (entry) entry.el.classList.remove('pressed');
+  updateDisplay();
+}
+
+// ── Keyboard events ────────────────────────────────────────────────────────
+const KB_MAP = {
+  'a':'C','s':'D','d':'E','f':'F','g':'G','h':'A','j':'B',
+  'k':'C',
+  'w':'C#','e':'D#','t':'F#','y':'G#','u':'A#',
+  'o':'C#',
+};
+const KB_OCT_OFFSET = { 'k': 1, 'o': 1 };
+
+function refreshOctaveDisplay() {
+  octValEl.textContent = octave;
+}
+
+window.addEventListener('keydown', e => {
+  if (e.repeat) return;
+  const kb = e.key.toLowerCase();
+
+  // Octave shortcuts
+  if (kb === 'z') {
+    if (octave > 2) {
+      octave--;
+      refreshOctaveDisplay();
+      buildPiano();
+    }
+    return;
+  }
+  if (kb === 'x') {
+    if (octave < 6) {
+      octave++;
+      refreshOctaveDisplay();
+      buildPiano();
+    }
+    return;
+  }
+
+  if (!KB_MAP[kb]) return;
+  e.preventDefault();
+  const note = KB_MAP[kb];
+  const oct = octave + (KB_OCT_OFFSET[kb] || 0);
+  const midi = noteToMidi(note, oct);
+  const id = 'kb-' + kb;
+  heldKeys.add(kb);
+  triggerOn(id, midi);
+});
+
+window.addEventListener('keyup', e => {
+  const kb = e.key.toLowerCase();
+  if (!KB_MAP[kb]) return;
+  const note = KB_MAP[kb];
+  const oct = octave + (KB_OCT_OFFSET[kb] || 0);
+  const midi = noteToMidi(note, oct);
+  const id = 'kb-' + kb;
+  heldKeys.delete(kb);
+  triggerOff(id, midi);
+});
+
+// ── Volume ─────────────────────────────────────────────────────────────────
+const volSlider = document.getElementById('volSlider');
+volSlider.addEventListener('input', function() {
+  const v = parseInt(this.value);
+  volume = v / 100;
+  volReadoutEl.textContent = v + '%';
+});
+
+// ── Init ───────────────────────────────────────────────────────────────────
+buildPiano();
+refreshOctaveDisplay();
+</script>
+</body>
+</html>
