@@ -7,189 +7,336 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.35);
+    --divider: #4A4239;
+    --grid-bg: #2A2522;
+  }
 
-body {
-  background: #1E1A17;
-  color: #EAE0D0;
-  font-family: 'Inter', sans-serif;
-  padding: 24px;
-  min-height: 100vh;
-  user-select: none;
-  -webkit-user-select: none;
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-.container { max-width: 760px; margin: 0 auto; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
 
-h1 {
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-  color: #EAE0D0;
-}
+  body {
+    padding: 20px 24px 28px;
+    max-width: 800px;
+    margin: 0 auto;
+    user-select: none;
+    -webkit-user-select: none;
+  }
 
-.controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 22px;
-  flex-wrap: wrap;
-}
+  /* ─── HEADER ─── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
 
-.btn {
-  background: transparent;
-  color: #EAE0D0;
-  border: 1px solid #EAE0D0;
-  padding: 8px 14px;
-  font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-decoration: none;
-  display: inline-block;
-  line-height: 1;
-}
-.btn:hover { border-color: #D8904A; color: #D8904A; }
-.btn.active { background: #C07838; border-color: #C07838; color: #1E1A17; }
-.btn:active { transform: translateY(1px); }
-#transportBtn { min-width: 92px; text-align: center; }
+  .title {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
 
-.tempo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-left: auto;
-}
-.tempo-label {
-  font-size: 10px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  opacity: 0.7;
-}
-.tempo-readout {
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-  color: #D8904A;
-  min-width: 64px;
-}
-input[type=range] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 140px;
-  height: 2px;
-  background: #EAE0D0;
-  outline: none;
-  cursor: pointer;
-}
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 14px;
-  height: 10px;
-  background: #C07838;
-  border: none;
-  cursor: pointer;
-  border-radius: 0;
-  border-left: 1px solid #1E1A17;
-  border-right: 1px solid #1E1A17;
-}
-input[type=range]::-moz-range-thumb {
-  width: 12px;
-  height: 10px;
-  background: #C07838;
-  border: none;
-  cursor: pointer;
-  border-radius: 0;
-}
+  .header-meta {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
 
-.grid-wrapper {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 8px;
-}
+  /* ─── SECTION LABELS ─── */
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
 
-.row-labels {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  width: 34px;
-}
-.row-label {
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  font-family: 'Courier New', monospace;
-  font-size: 10px;
-  color: #EAE0D0;
-  opacity: 0.75;
-  padding-right: 8px;
-  cursor: pointer;
-  transition: color 0.1s;
-}
-.row-label:hover { color: #D8904A; opacity: 1; }
+  /* ─── CONTROL ROW (TRANSPORT + TEMPO) ─── */
+  .controls-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 32px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(16, 1fr);
-  grid-template-rows: repeat(8, 28px);
-  gap: 1px;
-  flex: 1;
-  background: #2A2522;
-  padding: 1px;
-  border: 1px solid #2A2522;
-}
-.cell {
-  background: #1E1A17;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: background 0.05s, border-color 0.05s;
-}
-.cell.beat-marker { box-shadow: inset 1px 0 0 #3A322D; }
-.cell.active { background: #C07838; }
-.cell.playing:not(.active) { background: rgba(216, 144, 74, 0.18); }
-.cell.active.playing {
-  background: #D8904A;
-  box-shadow: 0 0 8px rgba(216, 144, 74, 0.6);
-}
-.cell:hover { border-color: #D8904A; }
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .control-group.tempo-group {
+    width: 260px;
+    margin-left: auto;
+  }
 
-.step-numbers {
-  display: grid;
-  grid-template-columns: repeat(16, 1fr);
-  gap: 1px;
-  margin-left: 42px;
-  margin-top: 2px;
-  padding: 0 1px;
-}
-.step-num {
-  text-align: center;
-  font-family: 'Courier New', monospace;
-  font-size: 9px;
-  opacity: 0.35;
-  letter-spacing: 0.05em;
-}
-.step-num.beat { opacity: 0.85; color: #D8904A; }
+  /* ─── BUTTONS ─── */
+  .button-group { display: flex; gap: 6px; }
+
+  .btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 9px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.12s, color 0.12s, background 0.12s;
+    text-decoration: none;
+    display: inline-block;
+    line-height: 1;
+    text-align: center;
+    min-width: 86px;
+  }
+  .btn:hover { border-color: var(--border-bright); }
+  .btn:active { transform: translateY(1px); }
+  .btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+  .btn.active:hover {
+    background: var(--accent-glow);
+    border-color: var(--accent-glow);
+  }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+    font-weight: 600;
+  }
+  .btn.primary:hover {
+    background: var(--accent-glow);
+    border-color: var(--accent-glow);
+  }
+  .btn.danger:hover {
+    border-color: #B85542;
+    color: #B85542;
+  }
+  .btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* ─── TEMPO SLIDER ─── */
+  .tempo-control {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 9px 0;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 2px;
+    background: var(--border-bright);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 12px;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    border-radius: 0;
+    border-left: 1px solid var(--bg);
+    border-right: 1px solid var(--bg);
+    transition: background 0.1s;
+  }
+  input[type=range]:hover::-webkit-slider-thumb { background: var(--accent-glow); }
+  input[type=range]::-moz-range-thumb {
+    width: 14px;
+    height: 12px;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    border-radius: 0;
+  }
+
+  .tempo-readout {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    min-width: 64px;
+    text-align: right;
+  }
+
+  /* ─── PATTERN HEADER ─── */
+  .pattern-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .pattern-meta {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ─── GRID ─── */
+  .grid-wrapper {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .row-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    width: 36px;
+  }
+
+  .row-label {
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: var(--text);
+    opacity: 0.7;
+    padding-right: 8px;
+    cursor: pointer;
+    transition: color 0.12s, opacity 0.12s;
+    letter-spacing: 0.04em;
+  }
+  .row-label:hover {
+    color: var(--accent-glow);
+    opacity: 1;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    grid-template-rows: repeat(8, 28px);
+    gap: 1px;
+    flex: 1;
+    background: var(--grid-bg);
+    padding: 1px;
+    border: 1px solid var(--grid-bg);
+  }
+
+  .cell {
+    background: var(--bg);
+    cursor: pointer;
+    position: relative;
+    transition: background 0.06s, box-shadow 0.06s;
+  }
+  /* Each beat (every 4 steps) gets a subtle left divider */
+  .cell.beat-marker { box-shadow: inset 2px 0 0 var(--divider); }
+  .cell:hover { background: #2A2522; }
+  .cell.active { background: var(--accent); }
+  .cell.active.beat-marker { box-shadow: inset 2px 0 0 #8A4F25; }
+  .cell.active:hover { background: var(--accent-glow); }
+  .cell.playing:not(.active) { background: rgba(216, 144, 74, 0.2); }
+  .cell.active.playing {
+    background: var(--accent-glow);
+    box-shadow: 0 0 8px rgba(216, 144, 74, 0.5);
+  }
+
+  /* ─── STEP NUMBERS ─── */
+  .step-numbers {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    gap: 1px;
+    margin-left: 44px;
+    margin-top: 4px;
+    padding: 0 1px;
+  }
+
+  .step-num {
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    opacity: 0.35;
+    letter-spacing: 0.05em;
+  }
+  .step-num.beat {
+    opacity: 0.85;
+    color: var(--accent-glow);
+  }
+
+  /* ─── ACTIONS ─── */
+  .actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 600px) {
+    body { padding: 16px; }
+    .controls-row { gap: 20px; }
+    .btn { font-size: 9px; padding: 8px 12px; min-width: 72px; }
+    .header-meta { display: none; }
+  }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>MOTE — MELODIC STEP SEQUENCER</h1>
+  <div class="header">
+    <div class="title">MELODIC STEP SEQUENCER</div>
+  </div>
 
-  <div class="controls">
-    <button id="transportBtn" class="btn">▶ PLAY</button>
-    <button id="beatBtn" class="btn">BEAT</button>
-    <button id="clearBtn" class="btn">CLEAR</button>
-    <a id="exportBtn" class="btn" download="mote-pattern.mid" href="#">EXPORT MIDI</a>
-    <div class="tempo">
-      <span class="tempo-label">TEMPO</span>
-      <input type="range" id="tempoSlider" min="60" max="180" value="120">
-      <span class="tempo-readout" id="tempoReadout">120 BPM</span>
+  <div class="controls-row">
+    <div class="control-group">
+      <div class="section-label">Transport</div>
+      <div class="button-group">
+        <button id="transportBtn" class="btn">▶ PLAY</button>
+        <button id="beatBtn" class="btn">BEAT</button>
+        <button id="octDownBtn" class="btn">OCT −</button>
+        <button id="octUpBtn" class="btn">OCT +</button>
+      </div>
     </div>
+    <div class="control-group tempo-group">
+      <div class="section-label">Tempo</div>
+      <div class="tempo-control">
+        <input type="range" id="tempoSlider" min="60" max="180" value="120">
+        <span class="tempo-readout" id="tempoReadout">120 BPM</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="pattern-header">
+    <div class="section-label">Pattern</div>
   </div>
 
   <div class="grid-wrapper">
@@ -198,14 +345,18 @@ input[type=range]::-moz-range-thumb {
   </div>
 
   <div class="step-numbers" id="stepNumbers"></div>
-</div>
+
+  <div class="actions">
+    <button id="clearBtn" class="btn danger">CLEAR</button>
+    <a id="exportBtn" class="btn primary" download="mote-pattern.mid" href="#">EXPORT MIDI</a>
+  </div>
 
 <script>
 // ---- CONFIG ----
 const COLS = 16;
 // Diatonic A-minor / C-major white keys, A3 (top) down to A2 (bottom)
 const ROW_MIDI =   [57,  55,  53,  52,  50,  48,  47,  45]; // A3 G3 F3 E3 D3 C3 B2 A2
-const NOTE_NAMES = ['A3','G3','F3','E3','D3','C3','B2','A2'];
+const NOTE_NAMES = ['A','G','F','E','D','C','B','A'];
 const ROWS = ROW_MIDI.length;
 
 // ---- STATE ----
@@ -213,6 +364,13 @@ let grid = Array.from({length: ROWS}, () => Array(COLS).fill(false));
 let tempo = 120;
 let playing = false;
 let drumsOn = false;
+let octaveShift = 0;           // multiplied by 12 semitones, applied to all note lookups
+const OCT_MIN = -1, OCT_MAX = 2;
+
+// Resolve a row index to its current MIDI note, accounting for octave shift
+function noteAt(rowIndex) {
+  return ROW_MIDI[rowIndex] + (12 * octaveShift);
+}
 let currentStep = 0;
 let nextStepTime = 0;
 let playbackStartTime = 0;
@@ -480,7 +638,7 @@ for (let r = 0; r < ROWS; r++) {
   label.textContent = NOTE_NAMES[r];
   label.addEventListener('click', () => {
     ensureAudioRunning();
-    playNote(ROW_MIDI[r], audioCtx.currentTime + 0.01, 0.25);
+    playNote(noteAt(r), audioCtx.currentTime + 0.01, 0.25);
   });
   rowLabelsEl.appendChild(label);
 }
@@ -521,7 +679,7 @@ function toggleCell(r, c) {
   if (!wasActive) {
     grid[r][c] = true;
     getCellEl(r, c).classList.add('active');
-    playNote(ROW_MIDI[r], audioCtx.currentTime + 0.01, 0.22);
+    playNote(noteAt(r), audioCtx.currentTime + 0.01, 0.22);
   }
 }
 
@@ -535,7 +693,7 @@ function scheduleStep(step, time) {
   const gate = stepDuration() * 0.9;
   for (let r = 0; r < ROWS; r++) {
     if (grid[r][step]) {
-      playNote(ROW_MIDI[r], time, gate);
+      playNote(noteAt(r), time, gate);
       break;
     }
   }
@@ -641,7 +799,7 @@ function buildMidiBytes() {
   for (let c = 0; c < COLS; c++) {
     for (let r = 0; r < ROWS; r++) {
       if (grid[r][c]) {
-        const note = ROW_MIDI[r];
+        const note = noteAt(r);
         events.push({ tick: c * TICKS_PER_STEP,                       status: 0x90, note, velocity: 100, order: 1 });
         events.push({ tick: c * TICKS_PER_STEP + NOTE_DURATION_TICKS, status: 0x80, note, velocity: 0,   order: 0 });
         break;
@@ -722,6 +880,23 @@ beatBtn.addEventListener('click', () => {
   drumsOn = !drumsOn;
   beatBtn.classList.toggle('active', drumsOn);
 });
+
+const octDownBtn = document.getElementById('octDownBtn');
+const octUpBtn = document.getElementById('octUpBtn');
+function setOctave(shift) {
+  octaveShift = Math.max(OCT_MIN, Math.min(OCT_MAX, shift));
+  octDownBtn.disabled = (octaveShift === OCT_MIN);
+  octUpBtn.disabled   = (octaveShift === OCT_MAX);
+}
+octDownBtn.addEventListener('click', () => {
+  ensureAudioRunning();
+  setOctave(octaveShift - 1);
+});
+octUpBtn.addEventListener('click', () => {
+  ensureAudioRunning();
+  setOctave(octaveShift + 1);
+});
+setOctave(0); // initialise button enabled/disabled states
 document.getElementById('clearBtn').addEventListener('click', clearGrid);
 document.getElementById('tempoSlider').addEventListener('input', (e) => {
   tempo = parseInt(e.target.value, 10);
