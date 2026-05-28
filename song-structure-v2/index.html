@@ -800,6 +800,14 @@
 
   // ─── INFO PANEL RENDERING ───────────────────────────────────────
   function renderInfoPanel() {
+    // Hide info panel entirely once the summary is showing — keeps the iframe
+    // from growing past its allotted height when both panels would be visible.
+    if (state.finalized) {
+      $infoPanel.style.display = 'none';
+      return;
+    }
+    $infoPanel.style.display = '';
+
     if (!state.lastInfoSection) {
       $infoPanel.innerHTML = '<div class="info-placeholder">Hover or click a section button to see what it does.</div>';
       return;
@@ -1053,6 +1061,7 @@
     $summary.classList.remove('active');
     renderTimeline();
     renderActions();
+    renderInfoPanel();
   }
 
   function handleEnd() {
@@ -1062,6 +1071,7 @@
     renderSummary();
     renderTimeline();
     renderActions();
+    renderInfoPanel();
     $summary.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
