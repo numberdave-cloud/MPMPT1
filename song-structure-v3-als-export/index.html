@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Song Structure Analyser — Live Set Export</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    padding: 20px 24px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .title {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+
+  .mode-tabs {
+    display: flex;
+    border: 1px solid var(--border);
+  }
+
+  .mode-tab {
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-right: 1px solid var(--border);
+    transition: color 0.1s, background 0.1s;
+  }
+  .mode-tab:last-child { border-right: none; }
+  .mode-tab:hover { color: var(--text); }
+  .mode-tab.active {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* ─── SECTION BUTTONS ─── */
+  .section-buttons-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .section-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .section-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: background 0.08s, border-color 0.08s, transform 0.05s;
+    min-width: 80px;
+  }
+  .section-btn:hover { border-color: var(--border-bright); }
+  .section-btn:active { transform: translateY(1px); }
+  .section-btn.flash {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* ─── TIMELINE ─── */
+  .timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+
+  .timeline-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .bar-count {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .bar-count strong {
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  .timeline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    min-height: 64px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 6px;
+    align-content: flex-start;
+  }
+
+  .timeline.empty {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .timeline.empty::after {
+    content: "Click a section button as each bar plays in the music.";
+    color: var(--text-faint);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    font-style: italic;
+  }
+
+  .group {
+    height: 44px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: var(--bg);
+    transition: filter 0.08s, outline-offset 0.08s;
+    position: relative;
+    user-select: none;
+    padding: 0 6px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .group:hover { filter: brightness(1.15); }
+  .group.selected {
+    outline: 2px solid var(--text);
+    outline-offset: -2px;
+    z-index: 1;
+  }
+
+  .group-name {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    line-height: 1.1;
+  }
+  .group-bars {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    opacity: 0.75;
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+
+  .hint {
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    margin-bottom: 18px;
+    font-style: italic;
+  }
+
+  /* ─── INFO PANEL ─── */
+  .info-panel {
+    border: 1px solid var(--border);
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    min-height: 100px;
+  }
+
+  .info-placeholder {
+    font-size: 12px;
+    color: var(--text-faint);
+    font-style: italic;
+    letter-spacing: 0.02em;
+    text-align: center;
+    padding: 22px 0;
+  }
+
+  .info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .info-section-name {
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    font-weight: 600;
+  }
+
+  .info-view-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+  }
+  .info-view-toggle button {
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    padding: 4px 10px;
+    font-family: inherit;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-right: 1px solid var(--border);
+    transition: color 0.1s, background 0.1s;
+  }
+  .info-view-toggle button:last-child { border-right: none; }
+  .info-view-toggle button:hover { color: var(--text); }
+  .info-view-toggle button.active {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .info-block {
+    margin-bottom: 14px;
+  }
+  .info-block:last-child { margin-bottom: 0; }
+
+  .info-block-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .info-block-body {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text);
+  }
+
+  .info-features-intro {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .info-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .info-features li {
+    font-size: 13px;
+    line-height: 1.55;
+    padding: 3px 0 3px 12px;
+    color: var(--text);
+    position: relative;
+  }
+  .info-features li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--text-dim);
+  }
+  .info-features strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .info-quote {
+    border-left: 2px solid var(--accent);
+    padding: 8px 12px;
+    margin: 0 0 8px 0;
+    background: rgba(192, 120, 56, 0.06);
+  }
+  .info-quote:last-child { margin-bottom: 0; }
+  .quote-text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+    font-style: italic;
+    margin-bottom: 4px;
+  }
+  .quote-attribution {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+  }
+
+  .info-examples {
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+  .example-item {
+    font-style: italic;
+  }
+  .example-year {
+    color: var(--text-dim);
+    font-style: normal;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    margin-left: 2px;
+  }
+  .example-sep {
+    color: var(--text-faint);
+    margin: 0 6px;
+  }
+
+  .info-note {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-style: italic;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+  }
+
+  /* ─── ACTIONS ─── */
+  .actions {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 9px 14px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: border-color 0.08s, background 0.08s;
+  }
+  .action-btn:hover:not(:disabled) { border-color: var(--border-bright); }
+  .action-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .action-btn.primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .action-btn.primary:hover:not(:disabled) { background: var(--accent-glow); border-color: var(--accent-glow); }
+  .action-btn.danger:hover:not(:disabled) {
+    border-color: #B85542;
+    color: #B85542;
+  }
+
+  /* ─── SUMMARY ─── */
+  .summary {
+    border: 1px solid var(--accent);
+    padding: 18px 20px;
+    margin-top: 8px;
+    display: none;
+  }
+  .summary.active { display: block; }
+
+  .summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .summary-title {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .summary-mode {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .stat-value strong {
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  .summary-list {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    margin: 8px 0 16px;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  .summary-observations {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border-left: 2px solid var(--accent);
+    background: rgba(192, 120, 56, 0.06);
+  }
+  .summary-observations strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .summary-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .copy-btn, .export-btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: background 0.1s;
+  }
+  .copy-btn:hover, .export-btn:hover { background: var(--accent-glow); }
+  .copy-btn.copied, .export-btn.copied { background: #6F8A50; }
+  .export-btn.failed { background: #B85542; }
+
+  .export-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--accent);
+  }
+  .export-btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* responsive */
+  @media (max-width: 600px) {
+    body { padding: 16px; }
+    .section-btn { font-size: 9px; padding: 8px 10px; min-width: 0; }
+    .action-btn { font-size: 9px; padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">SONG STRUCTURE ANALYSER</div>
+    <div class="mode-tabs" id="modeTabs">
+      <button class="mode-tab active" data-mode="pop">Pop / Rock</button>
+      <button class="mode-tab" data-mode="hiphop">Hip-Hop / Rap</button>
+      <button class="mode-tab" data-mode="electronic">Electronic</button>
+    </div>
+  </div>
+
+  <div class="section-buttons-label">Tap a section once per bar</div>
+  <div class="section-buttons" id="sectionButtons"></div>
+
+  <div class="timeline-header">
+    <div class="timeline-label">Timeline</div>
+    <div class="bar-count" id="barCount"><strong>0</strong> bars</div>
+  </div>
+  <div class="timeline empty" id="timeline"></div>
+  <div class="hint">Click a block to select it, then click a section button to reassign.</div>
+
+  <div class="info-panel" id="infoPanel"></div>
+
+  <div class="actions">
+    <button class="action-btn" id="undoBtn" disabled>Undo Last</button>
+    <button class="action-btn" id="deleteBtn" disabled>Delete Selected</button>
+    <button class="action-btn danger" id="clearBtn" disabled>Clear All</button>
+    <button class="action-btn primary" id="endBtn" disabled>Finish</button>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+<script>
+  // ─── SECTION DATA ────────────────────────────────────────────────
+  // Schema:
+  //   content.simple    — required: short info shown by default
+  //   content.detailed  — optional: full info shown when DETAILED toggled
+  //   Each view has: function (string), features (optional list), quotes (optional list), examples (optional list)
+
+  const SECTIONS = {
+    pop: [
+      {
+        name: 'INTRO',
+        color: '#8FA37E',
+        content: {
+          simple: {
+            function: "The song's front door. Its job is to grab attention in the first few seconds and tell the listener what world the song lives in — key, tempo, mood, genre.",
+            featuresIntro: "Usually 4, 8, or 16 bars. Three common shapes:",
+            features: [
+              { label: "Riff-led", desc: "a signature instrumental hook (Seven Nation Army)" },
+              { label: "Chord vamp", desc: "a looping progression with no melody (Get Lucky)" },
+              { label: "Sparse-to-full build", desc: "one element grows into the full band (Rolling in the Deep)" }
+            ],
+            quotes: [
+              { text: "You had to get people's attention in the first ten seconds.", attribution: "George Martin, producer of The Beatles" }
+            ],
+            examples: [
+              "A Hard Day's Night", "Sweet Child O' Mine", "Smells Like Teen Spirit",
+              "Wonderwall", "Mr. Brightside", "Bad Guy", "Anti-Hero"
+            ]
+          },
+          detailed: {
+            function: "The intro is the song's front door. Producers from the 1960s radio era onward have treated the opening seconds as the most valuable real estate on a record — the streaming era hasn't relaxed that. Its job: grab attention fast, establish the key, tempo and mood, signal the genre and production aesthetic, and create anticipation for the moment the vocal enters. The best intros also work as the song's audio logo — a few notes that announce the entire track before a word is sung.",
+            featuresIntro: "Most intros are 4, 8, or 16 bars. Four common shapes:",
+            features: [
+              { label: "Riff-led", desc: "a signature instrumental hook IS the song's identity (Seven Nation Army, Sweet Child O' Mine)" },
+              { label: "Chord vamp", desc: "a looping progression without a melodic hook sets feel and key (Get Lucky)" },
+              { label: "Sparse-to-full build", desc: "start with one element, layer up to the first verse (Rolling in the Deep, Anti-Hero)" },
+              { label: "Cold open", desc: "no intro at all, vocal on bar one (Mr. Brightside, Help!)" }
+            ],
+            quotes: [
+              { text: "You had to get people's attention in the first ten seconds.", attribution: "George Martin, producer of The Beatles" },
+              { text: "It was me trying to write a song without a chorus and still get people's attention… 'I'm not gonna have a chorus in this song. See if I can get away with it.' And on that one, we really did get away with it.", attribution: "Jack White, on the Seven Nation Army riff" }
+            ],
+            examples: [
+              { song: "A Hard Day's Night", year: 1964 },
+              { song: "Whole Lotta Love", year: 1969 },
+              { song: "Bohemian Rhapsody", year: 1975 },
+              { song: "Sweet Child O' Mine", year: 1987 },
+              { song: "Smells Like Teen Spirit", year: 1991 },
+              { song: "Wonderwall", year: 1995 },
+              { song: "Mr. Brightside", year: 2003 },
+              { song: "Seven Nation Army", year: 2003 },
+              { song: "Rolling in the Deep", year: 2010 },
+              { song: "Get Lucky", year: 2013 },
+              { song: "Bad Guy", year: 2019 },
+              { song: "Anti-Hero", year: 2022 }
+            ]
+          }
+        }
+      },
+      { name: 'VERSE',       color: '#C07838', content: { simple: { function: "Tells the story. Usually the same melody each time but with different lyrics. Lower energy than the chorus — sets up the payoff." } } },
+      { name: 'PRE-CHORUS',  color: '#C8A04A', content: { simple: { function: "Builds tension before the chorus. Often climbs in pitch, harmony or energy to create lift into the hook." } } },
+      { name: 'CHORUS',      color: '#B85542', content: { simple: { function: "The main hook. Catchiest melody, the song title often appears here. The most memorable part — the bit you hum after one listen." } } },
+      { name: 'POST-CHORUS', color: '#B07878', content: { simple: { function: 'Extends the chorus energy. Often a wordless hook ("oh-oh-oh"), an instrumental tag, or a vocal chop.' } } },
+      { name: 'BRIDGE',      color: '#8B6A8B', content: { simple: { function: "Provides contrast. New chords, new melody, often the emotional peak. Breaks the verse-chorus pattern so the final chorus hits harder." } } },
+      { name: 'SOLO',        color: '#8A8540', content: { simple: { function: "Instrumental feature, usually guitar or keys, played over the verse or chorus chords. Shows off a player or a melodic idea." } } },
+      { name: 'OUTRO',       color: '#8A7A6A', content: { simple: { function: "Brings the song to a close. Can fade out, repeat the chorus, return to the intro, or have a definitive ending." } } }
+    ],
+    hiphop: [
+      { name: 'INTRO',    color: '#8FA37E', content: { simple: { function: "Sets the vibe with a beat, vocal sample, ad-lib or DJ tag. Often shorter than in pop — the beat takes centre stage quickly." } } },
+      { name: 'VERSE',    color: '#C07838', content: { simple: { function: "Usually 16 bars of rapping (sometimes 8 or 32). Carries the lyrical content, storytelling and flow. Where the rapper does their actual work." } } },
+      { name: 'PRE-HOOK', color: '#C8A04A', content: { simple: { function: "Short build into the hook. Not always present — many tracks go straight from verse to hook with no setup." } } },
+      { name: 'HOOK',     color: '#B85542', content: { simple: { function: "The catchy refrain — the hip-hop equivalent of the chorus. Often sung rather than rapped. Repeats the song title or main phrase." } } },
+      { name: 'BRIDGE',   color: '#8B6A8B', content: { simple: { function: "Less common in hip-hop but provides contrast. Often a beat switch, a feature artist, or a change of tempo." } } },
+      { name: 'BREAK',    color: '#5C8A8A', content: { simple: { function: "Instrumental section, often just the beat. Lets the production breathe and reminds you the beat itself is doing serious work." } } },
+      { name: 'OUTRO',    color: '#8A7A6A', content: { simple: { function: "Closes the track. May feature an ad-lib, DJ tag, beat fade, or one final hook." } } }
+    ],
+    electronic: [
+      { name: 'INTRO',     color: '#8FA37E', content: { simple: { function: "Loops a sparse element or two to establish tempo. DJ-friendly so the next track can be beat-matched into it." } } },
+      { name: 'BUILD',     color: '#C8A04A', content: { simple: { function: "Tension rises. Filter sweeps, snare rolls, risers, white noise, pitch-bent synths. Energy climbs toward the drop." } } },
+      { name: 'DROP',      color: '#B85542', content: { simple: { function: "The release. Full energy, main hook, bassline drops in. The payoff after the build — the reason the build existed." } } },
+      { name: 'GROOVE',    color: '#C07838', content: { simple: { function: "The steady main section of a house or techno track. Loops the core elements without dramatic peaks — the body of the track." } } },
+      { name: 'BREAKDOWN', color: '#5C8A8A', content: { simple: { function: "Strips the energy back. Often removes drums, leaving melodic or atmospheric elements. Resets the listener for another build." } } },
+      { name: 'FAKE DROP', color: '#8B6A8B', content: { simple: { function: "Pretends to drop but pulls back at the last moment. Plays with expectation — the second drop hits harder because of it." } } },
+      { name: 'OUTRO',     color: '#8A7A6A', content: { simple: { function: "Mirrors the intro. Strips back the elements so a DJ can mix the next track in cleanly." } } }
+    ]
+  };
+
+  const MODE_LABELS = {
+    pop: 'Pop / Rock',
+    hiphop: 'Hip-Hop / Rap',
+    electronic: 'Electronic'
+  };
+
+  // ─── STATE ───────────────────────────────────────────────────────
+  let state = {
+    mode: 'pop',
+    bars: [],
+    selectedGroupIdx: null,
+    finalized: false,
+    lastInfoSection: null,
+    infoView: 'simple',    // 'simple' | 'detailed'
+  };
+
+  // ─── DOM REFS ────────────────────────────────────────────────────
+  const $modeTabs = document.getElementById('modeTabs');
+  const $sectionButtons = document.getElementById('sectionButtons');
+  const $timeline = document.getElementById('timeline');
+  const $barCount = document.getElementById('barCount');
+  const $infoPanel = document.getElementById('infoPanel');
+  const $undoBtn = document.getElementById('undoBtn');
+  const $deleteBtn = document.getElementById('deleteBtn');
+  const $clearBtn = document.getElementById('clearBtn');
+  const $endBtn = document.getElementById('endBtn');
+  const $summary = document.getElementById('summary');
+
+  // ─── HELPERS ─────────────────────────────────────────────────────
+  function currentSections() {
+    return SECTIONS[state.mode];
+  }
+
+  function sectionByName(name) {
+    return currentSections().find(s => s.name === name) ||
+           Object.values(SECTIONS).flat().find(s => s.name === name);
+  }
+
+  function groupedBars() {
+    const groups = [];
+    for (const name of state.bars) {
+      const last = groups[groups.length - 1];
+      if (last && last.name === name) {
+        last.count++;
+      } else {
+        groups.push({ name, count: 1 });
+      }
+    }
+    return groups;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+
+  // ─── INFO PANEL RENDERING ───────────────────────────────────────
+  function renderInfoPanel() {
+    if (!state.lastInfoSection) {
+      $infoPanel.innerHTML = '<div class="info-placeholder">Hover or click a section button to see what it does.</div>';
+      return;
+    }
+
+    const section = sectionByName(state.lastInfoSection);
+    if (!section || !section.content) {
+      $infoPanel.innerHTML = '<div class="info-placeholder">No info available.</div>';
+      return;
+    }
+
+    const hasDetailed = !!section.content.detailed;
+    const view = state.infoView;
+    const content = (view === 'detailed' && hasDetailed) ? section.content.detailed : section.content.simple;
+    const showInProgressNote = view === 'detailed' && !hasDetailed;
+
+    let html = '';
+
+    // Header: section name + view toggle
+    html += `<div class="info-header">
+      <div class="info-section-name" style="color: ${section.color};">${escapeHtml(section.name)}</div>
+      <div class="info-view-toggle" id="infoViewToggle">
+        <button data-view="simple" class="${view === 'simple' ? 'active' : ''}">Simple</button>
+        <button data-view="detailed" class="${view === 'detailed' ? 'active' : ''}">Detailed</button>
+      </div>
+    </div>`;
+
+    // Function
+    if (content.function) {
+      html += `<div class="info-block">
+        <div class="info-block-label">Function</div>
+        <div class="info-block-body">${escapeHtml(content.function)}</div>
+      </div>`;
+    }
+
+    // Features
+    if (content.features && content.features.length) {
+      html += `<div class="info-block">
+        <div class="info-block-label">Features</div>`;
+      if (content.featuresIntro) {
+        html += `<div class="info-features-intro">${escapeHtml(content.featuresIntro)}</div>`;
+      }
+      html += `<ul class="info-features">`;
+      content.features.forEach(f => {
+        html += `<li><strong>${escapeHtml(f.label)}</strong> — ${escapeHtml(f.desc)}</li>`;
+      });
+      html += `</ul></div>`;
+    }
+
+    // Quotes
+    if (content.quotes && content.quotes.length) {
+      const label = content.quotes.length > 1 ? 'Quotes' : 'Quote';
+      html += `<div class="info-block">
+        <div class="info-block-label">${label}</div>`;
+      content.quotes.forEach(q => {
+        html += `<blockquote class="info-quote">
+          <div class="quote-text">"${escapeHtml(q.text)}"</div>
+          <div class="quote-attribution">— ${escapeHtml(q.attribution)}</div>
+        </blockquote>`;
+      });
+      html += `</div>`;
+    }
+
+    // Examples
+    if (content.examples && content.examples.length) {
+      html += `<div class="info-block">
+        <div class="info-block-label">Famous Examples</div>
+        <div class="info-examples">`;
+      const items = content.examples.map(e => {
+        if (typeof e === 'string') {
+          return `<span class="example-item">${escapeHtml(e)}</span>`;
+        }
+        return `<span class="example-item">${escapeHtml(e.song)}<span class="example-year">(${escapeHtml(e.year)})</span></span>`;
+      });
+      html += items.join('<span class="example-sep">·</span>');
+      html += `</div></div>`;
+    }
+
+    if (showInProgressNote) {
+      html += `<div class="info-note">Detailed view for this section is still being developed.</div>`;
+    }
+
+    $infoPanel.innerHTML = html;
+
+    // Wire toggle
+    const $toggle = document.getElementById('infoViewToggle');
+    if ($toggle) {
+      $toggle.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-view]');
+        if (!btn) return;
+        state.infoView = btn.dataset.view;
+        renderInfoPanel();
+      });
+    }
+  }
+
+  // ─── OTHER RENDERING ─────────────────────────────────────────────
+  function renderModeTabs() {
+    $modeTabs.querySelectorAll('.mode-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.mode === state.mode);
+    });
+  }
+
+  function renderSectionButtons() {
+    $sectionButtons.innerHTML = '';
+    currentSections().forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'section-btn';
+      btn.textContent = s.name;
+      btn.style.borderLeftColor = s.color;
+      btn.addEventListener('click', () => handleSectionClick(s.name, btn));
+      btn.addEventListener('mouseenter', () => showInfo(s.name));
+      $sectionButtons.appendChild(btn);
+    });
+  }
+
+  function renderTimeline() {
+    const groups = groupedBars();
+    $timeline.innerHTML = '';
+    $timeline.classList.toggle('empty', groups.length === 0);
+
+    groups.forEach((g, idx) => {
+      const section = sectionByName(g.name);
+      const el = document.createElement('div');
+      el.className = 'group';
+      if (idx === state.selectedGroupIdx) el.classList.add('selected');
+      el.style.background = section ? section.color : '#888';
+      const width = Math.max(48, g.count * 36);
+      el.style.minWidth = width + 'px';
+      el.style.flexGrow = g.count;
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'group-name';
+      nameEl.textContent = g.name;
+      el.appendChild(nameEl);
+
+      const barsEl = document.createElement('div');
+      barsEl.className = 'group-bars';
+      barsEl.textContent = g.count + ' BAR' + (g.count > 1 ? 'S' : '');
+      el.appendChild(barsEl);
+
+      el.addEventListener('click', () => handleGroupClick(idx));
+      $timeline.appendChild(el);
+    });
+
+    $barCount.innerHTML = '<strong>' + state.bars.length + '</strong> bars';
+  }
+
+  function renderActions() {
+    $undoBtn.disabled = state.bars.length === 0 || state.finalized;
+    $deleteBtn.disabled = state.selectedGroupIdx === null || state.finalized;
+    $clearBtn.disabled = state.bars.length === 0;
+    $endBtn.disabled = state.bars.length === 0 || state.finalized;
+  }
+
+  function showInfo(sectionName) {
+    state.lastInfoSection = sectionName;
+    renderInfoPanel();
+  }
+
+  function renderAll() {
+    renderModeTabs();
+    renderSectionButtons();
+    renderTimeline();
+    renderActions();
+    renderInfoPanel();
+  }
+
+  // ─── EVENT HANDLERS ──────────────────────────────────────────────
+  function handleModeChange(newMode) {
+    if (newMode === state.mode) return;
+    if (state.bars.length > 0) {
+      if (!confirm('Switching mode will clear your current timeline. Continue?')) return;
+    }
+    state.mode = newMode;
+    state.bars = [];
+    state.selectedGroupIdx = null;
+    state.finalized = false;
+    state.lastInfoSection = null;
+    $summary.classList.remove('active');
+    renderAll();
+  }
+
+  function handleSectionClick(name, btnEl) {
+    showInfo(name);
+    if (btnEl) {
+      btnEl.classList.add('flash');
+      setTimeout(() => btnEl.classList.remove('flash'), 120);
+    }
+    if (state.finalized) return;
+
+    if (state.selectedGroupIdx !== null) {
+      const groups = groupedBars();
+      const target = groups[state.selectedGroupIdx];
+      if (target) {
+        let startIdx = 0;
+        for (let i = 0; i < state.selectedGroupIdx; i++) startIdx += groups[i].count;
+        for (let i = 0; i < target.count; i++) state.bars[startIdx + i] = name;
+      }
+      state.selectedGroupIdx = null;
+    } else {
+      state.bars.push(name);
+    }
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleGroupClick(idx) {
+    if (state.finalized) return;
+    state.selectedGroupIdx = (state.selectedGroupIdx === idx) ? null : idx;
+    const groups = groupedBars();
+    if (state.selectedGroupIdx !== null && groups[idx]) {
+      showInfo(groups[idx].name);
+    }
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleUndo() {
+    if (state.bars.length === 0) return;
+    state.bars.pop();
+    state.selectedGroupIdx = null;
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleDelete() {
+    if (state.selectedGroupIdx === null) return;
+    const groups = groupedBars();
+    const target = groups[state.selectedGroupIdx];
+    if (!target) return;
+    let startIdx = 0;
+    for (let i = 0; i < state.selectedGroupIdx; i++) startIdx += groups[i].count;
+    state.bars.splice(startIdx, target.count);
+    state.selectedGroupIdx = null;
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleClear() {
+    if (state.bars.length === 0) return;
+    // Skip the confirm() once finalized: the user has already committed by
+    // hitting Finish, and browsers can silently suppress confirm() shortly
+    // after a programmatic download triggers (which is exactly when the
+    // user would want to clear post-export).
+    if (!state.finalized && !confirm('Clear the entire timeline?')) return;
+    state.bars = [];
+    state.selectedGroupIdx = null;
+    state.finalized = false;
+    $summary.classList.remove('active');
+    renderTimeline();
+    renderActions();
+  }
+
+  function handleEnd() {
+    if (state.bars.length === 0) return;
+    state.finalized = true;
+    state.selectedGroupIdx = null;
+    renderSummary();
+    renderTimeline();
+    renderActions();
+    $summary.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ─── SUMMARY ─────────────────────────────────────────────────────
+  function toTitleCase(name) {
+    return name.split('-').map(part => part.charAt(0) + part.slice(1).toLowerCase()).join('-');
+  }
+
+  function buildObservations(groups) {
+    const obs = [];
+    const counts = {};
+    const totalBarsPerSection = {};
+    groups.forEach(g => {
+      counts[g.name] = (counts[g.name] || 0) + 1;
+      totalBarsPerSection[g.name] = (totalBarsPerSection[g.name] || 0) + g.count;
+    });
+
+    const totalBars = state.bars.length;
+    const distinctSections = Object.keys(counts).length;
+
+    let mostRepeated = null;
+    let mostRepeatedCount = 0;
+    Object.entries(counts).forEach(([name, c]) => {
+      if (c > mostRepeatedCount) { mostRepeated = name; mostRepeatedCount = c; }
+    });
+
+    let longest = null;
+    let longestBars = 0;
+    groups.forEach(g => {
+      if (g.count > longestBars) { longest = g.name; longestBars = g.count; }
+    });
+
+    if (mostRepeated && mostRepeatedCount > 1) {
+      const percent = Math.round((totalBarsPerSection[mostRepeated] / totalBars) * 100);
+      obs.push(`<strong>${toTitleCase(mostRepeated)}</strong> appears ${mostRepeatedCount} times (${totalBarsPerSection[mostRepeated]} bars / ${percent}% of the song).`);
+    }
+
+    if (longest) {
+      obs.push(`Longest single section: <strong>${toTitleCase(longest)}</strong> at ${longestBars} bars.`);
+    }
+
+    const sequence = groups.map(g => g.name);
+    if (state.mode === 'pop') {
+      const hasVerseChorus = sequence.some((s, i) => s === 'VERSE' && sequence[i+1] === 'CHORUS');
+      const hasBridge = sequence.includes('BRIDGE');
+      if (hasVerseChorus && hasBridge) {
+        obs.push(`Classic <strong>verse-chorus form with a bridge</strong> — the bread and butter of pop songwriting.`);
+      } else if (hasVerseChorus) {
+        obs.push(`Verse-chorus form — the foundation of most pop songs.`);
+      }
+    } else if (state.mode === 'hiphop') {
+      const verseCount = counts['VERSE'] || 0;
+      const hookCount = counts['HOOK'] || 0;
+      if (verseCount >= 2 && hookCount >= 2) {
+        obs.push(`Standard hip-hop form: <strong>verse — hook — verse — hook</strong> arrangement.`);
+      }
+    } else if (state.mode === 'electronic') {
+      const dropCount = counts['DROP'] || 0;
+      const hasFakeDrop = counts['FAKE DROP'] > 0;
+      if (dropCount >= 2) {
+        obs.push(`<strong>Two drops</strong> — classic festival EDM arrangement. The second drop usually hits hardest.`);
+      }
+      if (hasFakeDrop) {
+        obs.push(`Includes a <strong>fake drop</strong> — a structural fake-out that makes the real drop land harder.`);
+      }
+    }
+
+    obs.push(`Total: <strong>${totalBars} bars</strong> across <strong>${groups.length} sections</strong> (${distinctSections} distinct).`);
+    return obs;
+  }
+
+  function buildCopyText(groups) {
+    const lines = [];
+    lines.push(`SONG STRUCTURE — ${MODE_LABELS[state.mode]}`);
+    lines.push(`Total: ${state.bars.length} bars`);
+    lines.push('');
+    groups.forEach(g => {
+      lines.push(`${toTitleCase(g.name)} - ${g.count} ${g.count === 1 ? 'bar' : 'bars'}`);
+    });
+    return lines.join('\n');
+  }
+
+  function renderSummary() {
+    const groups = groupedBars();
+    if (groups.length === 0) return;
+
+    const observations = buildObservations(groups);
+    const flow = groups.map(g => `${toTitleCase(g.name)}(${g.count})`).join('  →  ');
+
+    $summary.innerHTML = `
+      <div class="summary-header">
+        <div class="summary-title">YOUR SONG STRUCTURE</div>
+        <div class="summary-mode">${MODE_LABELS[state.mode]}</div>
+      </div>
+
+      <div class="summary-stats">
+        <div>
+          <div class="stat-label">Total Bars</div>
+          <div class="stat-value"><strong>${state.bars.length}</strong></div>
+        </div>
+        <div>
+          <div class="stat-label">Sections</div>
+          <div class="stat-value"><strong>${groups.length}</strong></div>
+        </div>
+        <div>
+          <div class="stat-label">Distinct</div>
+          <div class="stat-value"><strong>${Object.keys(groups.reduce((a, g) => (a[g.name] = 1, a), {})).length}</strong></div>
+        </div>
+      </div>
+
+      <div class="stat-label" style="margin-bottom: 6px;">Flow</div>
+      <div class="summary-list">${flow}</div>
+
+      <div class="summary-observations">
+        ${observations.map(o => `<div>• ${o}</div>`).join('')}
+      </div>
+
+      <div class="summary-actions">
+        <button class="copy-btn" id="copyBtn">Copy to Clipboard</button>
+        <button class="export-btn" id="exportAlsBtn">Export Ableton Set</button>
+      </div>
+    `;
+    $summary.classList.add('active');
+
+    document.getElementById('copyBtn').addEventListener('click', handleCopy);
+    document.getElementById('exportAlsBtn').addEventListener('click', handleExportAls);
+  }
+
+  async function handleCopy() {
+    const groups = groupedBars();
+    const text = buildCopyText(groups);
+    const btn = document.getElementById('copyBtn');
+
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy to Clipboard';
+        btn.classList.remove('copied');
+      }, 2000);
+    } catch (err) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        btn.textContent = 'Copied ✓';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy to Clipboard';
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch (e) {
+        btn.textContent = 'Copy failed — select & copy manually';
+      }
+      document.body.removeChild(ta);
+    }
+  }
+
+
+  // ─── ABLETON EXPORT ──────────────────────────────────────────────
+  // Embedded gzipped XML of an empty Live 12.4 set, base64-encoded.
+  // Generation works by decompressing, splicing locators into the
+  // empty <Locators /> node, and recompressing as a fresh .als download.
+  const ABLETON_TEMPLATE_B64 = "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";
+
+  function base64ToBytes(b64) {
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+
+  async function gunzipBytes(bytes) {
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return await new Response(stream).text();
+  }
+
+  async function gzipString(str) {
+    const stream = new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'));
+    return await new Response(stream).arrayBuffer();
+  }
+
+  function escapeXml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'
+    }[c]));
+  }
+
+  function groupsToLocators(groups) {
+    // 4/4 fixed: bar N starts at beat (N-1) * 4.
+    // Locator i starts at cumulative bars so far * 4.
+    const locators = [];
+    let cumulativeBars = 0;
+    groups.forEach(g => {
+      locators.push({ name: g.name, beats: cumulativeBars * 4 });
+      cumulativeBars += g.count;
+    });
+    return locators;
+  }
+
+  function buildLocatorXml(locators) {
+    let block = '<Locators>\n';
+    locators.forEach((loc, i) => {
+      block += `\t\t\t\t<Locator Id="${i}">\n`;
+      block += `\t\t\t\t\t<LomId Value="0" />\n`;
+      block += `\t\t\t\t\t<Time Value="${loc.beats}" />\n`;
+      block += `\t\t\t\t\t<Name Value="${escapeXml(loc.name)}" />\n`;
+      block += `\t\t\t\t\t<Annotation Value="" />\n`;
+      block += `\t\t\t\t\t<IsSongStart Value="false" />\n`;
+      block += `\t\t\t\t</Locator>\n`;
+    });
+    block += '\t\t\t</Locators>';
+    return block;
+  }
+
+  async function handleExportAls() {
+    const btn = document.getElementById('exportAlsBtn');
+    const originalText = btn ? btn.textContent : 'Export Ableton Set';
+
+    try {
+      const groups = groupedBars();
+      if (groups.length === 0) return;
+
+      const locators = groupsToLocators(groups);
+      const locatorBlock = buildLocatorXml(locators);
+
+      const templateBytes = base64ToBytes(ABLETON_TEMPLATE_B64);
+      const xml = await gunzipBytes(templateBytes);
+
+      // The template contains exactly one <Locators /> self-closing tag.
+      if (!xml.includes('<Locators />')) {
+        throw new Error('Template missing expected empty <Locators /> node');
+      }
+      const newXml = xml.replace('<Locators />', locatorBlock);
+
+      const compressed = await gzipString(newXml);
+
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `song-structure-${state.mode}-${dateStr}.als`;
+
+      const blob = new Blob([compressed], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      if (btn) {
+        btn.textContent = 'Exported ✓';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.classList.remove('copied');
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Ableton export failed:', err);
+      if (btn) {
+        btn.textContent = 'Export failed';
+        btn.classList.add('failed');
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.classList.remove('failed');
+        }, 2500);
+      }
+    }
+  }
+
+  // ─── WIRE UP ─────────────────────────────────────────────────────
+  $modeTabs.addEventListener('click', (e) => {
+    if (e.target.matches('.mode-tab')) handleModeChange(e.target.dataset.mode);
+  });
+  $undoBtn.addEventListener('click', handleUndo);
+  $deleteBtn.addEventListener('click', handleDelete);
+  $clearBtn.addEventListener('click', handleClear);
+  $endBtn.addEventListener('click', handleEnd);
+
+  $timeline.addEventListener('click', (e) => {
+    if (e.target === $timeline) {
+      state.selectedGroupIdx = null;
+      renderTimeline();
+      renderActions();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      state.selectedGroupIdx = null;
+      renderTimeline();
+      renderActions();
+    }
+  });
+
+  renderAll();
+</script>
+</body>
+</html>
