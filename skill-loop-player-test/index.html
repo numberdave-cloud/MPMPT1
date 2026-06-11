@@ -10,467 +10,348 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #1E1A17;
-    --text: #EAE0D0;
-    --text-dim: rgba(234, 224, 208, 0.55);
-    --text-faint: rgba(234, 224, 208, 0.3);
-    --accent: #C07838;
-    --accent-glow: #D8904A;
-    --border: rgba(234, 224, 208, 0.15);
-    --border-bright: rgba(234, 224, 208, 0.35);
+    --bg: #1E1A17; --panel: #211D19; --inset: #181513; --video: #0E0C0A;
+    --text: #EAE0D0; --dim: rgba(234,224,208,0.55); --faint: rgba(234,224,208,0.30);
+    --accent: #C07838; --glow: #D8904A;
+    --border: rgba(234,224,208,0.15); --bright: rgba(234,224,208,0.35);
+    --wash: rgba(192,120,56,0.14); --wash2: rgba(192,120,56,0.28);
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  .mono { font-family: 'Courier New', monospace; }
+  body { padding: 22px clamp(16px, 4vw, 40px) 34px; }
+  .player { max-width: 920px; margin: 0 auto; }
 
-  html, body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    min-height: 100vh;
-  }
+  /* ── header + transport (T3: tucked behind a control) ── */
+  .hd { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 18px; }
+  .hd__title { font-size: 12px; letter-spacing: 0.24em; font-weight: 600; text-transform: uppercase; }
+  .tp { display: flex; align-items: center; gap: 8px; position: relative; }
+  .ic { width: 32px; height: 32px; border: 1px solid var(--border); background: transparent; color: var(--dim); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
+  .ic:hover { color: var(--text); border-color: var(--bright); }
+  .ic.on { color: var(--glow); border-color: rgba(192,120,56,0.5); background: var(--wash); }
+  .ic svg { width: 20px; height: 20px; display: block; }
+  /* volume: a quiet icon; the slider slides out on hover (low-level control) */
+  .volctl { display: flex; align-items: center; }
+  .volctl .vol { flex: none; width: 0; opacity: 0; margin: 0; transition: width .18s ease, opacity .18s ease, margin .18s ease; pointer-events: none; }
+  .volctl:hover .vol, .volctl:focus-within .vol { width: 78px; opacity: 1; margin-right: 10px; pointer-events: auto; }
+  .vol { -webkit-appearance: none; appearance: none; height: 2px; background: var(--bright); outline: none; cursor: pointer; }
+  .vol::-webkit-slider-thumb { -webkit-appearance: none; width: 9px; height: 15px; background: var(--text); cursor: pointer; }
+  .vol::-moz-range-thumb { width: 9px; height: 15px; border: 0; border-radius: 0; background: var(--text); cursor: pointer; }
 
-  body {
-    padding: 16px 20px 22px;
-    max-width: 760px;
-    margin: 0 auto;
-  }
+  /* ── video ── */
+  .vid { position: relative; width: 100%; aspect-ratio: 16/9; background:
+      repeating-linear-gradient(135deg, rgba(234,224,208,0.02) 0 2px, transparent 2px 10px),
+      radial-gradient(120% 140% at 50% 34%, #15110E 0%, var(--video) 70%);
+    border: 1px solid var(--border); overflow: hidden; cursor: pointer; }
+  .vid #player, .vid #player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; z-index: 1; }
+  .vid__btn { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 2; }
+  .vid__btn svg { width: 62px; height: 62px; opacity: 0.9; transition: opacity .15s, transform .15s; }
+  .vid.playing .vid__btn svg { opacity: 0; transform: scale(0.85); }
+  .vid:hover .vid__btn svg { opacity: 0.9; transform: none; }
 
-  /* ─── HEADER ─── */
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 14px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .title {
-    font-size: 13px;
-    letter-spacing: 0.2em;
-    font-weight: 600;
-  }
-  .sub {
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-    text-transform: uppercase;
-  }
+  /* ── quiet positional track (C) ── */
+  .trk { margin-top: 16px; }
+  .trk__read { display: flex; justify-content: flex-end; margin-bottom: 9px; }
+  .trk__read .mono { font-size: 11px; color: var(--dim); }
+  .trk__read b { color: var(--text); font-weight: 400; }
+  .line { position: relative; height: 30px; cursor: pointer; }
+  .line__base { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border); transform: translateY(-50%); }
+  .line__fill { position: absolute; top: 50%; left: 0; height: 1px; background: var(--accent); transform: translateY(-50%); width: 0; }
+  .blk { position: absolute; top: 50%; height: 6px; background: var(--wash2); transform: translateY(-50%); transition: height .15s; }
+  .blk.here { background: var(--glow); }
+  .blk.armed { height: 8px; background: var(--glow); }
+  .dot { position: absolute; top: 50%; width: 7px; height: 7px; border-radius: 50%; background: var(--text); transform: translate(-50%, -50%); z-index: 5; }
 
-  /* ─── VIDEO ─── */
-  .video-wrap {
-    max-width: 680px;
-    margin: 0 auto 12px;
-  }
-  .video-frame {
-    position: relative;
-    width: 100%;
-    padding-bottom: 56.25%;
-    height: 0;
-    border: 1px solid var(--border);
-    background: #000;
-  }
-  .video-frame iframe,
-  .video-frame #player,
-  .video-frame .player-fallback {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-  }
-  .player-fallback {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 24px;
-    font-size: 12px;
-    line-height: 1.6;
-    color: var(--text-dim);
-    letter-spacing: 0.03em;
-  }
-  .player-fallback.show { display: flex; }
+  /* ── chapter cards (A: index + name) ── */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px; }
+  .card { border: 1px solid var(--border); border-top: 2px solid rgba(192,120,56,0.4); padding: 13px 15px; cursor: pointer; background: transparent; text-align: left; color: var(--text); transition: border-color .12s; }
+  .card:hover { border-color: var(--bright); border-top-color: var(--accent); }
+  .card__head { display: flex; align-items: center; justify-content: space-between; min-height: 14px; }
+  .card__num { font-family: 'Courier New', monospace; font-size: 11px; color: var(--dim); display: inline-flex; align-items: center; }
+  .card__num svg { width: 13px; height: 13px; display: block; }
+  .card__time { font-family: 'Courier New', monospace; font-size: 10px; color: var(--dim); }
+  .card__name { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; margin-top: 8px; }
+  .card.here { background: rgba(192,120,56,0.05); border-color: rgba(192,120,56,0.28); }
+  .card.here .card__num { color: var(--glow); }
+  .card.armed { background: var(--accent); border-color: var(--glow); border-top-color: var(--glow); }
+  .card.armed .card__num, .card.armed .card__time, .card.armed .card__name { color: var(--bg); }
 
-  /* ─── READOUT ─── */
-  .readout {
-    max-width: 680px;
-    margin: 0 auto 16px;
-    display: flex;
-    align-items: baseline;
-    gap: 14px;
-    flex-wrap: wrap;
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    color: var(--text-dim);
-    letter-spacing: 0.05em;
-  }
-  .readout .time strong { color: var(--text); font-weight: 400; }
-  .loop-status {
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 11px;
-    color: var(--text-faint);
-  }
-  .loop-status.active { color: var(--accent-glow); }
+  /* ── permanent notes section (R1) ── */
+  .notes { position: relative; border: 1px solid var(--border); border-top: 2px solid var(--accent); background: var(--inset); padding: 17px 19px; margin-top: 12px; min-height: 150px; }
+  .notes__title { font-size: 16px; letter-spacing: 0.03em; font-weight: 600; color: var(--glow); margin-bottom: 13px; }
+  .notes ul { list-style: none; }
+  .notes li { font-size: 13.5px; line-height: 1.55; padding: 5px 0 5px 18px; position: relative; color: var(--text); }
+  .notes li::before { content: "\2022"; position: absolute; left: 3px; top: 5px; color: var(--accent); }
+  .notes code { font-family: 'Courier New', monospace; font-size: 13px; background: rgba(192,120,56,0.18); color: var(--text); border: 1px solid rgba(192,120,56,0.45); padding: 2px 7px; border-radius: 2px; white-space: nowrap; }
 
-  /* ─── TIMELINE TRACK ─── */
-  .strip-label {
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  .track {
-    position: relative;
-    height: 38px;
-    border: 1px solid var(--border);
-    background: rgba(234, 224, 208, 0.02);
-    margin-bottom: 22px;
-    cursor: crosshair;
-    overflow: hidden;
-  }
-  .zone {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    background: rgba(192, 120, 56, 0.16);
-    border-left: 1px solid rgba(192, 120, 56, 0.5);
-    border-right: 1px solid rgba(192, 120, 56, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.1s;
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-    color: var(--accent-glow);
-    user-select: none;
-  }
-  .zone:hover { background: rgba(192, 120, 56, 0.28); }
-  .zone.active {
-    background: rgba(192, 120, 56, 0.34);
-    color: var(--text);
-  }
-  .zone.armed {
-    background: var(--accent);
-    color: var(--bg);
-    border-color: var(--accent-glow);
-  }
-  .playhead {
-    position: absolute;
-    top: 0;
-    width: 2px;
-    height: 100%;
-    background: var(--text);
-    z-index: 4;
-    pointer-events: none;
-    display: none;
-  }
-
-  /* ─── SKILL BUTTONS ─── */
-  .skills {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-  .skill-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: transparent;
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-left-width: 4px;
-    border-left-color: var(--accent);
-    padding: 12px 14px;
-    font-family: inherit;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    text-transform: uppercase;
-    text-align: left;
-    transition: background 0.08s, border-color 0.08s;
-  }
-  .skill-btn:hover { border-color: var(--border-bright); }
-  .skill-btn:active { transform: translateY(1px); }
-  .skill-btn.active { border-color: var(--border-bright); background: rgba(192, 120, 56, 0.08); }
-  .skill-btn.armed { background: var(--accent); color: var(--bg); border-left-color: var(--accent-glow); }
-  .sk-num {
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    opacity: 0.7;
-    min-width: 14px;
-  }
-  .sk-label { font-weight: 600; flex: 1; }
-  .sk-time {
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-    letter-spacing: 0.02em;
-    opacity: 0.7;
-  }
-  .sk-loop {
-    font-size: 9px;
-    letter-spacing: 0.16em;
-    border: 1px solid currentColor;
-    padding: 2px 6px;
-    opacity: 0;
-  }
-  .skill-btn.armed .sk-loop { opacity: 1; }
-
-  .hint {
-    font-size: 10px;
-    color: var(--text-faint);
-    letter-spacing: 0.04em;
-    font-style: italic;
-  }
-
-  @media (max-width: 520px) {
-    body { padding: 14px; }
-    .skill-btn { font-size: 10px; padding: 10px 12px; gap: 8px; }
-    .sk-time { display: none; }
+  @media (max-width: 560px) {
+    .cards { grid-template-columns: 1fr; }
   }
 </style>
+<link id="gfont-Inter" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap">
 </head>
 <body>
-  <div class="header">
-    <div class="title">SKILL LOOP PLAYER</div>
-    <div class="sub" id="sub">Click a skill to loop it</div>
-  </div>
-
-  <div class="video-wrap">
-    <div class="video-frame">
-      <div id="player"></div>
-      <div class="player-fallback" id="fallback">
-        Player did not load. If you are previewing inside a restricted sandbox,
-        open this file in a normal browser tab with YouTube access to test it.
+  <div class="player">
+    <div class="hd" style="font-family: Georgia">
+      <div class="hd__title" style="font-family: Inter">Skill Loop Player</div>
+      <div class="tp" id="tp">
+        <div class="volctl" id="volctl">
+          <input type="range" class="vol" id="vol" min="0" max="100" value="80" aria-label="Volume">
+          <button class="ic" id="muteBtn" title="Mute / volume" aria-label="Mute"></button>
+        </div>
+        <button class="ic" id="turtleBtn" title="Half speed" aria-label="Half speed"></button>
       </div>
+    </div>
+
+    <div class="vid" id="vid">
+      <div id="player"></div>
+      <div class="vid__btn" id="vidBtn"></div>
+    </div>
+
+    <div class="trk">
+      <div class="trk__read"><span class="mono"><b id="tNow">0:00</b> / <span id="tDur">0:00</span></span></div>
+      <div class="line" id="line">
+        <div class="line__base"></div>
+        <div class="line__fill" id="lineFill"></div>
+        <div class="dot" id="dot"></div>
+      </div>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="notes" id="notes">
+      <div class="notes__title" id="notesTitle"></div>
+      <ul id="notesList"></ul>
     </div>
   </div>
 
-  <div class="readout">
-    <span class="time"><strong id="timeNow">0:00</strong> / <span id="timeTotal">0:00</span></span>
-    <span class="loop-status" id="loopStatus"></span>
-  </div>
-
-  <div class="strip-label">Timeline</div>
-  <div class="track" id="track">
-    <div class="playhead" id="playhead"></div>
-  </div>
-
-  <div class="strip-label">Skill Loops</div>
-  <div class="skills" id="skills"></div>
-  <div class="hint">Click a skill to loop that section. Click it again to release. Click the empty track to jump.</div>
-
 <script>
-  // ─── CONFIG ───────────────────────────────────────────────────────
-  // To reuse this MOTE: change VIDEO_ID and the REGIONS array. That's it.
-  const VIDEO_ID = '5PVdExtOY9o';
-  const REGIONS = [
-    { label: 'Adding Drum Kit',     start: 36,  end: 70  },
-    { label: 'Programming Beat 1',  start: 97,  end: 131 },
-    { label: 'Programming Beat 2',  start: 149, end: 177 }
-  ];
+// ─── CONFIG (same shape as the prototype) ───────────────────────────
+var VIDEO_ID = '5PVdExtOY9o';
+var DURATION = 195;            // placeholder until the real duration loads
+var REGIONS = [
+  { label: 'Adding Drum Kit', start: 36, end: 70, notes: [
+    'Open and close the browser with <code>Cmd+Option+B</code> (Mac) or <code>Ctrl+Alt+B</code> (Win)',
+    'The Drums section of the browser holds every kit. You can use the filters to narrow the search',
+    'Drag a kit onto a MIDI channel, or double-click it to load onto the selected channel',
+    'With monitoring on, click a kit to preview it'
+  ]},
+  { label: 'Programming Beat 1', start: 97, end: 131, notes: [
+    'Create blank MIDI clip: <code>Cmd+Shift+M</code> (Mac) or <code>Ctrl+Shift+M</code> (Win)',
+    '<code>B</code> is the shortcut for pencil (10 bonus points if you can guess why)',
+    'Resize the grid with <code>Cmd+1</code> and <code>Cmd+2</code>, or <code>Ctrl+1</code> and <code>Ctrl+2</code> on Win',
+    'If the headphone icon in the piano roll is highlighted, you hear notes as you draw them, a good check on what you\'re programming'
+  ]},
+  { label: 'Programming Beat 2', start: 149, end: 177, notes: [
+    'Duplicate is <code>Cmd+D</code> (<code>Ctrl+D</code> on Win), or right-click and Duplicate, or Edit menu > Duplicate',
+    '<code>B</code> toggles between the pencil and the pointer. The pointer lets you highlight notes to delete or move',
+    '<code>Shift</code>-click to add more notes to the current selection',
+    '<code>Cmd+D</code> also duplicates selected notes inside the clip'
+  ]}
+];
 
-  // ─── STATE ────────────────────────────────────────────────────────
-  let player = null;
-  let ready = false;
-  let duration = 0;
-  let armedIdx = null;
-  let activeIdx = null;
-  let seekCooldownUntil = 0;
-  let pollTimer = null;
+// ─── ICONS (inline; turtle = the slow-it-down speed control) ────────
+var ICON = {
+  play: '<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="28" stroke="#C07838" stroke-width="1" opacity="0.7"/><path d="M25 21 L41 30 L25 39 Z" fill="#D8904A"/></svg>',
+  pause:'<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="28" stroke="#C07838" stroke-width="1" opacity="0.7"/><rect x="24" y="21" width="4.5" height="18" fill="#D8904A"/><rect x="32" y="21" width="4.5" height="18" fill="#D8904A"/></svg>',
+  loop: '<svg viewBox="0 0 12 12" fill="none"><path d="M2 5 V4 a2 2 0 0 1 2-2 h4" stroke="currentColor" stroke-width="1.2"/><path d="M10 7 V8 a2 2 0 0 1-2 2 H4" stroke="currentColor" stroke-width="1.2"/><path d="M8 0.4 L10.4 2 L8 3.6 Z" fill="currentColor"/><path d="M4 8.4 L1.6 10 L4 11.6 Z" fill="currentColor"/></svg>',
+  vol:  '<svg viewBox="0 0 24 24" fill="none"><path d="M3 9 H7 L12 4.5 V19.5 L7 15 H3 Z" fill="currentColor"/><path d="M15 9 Q17.4 12 15 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M17.6 6.4 Q21.6 12 17.6 17.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  mute: '<svg viewBox="0 0 24 24" fill="none"><path d="M3 9 H7 L12 4.5 V19.5 L7 15 H3 Z" fill="currentColor"/><path d="M15.5 9.5 L20.5 14.5 M20.5 9.5 L15.5 14.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  turtle: '<svg viewBox="0 0 24 24" fill="none">'
+    + '<ellipse cx="5.4" cy="6.7" rx="2.9" ry="1.8" fill="currentColor" transform="rotate(-36 5.4 6.7)"/>'
+    + '<ellipse cx="18.6" cy="6.7" rx="2.9" ry="1.8" fill="currentColor" transform="rotate(36 18.6 6.7)"/>'
+    + '<ellipse cx="5.4" cy="17.3" rx="2.9" ry="1.8" fill="currentColor" transform="rotate(36 5.4 17.3)"/>'
+    + '<ellipse cx="18.6" cy="17.3" rx="2.9" ry="1.8" fill="currentColor" transform="rotate(-36 18.6 17.3)"/>'
+    + '<ellipse cx="12" cy="3" rx="2.1" ry="2.3" fill="currentColor"/>'
+    + '<path d="M10.6 19.4 L12 22.6 L13.4 19.4 Z" fill="currentColor"/>'
+    + '<ellipse cx="12" cy="12" rx="6.8" ry="7.4" fill="currentColor"/>'
+    + '<path d="M12 5 V19 M5.6 9.6 H18.4 M5.6 14.4 H18.4" stroke="#1E1A17" stroke-width="0.9" stroke-linecap="round" opacity="0.8"/>'
+    + '<circle cx="12" cy="12" r="2.2" fill="none" stroke="#1E1A17" stroke-width="0.9" opacity="0.8"/>'
+    + '</svg>'
+};
 
-  // ─── DOM ──────────────────────────────────────────────────────────
-  const $track = document.getElementById('track');
-  const $playhead = document.getElementById('playhead');
-  const $skills = document.getElementById('skills');
-  const $timeNow = document.getElementById('timeNow');
-  const $timeTotal = document.getElementById('timeTotal');
-  const $loopStatus = document.getElementById('loopStatus');
-  const $fallback = document.getElementById('fallback');
-  const $sub = document.getElementById('sub');
+// ─── STATE ──────────────────────────────────────────────────────────
+var t = 0, playing = false, rate = 1, vol = 80, muted = false, armed = null;
+var seekGuardUntil = 0;
+var player = null, ready = false, pollTimer = null;
 
-  // ─── HELPERS ──────────────────────────────────────────────────────
-  function fmt(s) {
-    s = Math.max(0, Math.floor(s));
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return m + ':' + (sec < 10 ? '0' : '') + sec;
-  }
+// ─── HELPERS ────────────────────────────────────────────────────────
+function fmt(s){ s = Math.max(0, Math.floor(s)); var m = Math.floor(s/60); var x = s%60; return m + ':' + (x<10?'0':'') + x; }
+function pct(s){ return (s/DURATION)*100; }
+function chapterAt(time){ for(var i=0;i<REGIONS.length;i++){ if(time>=REGIONS[i].start && time<REGIONS[i].end) return i; } return null; }
+// the chapter whose notes we show: armed → playhead's chapter → most recent skill
+function notesChapter(){
+  if(armed!==null) return armed;
+  var here = chapterAt(t); if(here!==null) return here;
+  var last = 0; for(var i=0;i<REGIONS.length;i++){ if(REGIONS[i].start<=t) last = i; }
+  return last;
+}
 
-  // ─── RENDER ───────────────────────────────────────────────────────
-  function renderSkills() {
-    $skills.innerHTML = '';
-    REGIONS.forEach((r, i) => {
-      const b = document.createElement('button');
-      b.className = 'skill-btn';
-      b.dataset.idx = i;
-      b.innerHTML =
-        '<span class="sk-num">' + (i + 1) + '</span>' +
-        '<span class="sk-label">' + r.label + '</span>' +
-        '<span class="sk-time">' + fmt(r.start) + ' \u2192 ' + fmt(r.end) + '</span>' +
-        '<span class="sk-loop">Loop</span>';
-      b.addEventListener('click', () => toggleArm(i));
-      $skills.appendChild(b);
-    });
-  }
+// ─── DOM ────────────────────────────────────────────────────────────
+var $=function(id){return document.getElementById(id);};
+var vid=$('vid'), vidBtn=$('vidBtn');
+var lineFill=$('lineFill'), dot=$('dot'), line=$('line');
+var cardsEl=$('cards'), notesTitle=$('notesTitle'), notesList=$('notesList');
+var tNow=$('tNow'), tDur=$('tDur');
+var muteBtn=$('muteBtn'), turtleBtn=$('turtleBtn'), volEl=$('vol');
 
-  function layoutZones() {
-    // Remove existing zones (keep the playhead)
-    $track.querySelectorAll('.zone').forEach(z => z.remove());
-    if (duration <= 0) return;
-    REGIONS.forEach((r, i) => {
-      const z = document.createElement('div');
-      z.className = 'zone';
-      z.dataset.idx = i;
-      z.style.left = (r.start / duration * 100) + '%';
-      z.style.width = ((r.end - r.start) / duration * 100) + '%';
-      z.textContent = (i + 1);
-      z.addEventListener('click', (e) => { e.stopPropagation(); toggleArm(i); });
-      $track.appendChild(z);
-    });
-    renderStates();
-  }
-
-  function renderStates() {
-    document.querySelectorAll('.zone, .skill-btn').forEach(el => {
-      const i = parseInt(el.dataset.idx, 10);
-      el.classList.toggle('armed', i === armedIdx);
-      el.classList.toggle('active', i === activeIdx && i !== armedIdx);
-    });
-    if (armedIdx !== null) {
-      $loopStatus.textContent = 'Looping: ' + REGIONS[armedIdx].label;
-      $loopStatus.classList.add('active');
-    } else {
-      $loopStatus.textContent = '';
-      $loopStatus.classList.remove('active');
-    }
-  }
-
-  // ─── LOOP CONTROL ─────────────────────────────────────────────────
-  function toggleArm(i) {
-    if (!ready || !player) return;
-    if (armedIdx === i) {
-      armedIdx = null;
-    } else {
-      armedIdx = i;
-      const r = REGIONS[i];
-      player.seekTo(r.start, true);
-      player.playVideo();
-      seekCooldownUntil = performance.now() + 500;
-    }
-    renderStates();
-  }
-
-  function disarm() {
-    if (armedIdx === null) return;
-    armedIdx = null;
-    renderStates();
-  }
-
-  // ─── POLL ─────────────────────────────────────────────────────────
-  function poll() {
-    if (!player || typeof player.getCurrentTime !== 'function') return;
-    const t = player.getCurrentTime() || 0;
-
-    const d = player.getDuration() || 0;
-    if (d > 0 && Math.abs(d - duration) > 0.5) {
-      duration = d;
-      $timeTotal.textContent = fmt(d);
-      layoutZones();
-    }
-
-    $timeNow.textContent = fmt(t);
-
-    if (duration > 0) {
-      $playhead.style.display = 'block';
-      $playhead.style.left = (t / duration * 100) + '%';
-    }
-
-    // Active region (playhead currently inside one)
-    let act = null;
-    for (let i = 0; i < REGIONS.length; i++) {
-      if (t >= REGIONS[i].start && t < REGIONS[i].end) { act = i; break; }
-    }
-    if (act !== activeIdx) { activeIdx = act; renderStates(); }
-
-    // Enforce armed loop
-    if (armedIdx !== null) {
-      const r = REGIONS[armedIdx];
-      const now = performance.now();
-      if (t >= r.end - 0.05 && now > seekCooldownUntil) {
-        player.seekTo(r.start, true);
-        seekCooldownUntil = now + 500;
-      }
-    }
-  }
-
-  // ─── TRACK SCRUB ──────────────────────────────────────────────────
-  $track.addEventListener('click', (e) => {
-    if (!ready || !player || duration <= 0) return;
-    const rect = $track.getBoundingClientRect();
-    const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-    player.seekTo(frac * duration, true);
+// ─── BUILD STATIC BITS ──────────────────────────────────────────────
+REGIONS.forEach(function(r,i){
+  var b = document.createElement('div');
+  b.className = 'blk'; b.dataset.idx = i;
+  line.insertBefore(b, dot);
+});
+REGIONS.forEach(function(r,i){
+  var c = document.createElement('button');
+  c.className = 'card'; c.dataset.idx = i;
+  c.innerHTML = '<div class="card__head"><span class="card__num mono">'+(i+1)+'</span>'
+    + '<span class="card__time mono">'+fmt(r.start)+'\u2013'+fmt(r.end)+'</span></div>'
+    + '<div class="card__name">'+r.label+'</div>';
+  c.addEventListener('click', function(){ toggleArm(i); });
+  cardsEl.appendChild(c);
+});
+function layoutBlocks(){
+  REGIONS.forEach(function(r,i){
+    var b = line.querySelector('.blk[data-idx="'+i+'"]');
+    if(b){ b.style.left = pct(r.start)+'%'; b.style.width = pct(r.end-r.start)+'%'; }
   });
+}
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') disarm();
-  });
-
-  // ─── YOUTUBE API ──────────────────────────────────────────────────
-  function onYouTubeIframeAPIReady() {
-    const onHttp = location.protocol === 'http:' || location.protocol === 'https:';
-    const cfg = {
-      videoId: VIDEO_ID,
-      host: 'https://www.youtube-nocookie.com',
-      playerVars: {
-        playsinline: 1,
-        rel: 0,
-        modestbranding: 1
-      },
-      events: {
-        onReady: onReady,
-        onError: onError
-      }
-    };
-    if (onHttp) cfg.playerVars.origin = location.origin;
-    player = new YT.Player('player', cfg);
+// ─── RENDER ─────────────────────────────────────────────────────────
+var lastNotes = -2, lastLooping = null;
+function render(){
+  var here = chapterAt(t);
+  // video
+  vid.classList.toggle('playing', playing);
+  vidBtn.innerHTML = playing ? ICON.pause : ICON.play;
+  // track
+  tNow.textContent = fmt(t); tDur.textContent = fmt(DURATION);
+  lineFill.style.width = pct(t) + '%';
+  dot.style.left = pct(t) + '%';
+  // blocks + cards highlight: armed (solid) or here (subtle)
+  for(var i=0;i<REGIONS.length;i++){
+    var blk = line.querySelector('.blk[data-idx="'+i+'"]');
+    var card = cardsEl.querySelector('.card[data-idx="'+i+'"]');
+    var isArmed = (i===armed), isHere = (!isArmed && i===here);
+    blk.classList.toggle('armed', isArmed); blk.classList.toggle('here', isHere);
+    card.classList.toggle('armed', isArmed); card.classList.toggle('here', isHere);
+    // the card's number becomes a ↻ while it's the active loop
+    var numEl = card.querySelector('.card__num');
+    var want = isArmed ? 'loop' : 'num';
+    if(numEl.getAttribute('data-show') !== want){ numEl.setAttribute('data-show', want); numEl.innerHTML = isArmed ? ICON.loop : (i+1); }
   }
-  window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
-
-  function onReady() {
-    ready = true;
-    duration = player.getDuration() || 0;
-    if (duration > 0) { $timeTotal.textContent = fmt(duration); layoutZones(); }
-    if (pollTimer) clearInterval(pollTimer);
-    pollTimer = setInterval(poll, 150);
+  // notes — only rebuild on change
+  var nc = notesChapter();
+  var looping = (armed!==null);
+  if(nc!==lastNotes || looping!==lastLooping){
+    lastNotes = nc; lastLooping = looping;
+    var r = REGIONS[nc];
+    notesTitle.innerHTML = '<span>'+r.label+'</span>';
+    notesList.innerHTML = r.notes.map(function(n){ return '<li>'+n+'</li>'; }).join('');
   }
+  // transport reflect
+  muteBtn.innerHTML = (muted || vol===0) ? ICON.mute : ICON.vol;
+  muteBtn.classList.toggle('on', muted);
+  turtleBtn.innerHTML = ICON.turtle;
+  turtleBtn.classList.toggle('on', rate===0.5);
+  if(document.activeElement!==volEl) volEl.value = muted ? 0 : vol;
+}
 
-  function onError(e) {
-    const code = e && e.data;
-    $fallback.classList.add('show');
-    $sub.textContent = 'Player error' + (code ? ' (' + code + ')' : '');
+// ─── BEHAVIOUR (wired to the real player) ───────────────────────────
+function toggleArm(i){
+  if(armed===i){ armed = null; }              // click the armed chapter again → release, keep playing
+  else {
+    armed = i; t = REGIONS[i].start; playing = true;
+    seekGuardUntil = performance.now()+400;
+    if(player){ player.seekTo(REGIONS[i].start, true); player.playVideo(); }
   }
+  render();
+}
+function togglePlay(){
+  if(!player) return;
+  if(playing) player.pauseVideo(); else player.playVideo();
+}
+function seekFrac(frac){
+  var nt = Math.max(0, Math.min(DURATION, frac*DURATION));
+  t = nt;
+  // a manual scrub frees the loop so you can move anywhere
+  if(armed!==null && (t < REGIONS[armed].start-0.4 || t > REGIONS[armed].end+0.4)) armed = null;
+  if(player) player.seekTo(nt, true);
+  render();
+}
+function applyVolume(){
+  if(!player) return;
+  if(muted || vol===0){ player.mute(); }
+  else { player.unMute(); player.setVolume(vol); }
+}
 
-  // Fallback if the API script never loads (blocked sandbox / offline)
-  setTimeout(() => {
-    if (!ready) {
-      $fallback.classList.add('show');
-      $sub.textContent = 'Player unavailable';
-    }
-  }, 7000);
+vid.addEventListener('click', togglePlay);
+line.addEventListener('click', function(e){
+  var rect = line.getBoundingClientRect();
+  seekFrac((e.clientX-rect.left)/rect.width);
+});
+muteBtn.addEventListener('click', function(){ muted = !muted; if(!muted && vol===0){ vol = 60; } applyVolume(); render(); });
+turtleBtn.addEventListener('click', function(){ rate = (rate===1 ? 0.5 : 1); if(player) player.setPlaybackRate(rate); render(); });
+volEl.addEventListener('input', function(){ vol=parseInt(volEl.value,10); if(vol>0&&muted) muted=false; if(vol===0) muted=true; applyVolume(); render(); });
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape'){ if(armed!==null){ armed=null; } render(); }
+  if(e.key===' '){ e.preventDefault(); togglePlay(); }
+});
 
-  // ─── INIT ─────────────────────────────────────────────────────────
-  renderSkills();
-  (function loadAPI() {
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    const first = document.getElementsByTagName('script')[0];
-    first.parentNode.insertBefore(tag, first);
-  })();
+// ─── POLL (replaces the sim clock) ──────────────────────────────────
+function poll(){
+  if(!player || typeof player.getCurrentTime !== 'function') return;
+  t = player.getCurrentTime() || 0;
+  var d = player.getDuration() || 0;
+  if(d>0 && Math.abs(d-DURATION)>0.5){ DURATION = d; layoutBlocks(); }
+  if(armed!==null){
+    var r = REGIONS[armed]; var now = performance.now();
+    if(t >= r.end - 0.05 && now > seekGuardUntil){ player.seekTo(r.start, true); seekGuardUntil = now+400; }
+  }
+  render();
+}
+
+// ─── YOUTUBE IFRAME API ─────────────────────────────────────────────
+function onYouTubeIframeAPIReady(){
+  var onHttp = location.protocol==='http:' || location.protocol==='https:';
+  var cfg = {
+    videoId: VIDEO_ID,
+    host: 'https://www.youtube-nocookie.com',
+    playerVars: { playsinline:1, rel:0, controls:0, modestbranding:1, disablekb:1, fs:0, iv_load_policy:3 },
+    events: { onReady: onReady, onStateChange: onStateChange, onError: onError }
+  };
+  if(onHttp) cfg.playerVars.origin = location.origin;
+  player = new YT.Player('player', cfg);
+}
+window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+
+function onReady(){
+  ready = true;
+  var d = player.getDuration() || 0;
+  if(d>0){ DURATION = d; layoutBlocks(); }
+  applyVolume();
+  if(player.setPlaybackRate) player.setPlaybackRate(rate);
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(poll, 150);
+  render();
+}
+function onStateChange(e){
+  if(e.data===YT.PlayerState.PLAYING) playing = true;
+  else if(e.data===YT.PlayerState.PAUSED) playing = false;
+  else if(e.data===YT.PlayerState.ENDED) playing = false;
+  render();
+}
+function onError(){ /* leave the design's video box visible */ }
+
+// ─── INIT ───────────────────────────────────────────────────────────
+layoutBlocks();
+render();
+(function loadAPI(){
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  var first = document.getElementsByTagName('script')[0];
+  first.parentNode.insertBefore(tag, first);
+})();
 </script>
 </body>
 </html>
