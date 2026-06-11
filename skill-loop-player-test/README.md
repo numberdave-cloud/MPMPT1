@@ -11,7 +11,7 @@ https://numberdave-cloud.github.io/MPMPT1/skill-loop-player-test/
 ## Canvas embed
 
 ```html
-<iframe src="https://numberdave-cloud.github.io/MPMPT1/skill-loop-player-test/?v=3"
+<iframe src="https://numberdave-cloud.github.io/MPMPT1/skill-loop-player-test/?v=4"
         width="100%" height="980"
         title="Skill Loop Player"
         style="border: none;"
@@ -28,10 +28,9 @@ Staging build for live review. 2B design, real player, real notes. Pending sign-
 ## Technical notes
 
 - Not self-contained. Loads YouTube's IFrame Player API at runtime and needs the student online.
-- The video uses YouTube's native controls for play, pause, and scrubbing. The timeline also scrubs, and Escape releases a loop.
+- Play, pause, scrubbing, volume, and speed are all handled by YouTube's own control bar. The widget adds the timeline, the chapter loops, and the per-loop notes. The timeline also scrubs, and Escape releases a loop.
 - `getCurrentTime()` is polled at 150ms to drive the playhead, the active-chapter highlight, and the loop. `seekTo(start, true)` fires when the playhead passes an armed region's end, with a short guard against double-seeks.
 - Error 153 mitigation: a `strict-origin-when-cross-origin` referrer meta tag, the `youtube-nocookie.com` host, and an `origin` playerVar on https. `file://` has no valid origin and will still 153, so test over http.
-- Speed is a half-speed turtle toggle (`setPlaybackRate` 0.5 or 1), re-applied when playback starts so a rate set while paused persists. Volume slider and mute hit the player. iOS may ignore the volume slider since the OS owns volume there; mute works.
 - Duration is read from `getDuration()` once ready, then the timeline blocks reposition. A 195s placeholder is used until then.
 
 ## Config
@@ -44,10 +43,10 @@ Unlisted (not private), with "allow embedding" turned on.
 
 ## Open / TODO
 
-- Live test of the full 2B build: play, loop, speed, scrub, and notes.
-- iOS check: first play and the volume slider.
+- Live test of the build: play, loop, scrub, and notes.
+- iOS check: first play.
 - On sign-off, ship the final to `skill-loop-player/`.
 
 ## Last updated
 
-2026-06-11: switched the video to YouTube's native controls (fixes a glitchy custom play button) and made the turtle re-apply its rate on play so half-speed works whether or not the video is playing.
+2026-06-11: removed the header strip above the video (title, volume, mute, turtle). Play, volume, and speed now come from YouTube's own control bar. Cleaner layout, video first.
