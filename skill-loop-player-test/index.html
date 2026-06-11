@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Skill Loop Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    padding: 16px 20px 22px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .title {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+  .sub {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* ─── VIDEO ─── */
+  .video-wrap {
+    max-width: 680px;
+    margin: 0 auto 12px;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    height: 0;
+    border: 1px solid var(--border);
+    background: #000;
+  }
+  .video-frame iframe,
+  .video-frame #player,
+  .video-frame .player-fallback {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  .player-fallback {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-dim);
+    letter-spacing: 0.03em;
+  }
+  .player-fallback.show { display: flex; }
+
+  /* ─── READOUT ─── */
+  .readout {
+    max-width: 680px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .readout .time strong { color: var(--text); font-weight: 400; }
+  .loop-status {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+  .loop-status.active { color: var(--accent-glow); }
+
+  /* ─── TIMELINE TRACK ─── */
+  .strip-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .track {
+    position: relative;
+    height: 38px;
+    border: 1px solid var(--border);
+    background: rgba(234, 224, 208, 0.02);
+    margin-bottom: 22px;
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .zone {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: rgba(192, 120, 56, 0.16);
+    border-left: 1px solid rgba(192, 120, 56, 0.5);
+    border-right: 1px solid rgba(192, 120, 56, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.1s;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--accent-glow);
+    user-select: none;
+  }
+  .zone:hover { background: rgba(192, 120, 56, 0.28); }
+  .zone.active {
+    background: rgba(192, 120, 56, 0.34);
+    color: var(--text);
+  }
+  .zone.armed {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent-glow);
+  }
+  .playhead {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: var(--text);
+    z-index: 4;
+    pointer-events: none;
+    display: none;
+  }
+
+  /* ─── SKILL BUTTONS ─── */
+  .skills {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .skill-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    border-left-color: var(--accent);
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    text-transform: uppercase;
+    text-align: left;
+    transition: background 0.08s, border-color 0.08s;
+  }
+  .skill-btn:hover { border-color: var(--border-bright); }
+  .skill-btn:active { transform: translateY(1px); }
+  .skill-btn.active { border-color: var(--border-bright); background: rgba(192, 120, 56, 0.08); }
+  .skill-btn.armed { background: var(--accent); color: var(--bg); border-left-color: var(--accent-glow); }
+  .sk-num {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    opacity: 0.7;
+    min-width: 14px;
+  }
+  .sk-label { font-weight: 600; flex: 1; }
+  .sk-time {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    opacity: 0.7;
+  }
+  .sk-loop {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    border: 1px solid currentColor;
+    padding: 2px 6px;
+    opacity: 0;
+  }
+  .skill-btn.armed .sk-loop { opacity: 1; }
+
+  .hint {
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    font-style: italic;
+  }
+
+  @media (max-width: 520px) {
+    body { padding: 14px; }
+    .skill-btn { font-size: 10px; padding: 10px 12px; gap: 8px; }
+    .sk-time { display: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">SKILL LOOP PLAYER</div>
+    <div class="sub" id="sub">Click a skill to loop it</div>
+  </div>
+
+  <div class="video-wrap">
+    <div class="video-frame">
+      <div id="player"></div>
+      <div class="player-fallback" id="fallback">
+        Player did not load. If you are previewing inside a restricted sandbox,
+        open this file in a normal browser tab with YouTube access to test it.
+      </div>
+    </div>
+  </div>
+
+  <div class="readout">
+    <span class="time"><strong id="timeNow">0:00</strong> / <span id="timeTotal">0:00</span></span>
+    <span class="loop-status" id="loopStatus"></span>
+  </div>
+
+  <div class="strip-label">Timeline</div>
+  <div class="track" id="track">
+    <div class="playhead" id="playhead"></div>
+  </div>
+
+  <div class="strip-label">Skill Loops</div>
+  <div class="skills" id="skills"></div>
+  <div class="hint">Click a skill to loop that section. Click it again to release. Click the empty track to jump.</div>
+
+<script>
+  // ─── CONFIG ───────────────────────────────────────────────────────
+  // To reuse this MOTE: change VIDEO_ID and the REGIONS array. That's it.
+  const VIDEO_ID = '5PVdExtOY9o';
+  const REGIONS = [
+    { label: 'Adding Drum Kit',     start: 36,  end: 70  },
+    { label: 'Programming Beat 1',  start: 97,  end: 131 },
+    { label: 'Programming Beat 2',  start: 149, end: 177 }
+  ];
+
+  // ─── STATE ────────────────────────────────────────────────────────
+  let player = null;
+  let ready = false;
+  let duration = 0;
+  let armedIdx = null;
+  let activeIdx = null;
+  let seekCooldownUntil = 0;
+  let pollTimer = null;
+
+  // ─── DOM ──────────────────────────────────────────────────────────
+  const $track = document.getElementById('track');
+  const $playhead = document.getElementById('playhead');
+  const $skills = document.getElementById('skills');
+  const $timeNow = document.getElementById('timeNow');
+  const $timeTotal = document.getElementById('timeTotal');
+  const $loopStatus = document.getElementById('loopStatus');
+  const $fallback = document.getElementById('fallback');
+  const $sub = document.getElementById('sub');
+
+  // ─── HELPERS ──────────────────────────────────────────────────────
+  function fmt(s) {
+    s = Math.max(0, Math.floor(s));
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
+  // ─── RENDER ───────────────────────────────────────────────────────
+  function renderSkills() {
+    $skills.innerHTML = '';
+    REGIONS.forEach((r, i) => {
+      const b = document.createElement('button');
+      b.className = 'skill-btn';
+      b.dataset.idx = i;
+      b.innerHTML =
+        '<span class="sk-num">' + (i + 1) + '</span>' +
+        '<span class="sk-label">' + r.label + '</span>' +
+        '<span class="sk-time">' + fmt(r.start) + ' \u2192 ' + fmt(r.end) + '</span>' +
+        '<span class="sk-loop">Loop</span>';
+      b.addEventListener('click', () => toggleArm(i));
+      $skills.appendChild(b);
+    });
+  }
+
+  function layoutZones() {
+    // Remove existing zones (keep the playhead)
+    $track.querySelectorAll('.zone').forEach(z => z.remove());
+    if (duration <= 0) return;
+    REGIONS.forEach((r, i) => {
+      const z = document.createElement('div');
+      z.className = 'zone';
+      z.dataset.idx = i;
+      z.style.left = (r.start / duration * 100) + '%';
+      z.style.width = ((r.end - r.start) / duration * 100) + '%';
+      z.textContent = (i + 1);
+      z.addEventListener('click', (e) => { e.stopPropagation(); toggleArm(i); });
+      $track.appendChild(z);
+    });
+    renderStates();
+  }
+
+  function renderStates() {
+    document.querySelectorAll('.zone, .skill-btn').forEach(el => {
+      const i = parseInt(el.dataset.idx, 10);
+      el.classList.toggle('armed', i === armedIdx);
+      el.classList.toggle('active', i === activeIdx && i !== armedIdx);
+    });
+    if (armedIdx !== null) {
+      $loopStatus.textContent = 'Looping: ' + REGIONS[armedIdx].label;
+      $loopStatus.classList.add('active');
+    } else {
+      $loopStatus.textContent = '';
+      $loopStatus.classList.remove('active');
+    }
+  }
+
+  // ─── LOOP CONTROL ─────────────────────────────────────────────────
+  function toggleArm(i) {
+    if (!ready || !player) return;
+    if (armedIdx === i) {
+      armedIdx = null;
+    } else {
+      armedIdx = i;
+      const r = REGIONS[i];
+      player.seekTo(r.start, true);
+      player.playVideo();
+      seekCooldownUntil = performance.now() + 500;
+    }
+    renderStates();
+  }
+
+  function disarm() {
+    if (armedIdx === null) return;
+    armedIdx = null;
+    renderStates();
+  }
+
+  // ─── POLL ─────────────────────────────────────────────────────────
+  function poll() {
+    if (!player || typeof player.getCurrentTime !== 'function') return;
+    const t = player.getCurrentTime() || 0;
+
+    const d = player.getDuration() || 0;
+    if (d > 0 && Math.abs(d - duration) > 0.5) {
+      duration = d;
+      $timeTotal.textContent = fmt(d);
+      layoutZones();
+    }
+
+    $timeNow.textContent = fmt(t);
+
+    if (duration > 0) {
+      $playhead.style.display = 'block';
+      $playhead.style.left = (t / duration * 100) + '%';
+    }
+
+    // Active region (playhead currently inside one)
+    let act = null;
+    for (let i = 0; i < REGIONS.length; i++) {
+      if (t >= REGIONS[i].start && t < REGIONS[i].end) { act = i; break; }
+    }
+    if (act !== activeIdx) { activeIdx = act; renderStates(); }
+
+    // Enforce armed loop
+    if (armedIdx !== null) {
+      const r = REGIONS[armedIdx];
+      const now = performance.now();
+      if (t >= r.end - 0.05 && now > seekCooldownUntil) {
+        player.seekTo(r.start, true);
+        seekCooldownUntil = now + 500;
+      }
+    }
+  }
+
+  // ─── TRACK SCRUB ──────────────────────────────────────────────────
+  $track.addEventListener('click', (e) => {
+    if (!ready || !player || duration <= 0) return;
+    const rect = $track.getBoundingClientRect();
+    const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    player.seekTo(frac * duration, true);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') disarm();
+  });
+
+  // ─── YOUTUBE API ──────────────────────────────────────────────────
+  function onYouTubeIframeAPIReady() {
+    const onHttp = location.protocol === 'http:' || location.protocol === 'https:';
+    const cfg = {
+      videoId: VIDEO_ID,
+      host: 'https://www.youtube-nocookie.com',
+      playerVars: {
+        playsinline: 1,
+        rel: 0,
+        modestbranding: 1
+      },
+      events: {
+        onReady: onReady,
+        onError: onError
+      }
+    };
+    if (onHttp) cfg.playerVars.origin = location.origin;
+    player = new YT.Player('player', cfg);
+  }
+  window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+
+  function onReady() {
+    ready = true;
+    duration = player.getDuration() || 0;
+    if (duration > 0) { $timeTotal.textContent = fmt(duration); layoutZones(); }
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(poll, 150);
+  }
+
+  function onError(e) {
+    const code = e && e.data;
+    $fallback.classList.add('show');
+    $sub.textContent = 'Player error' + (code ? ' (' + code + ')' : '');
+  }
+
+  // Fallback if the API script never loads (blocked sandbox / offline)
+  setTimeout(() => {
+    if (!ready) {
+      $fallback.classList.add('show');
+      $sub.textContent = 'Player unavailable';
+    }
+  }, 7000);
+
+  // ─── INIT ─────────────────────────────────────────────────────────
+  renderSkills();
+  (function loadAPI() {
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const first = document.getElementsByTagName('script')[0];
+    first.parentNode.insertBefore(tag, first);
+  })();
+</script>
+</body>
+</html>
