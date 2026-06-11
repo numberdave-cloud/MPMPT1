@@ -44,10 +44,6 @@
       radial-gradient(120% 140% at 50% 34%, #15110E 0%, var(--video) 70%);
     border: 1px solid var(--border); overflow: hidden; cursor: pointer; }
   .vid #player, .vid #player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; z-index: 1; }
-  .vid__btn { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 2; }
-  .vid__btn svg { width: 62px; height: 62px; opacity: 0.9; transition: opacity .15s, transform .15s; }
-  .vid.playing .vid__btn svg { opacity: 0; transform: scale(0.85); }
-  .vid:hover .vid__btn svg { opacity: 0.9; transform: none; }
 
   /* ── quiet positional track (C) ── */
   .trk { margin-top: 16px; }
@@ -105,7 +101,6 @@
 
     <div class="vid" id="vid">
       <div id="player"></div>
-      <div class="vid__btn" id="vidBtn"></div>
     </div>
 
     <div class="trk">
@@ -189,7 +184,7 @@ function notesChapter(){
 
 // ─── DOM ────────────────────────────────────────────────────────────
 var $=function(id){return document.getElementById(id);};
-var vid=$('vid'), vidBtn=$('vidBtn');
+var vid=$('vid');
 var lineFill=$('lineFill'), dot=$('dot'), line=$('line');
 var cardsEl=$('cards'), notesTitle=$('notesTitle'), notesList=$('notesList');
 var tNow=$('tNow'), tDur=$('tDur');
@@ -221,9 +216,6 @@ function layoutBlocks(){
 var lastNotes = -2, lastLooping = null;
 function render(){
   var here = chapterAt(t);
-  // video
-  vid.classList.toggle('playing', playing);
-  vidBtn.innerHTML = playing ? ICON.pause : ICON.play;
   // track
   tNow.textContent = fmt(t); tDur.textContent = fmt(DURATION);
   lineFill.style.width = pct(t) + '%';
@@ -285,7 +277,6 @@ function applyVolume(){
   else { player.unMute(); player.setVolume(vol); }
 }
 
-vid.addEventListener('click', togglePlay);
 line.addEventListener('click', function(e){
   var rect = line.getBoundingClientRect();
   seekFrac((e.clientX-rect.left)/rect.width);
@@ -295,7 +286,6 @@ turtleBtn.addEventListener('click', function(){ rate = (rate===1 ? 0.5 : 1); if(
 volEl.addEventListener('input', function(){ vol=parseInt(volEl.value,10); if(vol>0&&muted) muted=false; if(vol===0) muted=true; applyVolume(); render(); });
 document.addEventListener('keydown', function(e){
   if(e.key==='Escape'){ if(armed!==null){ armed=null; } render(); }
-  if(e.key===' '){ e.preventDefault(); togglePlay(); }
 });
 
 // ─── POLL (replaces the sim clock) ──────────────────────────────────
@@ -317,7 +307,7 @@ function onYouTubeIframeAPIReady(){
   var cfg = {
     videoId: VIDEO_ID,
     host: 'https://www.youtube-nocookie.com',
-    playerVars: { playsinline:1, rel:0, controls:0, modestbranding:1, disablekb:1, fs:0, iv_load_policy:3 },
+    playerVars: { playsinline:1, rel:0, modestbranding:1, fs:0, iv_load_policy:3 },
     events: { onReady: onReady, onStateChange: onStateChange, onError: onError }
   };
   if(onHttp) cfg.playerVars.origin = location.origin;
@@ -336,7 +326,7 @@ function onReady(){
   render();
 }
 function onStateChange(e){
-  if(e.data===YT.PlayerState.PLAYING) playing = true;
+  if(e.data===YT.PlayerState.PLAYING){ playing = true; if(player.setPlaybackRate) player.setPlaybackRate(rate); }
   else if(e.data===YT.PlayerState.PAUSED) playing = false;
   else if(e.data===YT.PlayerState.ENDED) playing = false;
   render();
