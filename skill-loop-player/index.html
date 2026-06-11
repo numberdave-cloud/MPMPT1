@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Skill Loop Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17; --panel: #211D19; --inset: #181513; --video: #0E0C0A;
+    --text: #EAE0D0; --dim: rgba(234,224,208,0.55); --faint: rgba(234,224,208,0.30);
+    --accent: #C07838; --glow: #D8904A;
+    --border: rgba(234,224,208,0.15); --bright: rgba(234,224,208,0.35);
+    --wash: rgba(192,120,56,0.14); --wash2: rgba(192,120,56,0.28);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  .mono { font-family: 'Courier New', monospace; }
+  body { padding: 22px clamp(16px, 4vw, 40px) 34px; }
+  .player { max-width: 920px; margin: 0 auto; }
+
+  /* ── video ── */
+  .vid { position: relative; width: 100%; aspect-ratio: 16/9; background:
+      repeating-linear-gradient(135deg, rgba(234,224,208,0.02) 0 2px, transparent 2px 10px),
+      radial-gradient(120% 140% at 50% 34%, #15110E 0%, var(--video) 70%);
+    border: 1px solid var(--border); overflow: hidden; cursor: pointer; }
+  .vid #player, .vid #player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; z-index: 1; }
+
+  /* ── quiet positional track (C) ── */
+  .trk { margin-top: 16px; }
+  .trk__read { display: flex; justify-content: flex-end; margin-bottom: 9px; }
+  .trk__read .mono { font-size: 11px; color: var(--dim); }
+  .trk__read b { color: var(--text); font-weight: 400; }
+  .line { position: relative; height: 30px; cursor: pointer; }
+  .line__base { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border); transform: translateY(-50%); }
+  .line__fill { position: absolute; top: 50%; left: 0; height: 1px; background: var(--accent); transform: translateY(-50%); width: 0; }
+  .blk { position: absolute; top: 50%; height: 6px; background: var(--wash2); transform: translateY(-50%); transition: height .15s; }
+  .blk.here { background: var(--glow); }
+  .blk.armed { height: 8px; background: var(--glow); }
+  .dot { position: absolute; top: 50%; width: 7px; height: 7px; border-radius: 50%; background: var(--text); transform: translate(-50%, -50%); z-index: 5; }
+
+  /* ── chapter cards (A: index + name) ── */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px; }
+  .card { border: 1px solid var(--border); border-top: 2px solid rgba(192,120,56,0.4); padding: 13px 15px; cursor: pointer; background: transparent; text-align: left; color: var(--text); transition: border-color .12s; }
+  .card:hover { border-color: var(--bright); border-top-color: var(--accent); }
+  .card__head { display: flex; align-items: center; justify-content: space-between; min-height: 14px; }
+  .card__num { font-family: 'Courier New', monospace; font-size: 11px; color: var(--dim); display: inline-flex; align-items: center; }
+  .card__num svg { width: 13px; height: 13px; display: block; }
+  .card__time { font-family: 'Courier New', monospace; font-size: 10px; color: var(--dim); }
+  .card__name { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; margin-top: 8px; }
+  .card.here { background: rgba(192,120,56,0.05); border-color: rgba(192,120,56,0.28); }
+  .card.here .card__num { color: var(--glow); }
+  .card.armed { background: var(--accent); border-color: var(--glow); border-top-color: var(--glow); }
+  .card.armed .card__num, .card.armed .card__time, .card.armed .card__name { color: var(--bg); }
+
+  /* ── permanent notes section (R1) ── */
+  .notes { position: relative; border: 1px solid var(--border); border-top: 2px solid var(--accent); background: var(--inset); padding: 17px 19px; margin-top: 12px; min-height: 150px; }
+  .notes__title { font-size: 16px; letter-spacing: 0.03em; font-weight: 600; color: var(--glow); margin-bottom: 13px; }
+  .notes ul { list-style: none; }
+  .notes li { font-size: 13.5px; line-height: 1.55; padding: 5px 0 5px 18px; position: relative; color: var(--text); }
+  .notes li::before { content: "\2022"; position: absolute; left: 3px; top: 5px; color: var(--accent); }
+  .notes code { font-family: 'Courier New', monospace; font-size: 13px; background: rgba(192,120,56,0.18); color: var(--text); border: 1px solid rgba(192,120,56,0.45); padding: 2px 7px; border-radius: 2px; white-space: nowrap; }
+
+  @media (max-width: 560px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+</style>
+<link id="gfont-Inter" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap">
+</head>
+<body>
+  <div class="player">
+    <div class="vid" id="vid">
+      <div id="player"></div>
+    </div>
+
+    <div class="trk">
+      <div class="trk__read"><span class="mono"><b id="tNow">0:00</b> / <span id="tDur">0:00</span></span></div>
+      <div class="line" id="line">
+        <div class="line__base"></div>
+        <div class="line__fill" id="lineFill"></div>
+        <div class="dot" id="dot"></div>
+      </div>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="notes" id="notes">
+      <div class="notes__title" id="notesTitle"></div>
+      <ul id="notesList"></ul>
+    </div>
+  </div>
+
+<script>
+// ─── CONFIG (same shape as the prototype) ───────────────────────────
+var VIDEO_ID = '5PVdExtOY9o';
+var DURATION = 195;            // placeholder until the real duration loads
+var REGIONS = [
+  { label: 'Adding Drum Kit', start: 36, end: 70, notes: [
+    'Open and close the browser with <code>Cmd+Option+B</code> (Mac) or <code>Ctrl+Alt+B</code> (Win)',
+    'The Drums section of the browser holds every kit. You can use the filters to narrow the search',
+    'Drag a kit onto a MIDI channel, or double-click it to load onto the selected channel',
+    'With monitoring on, click a kit to preview it'
+  ]},
+  { label: 'Programming Beat 1', start: 97, end: 131, notes: [
+    'Create blank MIDI clip: <code>Cmd+Shift+M</code> (Mac) or <code>Ctrl+Shift+M</code> (Win)',
+    '<code>B</code> is the shortcut for pencil (10 bonus points if you can guess why)',
+    'Resize the grid with <code>Cmd+1</code> and <code>Cmd+2</code>, or <code>Ctrl+1</code> and <code>Ctrl+2</code> on Win',
+    'If the headphone icon in the piano roll is highlighted, you hear notes as you draw them, a good check on what you\'re programming'
+  ]},
+  { label: 'Programming Beat 2', start: 149, end: 177, notes: [
+    'Duplicate is <code>Cmd+D</code> (<code>Ctrl+D</code> on Win), or right-click and Duplicate, or Edit menu > Duplicate',
+    '<code>B</code> toggles between the pencil and the pointer. The pointer lets you highlight notes to delete or move',
+    '<code>Shift</code>-click to add more notes to the current selection',
+    '<code>Cmd+D</code> also duplicates selected notes inside the clip'
+  ]}
+];
+
+// ─── ICONS (inline; turtle = the slow-it-down speed control) ────────
+var ICON = {
+  play: '<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="28" stroke="#C07838" stroke-width="1" opacity="0.7"/><path d="M25 21 L41 30 L25 39 Z" fill="#D8904A"/></svg>',
+  pause:'<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="28" stroke="#C07838" stroke-width="1" opacity="0.7"/><rect x="24" y="21" width="4.5" height="18" fill="#D8904A"/><rect x="32" y="21" width="4.5" height="18" fill="#D8904A"/></svg>',
+  loop: '<svg viewBox="0 0 12 12" fill="none"><path d="M2 5 V4 a2 2 0 0 1 2-2 h4" stroke="currentColor" stroke-width="1.2"/><path d="M10 7 V8 a2 2 0 0 1-2 2 H4" stroke="currentColor" stroke-width="1.2"/><path d="M8 0.4 L10.4 2 L8 3.6 Z" fill="currentColor"/><path d="M4 8.4 L1.6 10 L4 11.6 Z" fill="currentColor"/></svg>',
+  vol:  '<svg viewBox="0 0 24 24" fill="none"><path d="M3 9 H7 L12 4.5 V19.5 L7 15 H3 Z" fill="currentColor"/><path d="M15 9 Q17.4 12 15 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M17.6 6.4 Q21.6 12 17.6 17.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  mute: '<svg viewBox="0 0 24 24" fill="none"><path d="M3 9 H7 L12 4.5 V19.5 L7 15 H3 Z" fill="currentColor"/><path d="M15.5 9.5 L20.5 14.5 M20.5 9.5 L15.5 14.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  turtle: '<svg viewBox="0 0 24 24" fill="none">'
+    + '<ellipse cx="5.4" cy="6.7" rx="2.9" ry="1.8" fill="currentColor" transform="rotate(-36 5.4 6.7)"/>'
+    + '<ellipse cx="18.6" cy="6.7" rx="2.9" ry="1.8" fill="currentColor" transform="rotate(36 18.6 6.7)"/>'
+    + '<ellipse cx="5.4" cy="17.3" rx="2.9" ry="1.8" fill="currentColor" transform="rotate(36 5.4 17.3)"/>'
+    + '<ellipse cx="18.6" cy="17.3" rx="2.9" ry="1.8" fill="currentColor" transform="rotate(-36 18.6 17.3)"/>'
+    + '<ellipse cx="12" cy="3" rx="2.1" ry="2.3" fill="currentColor"/>'
+    + '<path d="M10.6 19.4 L12 22.6 L13.4 19.4 Z" fill="currentColor"/>'
+    + '<ellipse cx="12" cy="12" rx="6.8" ry="7.4" fill="currentColor"/>'
+    + '<path d="M12 5 V19 M5.6 9.6 H18.4 M5.6 14.4 H18.4" stroke="#1E1A17" stroke-width="0.9" stroke-linecap="round" opacity="0.8"/>'
+    + '<circle cx="12" cy="12" r="2.2" fill="none" stroke="#1E1A17" stroke-width="0.9" opacity="0.8"/>'
+    + '</svg>'
+};
+
+// ─── STATE ──────────────────────────────────────────────────────────
+var t = 0, playing = false, armed = null;
+var seekGuardUntil = 0;
+var player = null, ready = false, pollTimer = null;
+
+// ─── HELPERS ────────────────────────────────────────────────────────
+function fmt(s){ s = Math.max(0, Math.floor(s)); var m = Math.floor(s/60); var x = s%60; return m + ':' + (x<10?'0':'') + x; }
+function pct(s){ return (s/DURATION)*100; }
+function chapterAt(time){ for(var i=0;i<REGIONS.length;i++){ if(time>=REGIONS[i].start && time<REGIONS[i].end) return i; } return null; }
+// the chapter whose notes we show: armed → playhead's chapter → most recent skill
+function notesChapter(){
+  if(armed!==null) return armed;
+  var here = chapterAt(t); if(here!==null) return here;
+  var last = 0; for(var i=0;i<REGIONS.length;i++){ if(REGIONS[i].start<=t) last = i; }
+  return last;
+}
+
+// ─── DOM ────────────────────────────────────────────────────────────
+var $=function(id){return document.getElementById(id);};
+var vid=$('vid');
+var lineFill=$('lineFill'), dot=$('dot'), line=$('line');
+var cardsEl=$('cards'), notesTitle=$('notesTitle'), notesList=$('notesList');
+var tNow=$('tNow'), tDur=$('tDur');
+
+// ─── BUILD STATIC BITS ──────────────────────────────────────────────
+REGIONS.forEach(function(r,i){
+  var b = document.createElement('div');
+  b.className = 'blk'; b.dataset.idx = i;
+  line.insertBefore(b, dot);
+});
+REGIONS.forEach(function(r,i){
+  var c = document.createElement('button');
+  c.className = 'card'; c.dataset.idx = i;
+  c.innerHTML = '<div class="card__head"><span class="card__num mono">'+(i+1)+'</span>'
+    + '<span class="card__time mono">'+fmt(r.start)+'\u2013'+fmt(r.end)+'</span></div>'
+    + '<div class="card__name">'+r.label+'</div>';
+  c.addEventListener('click', function(){ toggleArm(i); });
+  cardsEl.appendChild(c);
+});
+function layoutBlocks(){
+  REGIONS.forEach(function(r,i){
+    var b = line.querySelector('.blk[data-idx="'+i+'"]');
+    if(b){ b.style.left = pct(r.start)+'%'; b.style.width = pct(r.end-r.start)+'%'; }
+  });
+}
+
+// ─── RENDER ─────────────────────────────────────────────────────────
+var lastNotes = -2, lastLooping = null;
+function render(){
+  var here = chapterAt(t);
+  // track
+  tNow.textContent = fmt(t); tDur.textContent = fmt(DURATION);
+  lineFill.style.width = pct(t) + '%';
+  dot.style.left = pct(t) + '%';
+  // blocks + cards highlight: armed (solid) or here (subtle)
+  for(var i=0;i<REGIONS.length;i++){
+    var blk = line.querySelector('.blk[data-idx="'+i+'"]');
+    var card = cardsEl.querySelector('.card[data-idx="'+i+'"]');
+    var isArmed = (i===armed), isHere = (!isArmed && i===here);
+    blk.classList.toggle('armed', isArmed); blk.classList.toggle('here', isHere);
+    card.classList.toggle('armed', isArmed); card.classList.toggle('here', isHere);
+    // the card's number becomes a ↻ while it's the active loop
+    var numEl = card.querySelector('.card__num');
+    var want = isArmed ? 'loop' : 'num';
+    if(numEl.getAttribute('data-show') !== want){ numEl.setAttribute('data-show', want); numEl.innerHTML = isArmed ? ICON.loop : (i+1); }
+  }
+  // notes — only rebuild on change
+  var nc = notesChapter();
+  var looping = (armed!==null);
+  if(nc!==lastNotes || looping!==lastLooping){
+    lastNotes = nc; lastLooping = looping;
+    var r = REGIONS[nc];
+    notesTitle.innerHTML = '<span>'+r.label+'</span>';
+    notesList.innerHTML = r.notes.map(function(n){ return '<li>'+n+'</li>'; }).join('');
+  }
+}
+
+// ─── BEHAVIOUR (wired to the real player) ───────────────────────────
+function toggleArm(i){
+  if(armed===i){ armed = null; }              // click the armed chapter again → release, keep playing
+  else {
+    armed = i; t = REGIONS[i].start; playing = true;
+    seekGuardUntil = performance.now()+400;
+    if(player){ player.seekTo(REGIONS[i].start, true); player.playVideo(); }
+  }
+  render();
+}
+function togglePlay(){
+  if(!player) return;
+  if(playing) player.pauseVideo(); else player.playVideo();
+}
+function seekFrac(frac){
+  var nt = Math.max(0, Math.min(DURATION, frac*DURATION));
+  t = nt;
+  // a manual scrub frees the loop so you can move anywhere
+  if(armed!==null && (t < REGIONS[armed].start-0.4 || t > REGIONS[armed].end+0.4)) armed = null;
+  if(player) player.seekTo(nt, true);
+  render();
+}
+
+line.addEventListener('click', function(e){
+  var rect = line.getBoundingClientRect();
+  seekFrac((e.clientX-rect.left)/rect.width);
+});
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape'){ if(armed!==null){ armed=null; } render(); }
+});
+
+// ─── POLL (replaces the sim clock) ──────────────────────────────────
+function poll(){
+  if(!player || typeof player.getCurrentTime !== 'function') return;
+  t = player.getCurrentTime() || 0;
+  var d = player.getDuration() || 0;
+  if(d>0 && Math.abs(d-DURATION)>0.5){ DURATION = d; layoutBlocks(); }
+  if(armed!==null){
+    var r = REGIONS[armed]; var now = performance.now();
+    if(t >= r.end - 0.05 && now > seekGuardUntil){ player.seekTo(r.start, true); seekGuardUntil = now+400; }
+  }
+  render();
+}
+
+// ─── YOUTUBE IFRAME API ─────────────────────────────────────────────
+function onYouTubeIframeAPIReady(){
+  var onHttp = location.protocol==='http:' || location.protocol==='https:';
+  var cfg = {
+    videoId: VIDEO_ID,
+    host: 'https://www.youtube-nocookie.com',
+    playerVars: { playsinline:1, rel:0, modestbranding:1, fs:0, iv_load_policy:3 },
+    events: { onReady: onReady, onStateChange: onStateChange, onError: onError }
+  };
+  if(onHttp) cfg.playerVars.origin = location.origin;
+  player = new YT.Player('player', cfg);
+}
+window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+
+function onReady(){
+  ready = true;
+  var d = player.getDuration() || 0;
+  if(d>0){ DURATION = d; layoutBlocks(); }
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(poll, 150);
+  render();
+}
+function onStateChange(e){
+  if(e.data===YT.PlayerState.PLAYING) playing = true;
+  else if(e.data===YT.PlayerState.PAUSED) playing = false;
+  else if(e.data===YT.PlayerState.ENDED) playing = false;
+  render();
+}
+function onError(){ /* leave the design's video box visible */ }
+
+// ─── INIT ───────────────────────────────────────────────────────────
+layoutBlocks();
+render();
+(function loadAPI(){
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  var first = document.getElementsByTagName('script')[0];
+  first.parentNode.insertBefore(tag, first);
+})();
+</script>
+</body>
+</html>
