@@ -15680,5 +15680,673 @@
         "p": ""
       }
     ]
+  },
+  {
+    "id": "r158",
+    "name": "Potato Leek Soup with Dark Leafy Greens",
+    "ref": "Alison Roman, Something from Nothing, p.73",
+    "serves": "4",
+    "cookMin": 49,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "900",
+        "u": "g",
+        "i": "potato",
+        "s": false,
+        "sea": true,
+        "p": "potato"
+      },
+      {
+        "q": "2",
+        "u": "",
+        "i": "leek",
+        "s": false,
+        "sea": true,
+        "p": "leek"
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1.4",
+        "u": "litre",
+        "i": "chicken stock",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "bunch",
+        "i": "leafy greens",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "ml",
+        "i": "sour cream",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "tsp",
+        "i": "white wine vinegar",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "4",
+        "u": "",
+        "i": "spring onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "40",
+        "u": "g",
+        "i": "dill",
+        "s": false,
+        "sea": true,
+        "p": "dill"
+      }
+    ]
+  },
+  {
+    "id": "r159",
+    "name": "Dilly Bean Stew with Cabbage and Frizzled Onions",
+    "ref": "Alison Roman, Something from Nothing, p.65",
+    "serves": "4",
+    "cookMin": 23,
+    "slot": "quick",
+    "ings": [
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "butter",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "800",
+        "u": "g",
+        "i": "cannellini beans",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "white vinegar",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "litre",
+        "i": "chicken stock",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "225",
+        "u": "g",
+        "i": "cabbage",
+        "s": false,
+        "sea": true,
+        "p": "cabbage"
+      },
+      {
+        "q": "40",
+        "u": "g",
+        "i": "dill",
+        "s": false,
+        "sea": true,
+        "p": "dill"
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "sour cream",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r160",
+    "name": "Very Classic Split Pea Soup",
+    "ref": "Alison Roman, Something from Nothing, p.62",
+    "serves": "4",
+    "cookMin": 84,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "280",
+        "u": "g",
+        "i": "bacon",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "5",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "swede",
+        "s": false,
+        "sea": true,
+        "p": "swede"
+      },
+      {
+        "q": "450",
+        "u": "g",
+        "i": "split peas",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1.9",
+        "u": "litre",
+        "i": "chicken stock",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "bay leaf",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "handful",
+        "i": "flat-leaf parsley",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "lemon",
+        "s": false,
+        "sea": true,
+        "p": "lemon"
+      }
+    ]
+  },
+  {
+    "id": "r161",
+    "name": "Ginger and Greens Noodle Soup",
+    "ref": "Alison Roman, Something from Nothing, p.54",
+    "serves": "4-6",
+    "cookMin": 20,
+    "slot": "quick",
+    "ings": [
+      {
+        "q": "1",
+        "u": "bunch",
+        "i": "coriander",
+        "s": false,
+        "sea": true,
+        "p": "coriander"
+      },
+      {
+        "q": "4",
+        "u": "",
+        "i": "spring onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "4",
+        "u": "tbsp",
+        "i": "fresh ginger",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "4",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "tsp",
+        "i": "fish sauce",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "90",
+        "u": "ml",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2.35",
+        "u": "litre",
+        "i": "chicken stock",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "bunch",
+        "i": "leafy greens",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "175",
+        "u": "g",
+        "i": "pasta",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "280",
+        "u": "g",
+        "i": "cooked chicken",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "",
+        "i": "lime",
+        "s": false,
+        "sea": true,
+        "p": "lime"
+      }
+    ]
+  },
+  {
+    "id": "r162",
+    "name": "Kimchi-Tomato Soup with Rice and a Soft Egg",
+    "ref": "Alison Roman, Something from Nothing, p.60",
+    "serves": "4",
+    "cookMin": 40,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "0.5",
+        "u": "",
+        "i": "onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "4",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "450",
+        "u": "g",
+        "i": "tomatoes",
+        "s": false,
+        "sea": true,
+        "p": "tomato"
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "fresh ginger",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "350",
+        "u": "g",
+        "i": "kimchi",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "ml",
+        "i": "soy sauce",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "tbsp",
+        "i": "fish sauce",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1.4",
+        "u": "litre",
+        "i": "water",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "g",
+        "i": "jasmine rice",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "4",
+        "u": "",
+        "i": "eggs",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "sesame oil",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "spring onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r163",
+    "name": "Pork Noodle Soup with Toasted Garlic and Greens",
+    "ref": "Alison Roman, Something from Nothing, p.67",
+    "serves": "4",
+    "cookMin": 24,
+    "slot": "quick",
+    "ings": [
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "vegetable oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "8",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "450",
+        "u": "g",
+        "i": "minced pork",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1.5",
+        "u": "tsp",
+        "i": "chilli flakes",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "ml",
+        "i": "soy sauce",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "g",
+        "i": "coriander",
+        "s": false,
+        "sea": true,
+        "p": "coriander"
+      },
+      {
+        "q": "1",
+        "u": "bunch",
+        "i": "leafy greens",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "fresh ginger",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1.4",
+        "u": "litre",
+        "i": "water",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "tsp",
+        "i": "fish sauce",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "175",
+        "u": "g",
+        "i": "rice noodles",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "0.5",
+        "u": "",
+        "i": "onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
   }
 ]
