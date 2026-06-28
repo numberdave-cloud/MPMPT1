@@ -11298,5 +11298,2171 @@
         "p": "basil"
       }
     ]
+  },
+  {
+    "id": "r119",
+    "name": "Greens Pie",
+    "ref": "Ostro, p.60",
+    "serves": "6",
+    "cookMin": 64,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "1",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "",
+        "i": "leek",
+        "s": false,
+        "sea": true,
+        "p": "leek"
+      },
+      {
+        "q": "3",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "600",
+        "u": "g",
+        "i": "leafy greens",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "150",
+        "u": "g",
+        "i": "ricotta",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "ml",
+        "i": "cream",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "",
+        "i": "egg",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "lemon",
+        "s": false,
+        "sea": true,
+        "p": "lemon"
+      },
+      {
+        "q": "",
+        "u": "pinch",
+        "i": "nutmeg",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "300",
+        "u": "g",
+        "i": "plain flour",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "g",
+        "i": "cheddar cheese",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "200",
+        "u": "g",
+        "i": "butter",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "ml",
+        "i": "water",
+        "s": true,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r120",
+    "name": "Mushroom and Barley Pie",
+    "ref": "Ostro, p.56",
+    "serves": "8",
+    "cookMin": 90,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "1",
+        "u": "",
+        "i": "egg",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "350",
+        "u": "g",
+        "i": "plain flour",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "350",
+        "u": "g",
+        "i": "butter",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "80",
+        "u": "ml",
+        "i": "water",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "g",
+        "i": "pearl barley",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "g",
+        "i": "butter",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "",
+        "i": "leek",
+        "s": false,
+        "sea": true,
+        "p": "leek"
+      },
+      {
+        "q": "100",
+        "u": "g",
+        "i": "cavolo nero",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "ml",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "900",
+        "u": "g",
+        "i": "mixed mushrooms",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "tarragon",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "flat-leaf parsley",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "lemon",
+        "s": false,
+        "sea": true,
+        "p": "lemon"
+      },
+      {
+        "q": "150",
+        "u": "g",
+        "i": "creme fraiche",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r121",
+    "name": "Roasted Cauliflower and Wheat Salad",
+    "ref": "Ostro, p.68",
+    "serves": "4-6",
+    "cookMin": 90,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "50",
+        "u": "g",
+        "i": "almonds",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "cauliflower",
+        "s": false,
+        "sea": true,
+        "p": "cauliflower"
+      },
+      {
+        "q": "1",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "150",
+        "u": "g",
+        "i": "wheat grains",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "bunch",
+        "i": "mint",
+        "s": false,
+        "sea": true,
+        "p": "mint"
+      },
+      {
+        "q": "",
+        "u": "bunch",
+        "i": "flat-leaf parsley",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "6",
+        "u": "",
+        "i": "prunes",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "tbsp",
+        "i": "salted capers",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "tahini",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "ml",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "tbsp",
+        "i": "apple cider vinegar",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r122",
+    "name": "Tomato and Red Onion Salad",
+    "ref": "Ostro, p.72",
+    "serves": "4-6",
+    "cookMin": 0,
+    "slot": "quick",
+    "ings": [
+      {
+        "q": "1",
+        "u": "",
+        "i": "red onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "kg",
+        "i": "tomatoes",
+        "s": false,
+        "sea": true,
+        "p": "tomato"
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "tarragon",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "tbsp",
+        "i": "red wine vinegar",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r123",
+    "name": "Potato, Leek and Mozzarella Pie",
+    "ref": "Ostro, p.78",
+    "serves": "6-8",
+    "cookMin": 70,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "1",
+        "u": "kg",
+        "i": "potatoes",
+        "s": false,
+        "sea": true,
+        "p": "potato"
+      },
+      {
+        "q": "1",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "15",
+        "u": "g",
+        "i": "butter",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "",
+        "i": "leek",
+        "s": false,
+        "sea": true,
+        "p": "leek"
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1.5",
+        "u": "tbsp",
+        "i": "woody herbs",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "bunch",
+        "i": "flat-leaf parsley",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "0.5",
+        "u": "tsp",
+        "i": "chilli flakes",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "250",
+        "u": "g",
+        "i": "mozzarella",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "egg",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "400",
+        "u": "g",
+        "i": "plain flour",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "g",
+        "i": "butter",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "ml",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "ml",
+        "i": "water",
+        "s": true,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r124",
+    "name": "Cheese and Onion Pie",
+    "ref": "Ostro, p.80",
+    "serves": "6",
+    "cookMin": 75,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "2.5",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "3",
+        "u": "",
+        "i": "onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "3",
+        "u": "sprig",
+        "i": "thyme",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "3",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2.5",
+        "u": "tbsp",
+        "i": "cream",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "",
+        "i": "egg",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "g",
+        "i": "fontina",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "150",
+        "u": "g",
+        "i": "asiago",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "70",
+        "u": "g",
+        "i": "provolone",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "flat-leaf parsley",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "300",
+        "u": "g",
+        "i": "plain flour",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "50",
+        "u": "g",
+        "i": "butter",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2.5",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "g",
+        "i": "sour cream",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "ml",
+        "i": "water",
+        "s": true,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r125",
+    "name": "Chicken Broth with Wheat and Spring Vegetables",
+    "ref": "Ostro, p.86",
+    "serves": "4",
+    "cookMin": 58,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "200",
+        "u": "g",
+        "i": "wheat grains",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "leek",
+        "s": false,
+        "sea": true,
+        "p": "leek"
+      },
+      {
+        "q": "1",
+        "u": "stalk",
+        "i": "celery",
+        "s": false,
+        "sea": true,
+        "p": "celery"
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "litre",
+        "i": "chicken stock",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "500",
+        "u": "g",
+        "i": "chicken thighs",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "150",
+        "u": "g",
+        "i": "broad beans",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "g",
+        "i": "peas",
+        "s": false,
+        "sea": true,
+        "p": "pea"
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "mint",
+        "s": false,
+        "sea": true,
+        "p": "mint"
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "flat-leaf parsley",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "0.5",
+        "u": "",
+        "i": "lemon",
+        "s": false,
+        "sea": true,
+        "p": "lemon"
+      },
+      {
+        "q": "100",
+        "u": "ml",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r126",
+    "name": "Pasta and Chickpea Soup",
+    "ref": "Ostro, p.89",
+    "serves": "4-6",
+    "cookMin": 120,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "250",
+        "u": "g",
+        "i": "dried chickpeas",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1.5",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "stalk",
+        "i": "celery",
+        "s": false,
+        "sea": true,
+        "p": "celery"
+      },
+      {
+        "q": "2",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "pinch",
+        "i": "chilli flakes",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "sprig",
+        "i": "rosemary",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "400",
+        "u": "g",
+        "i": "canned tomatoes",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "litre",
+        "i": "chicken stock",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "350",
+        "u": "g",
+        "i": "pumpkin",
+        "s": false,
+        "sea": true,
+        "p": "pumpkin"
+      },
+      {
+        "q": "150",
+        "u": "g",
+        "i": "short pasta",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "creme fraiche",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "parmesan",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r127",
+    "name": "Buttery Leek Soup Topped with Apple, Pancetta and Sage",
+    "ref": "Ostro, p.103",
+    "serves": "4-6",
+    "cookMin": 50,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "50",
+        "u": "g",
+        "i": "butter",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "6",
+        "u": "",
+        "i": "leek",
+        "s": false,
+        "sea": true,
+        "p": "leek"
+      },
+      {
+        "q": "2",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "300",
+        "u": "g",
+        "i": "potatoes",
+        "s": false,
+        "sea": true,
+        "p": "potato"
+      },
+      {
+        "q": "1",
+        "u": "litre",
+        "i": "vegetable stock",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "200",
+        "u": "ml",
+        "i": "cream",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "30",
+        "u": "g",
+        "i": "butter",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "g",
+        "i": "pancetta",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "",
+        "i": "apple",
+        "s": false,
+        "sea": true,
+        "p": "apple"
+      },
+      {
+        "q": "20",
+        "u": "leaf",
+        "i": "sage",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r128",
+    "name": "Orecchiette with Peas and Ricotta",
+    "ref": "Ostro, p.127",
+    "serves": "",
+    "cookMin": 2,
+    "slot": "quick",
+    "ings": [
+      {
+        "q": "150",
+        "u": "g",
+        "i": "peas",
+        "s": false,
+        "sea": true,
+        "p": "pea"
+      },
+      {
+        "q": "375",
+        "u": "g",
+        "i": "ricotta",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "orecchiette",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "mint",
+        "s": false,
+        "sea": true,
+        "p": "mint"
+      }
+    ]
+  },
+  {
+    "id": "r129",
+    "name": "Orecchiette with Chicory, Raisins and Garlic Crumbs",
+    "ref": "Ostro, p.127",
+    "serves": "",
+    "cookMin": 23,
+    "slot": "quick",
+    "ings": [
+      {
+        "q": "60",
+        "u": "g",
+        "i": "butter",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1.5",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "",
+        "i": "onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "200",
+        "u": "g",
+        "i": "chicory",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "flat-leaf parsley",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "g",
+        "i": "raisins",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "0.5",
+        "u": "",
+        "i": "lemon",
+        "s": false,
+        "sea": true,
+        "p": "lemon"
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "orecchiette",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1.5",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "g",
+        "i": "breadcrumbs",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r130",
+    "name": "Orecchiette with Walnut and Herb Sauce",
+    "ref": "Ostro, p.129",
+    "serves": "",
+    "cookMin": 2,
+    "slot": "quick",
+    "ings": [
+      {
+        "q": "1",
+        "u": "slice",
+        "i": "white bread",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "ml",
+        "i": "milk",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "130",
+        "u": "g",
+        "i": "walnuts",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "3",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "soft herbs",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "lemon",
+        "s": false,
+        "sea": true,
+        "p": "lemon"
+      },
+      {
+        "q": "80",
+        "u": "ml",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "3",
+        "u": "tsp",
+        "i": "red wine vinegar",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "orecchiette",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "parmesan",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r131",
+    "name": "Ricotta Gnocchi with a Summer Tomato Sauce",
+    "ref": "Ostro, p.141",
+    "serves": "4",
+    "cookMin": 44,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "750",
+        "u": "g",
+        "i": "cherry tomatoes",
+        "s": false,
+        "sea": true,
+        "p": "tomato"
+      },
+      {
+        "q": "3",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "basil",
+        "s": false,
+        "sea": true,
+        "p": "basil"
+      },
+      {
+        "q": "60",
+        "u": "ml",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "parmesan",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "400",
+        "u": "g",
+        "i": "ricotta",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "",
+        "i": "egg",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "pinch",
+        "i": "nutmeg",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "45",
+        "u": "g",
+        "i": "parmesan",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "200",
+        "u": "g",
+        "i": "00 flour",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r132",
+    "name": "Orzotto of Mushrooms with Mascarpone",
+    "ref": "Ostro, p.150",
+    "serves": "8-10",
+    "cookMin": 67,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "200",
+        "u": "g",
+        "i": "pearl barley",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "stalk",
+        "i": "celery",
+        "s": false,
+        "sea": true,
+        "p": "celery"
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "litre",
+        "i": "vegetable stock",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "10",
+        "u": "g",
+        "i": "dried porcini",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "125",
+        "u": "ml",
+        "i": "dry white wine",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "400",
+        "u": "g",
+        "i": "mixed mushrooms",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "60",
+        "u": "g",
+        "i": "butter",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "3",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "flat-leaf parsley",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "black pepper",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "parmesan",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "mascarpone",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r133",
+    "name": "Lentils with Cavolo Nero and Sausage",
+    "ref": "Ostro, p.168",
+    "serves": "6",
+    "cookMin": 69,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "1.5",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "carrot",
+        "s": false,
+        "sea": true,
+        "p": "carrot"
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "ml",
+        "i": "dry white wine",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "tomato",
+        "s": false,
+        "sea": true,
+        "p": "tomato"
+      },
+      {
+        "q": "3",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "350",
+        "u": "g",
+        "i": "puy lentils",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "bay leaf",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "litre",
+        "i": "chicken stock",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "bunch",
+        "i": "cavolo nero",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "6",
+        "u": "",
+        "i": "pork sausages",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "slice",
+        "i": "white bread",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "milk",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "tbsp",
+        "i": "salted capers",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "3",
+        "u": "",
+        "i": "anchovy fillets",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "flat-leaf parsley",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "0.5",
+        "u": "",
+        "i": "lemon",
+        "s": false,
+        "sea": true,
+        "p": "lemon"
+      },
+      {
+        "q": "60",
+        "u": "ml",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r134",
+    "name": "Lamb Meatballs with Broad Beans",
+    "ref": "Ostro, p.180",
+    "serves": "4",
+    "cookMin": 40,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "1",
+        "u": "slice",
+        "i": "white bread",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "ml",
+        "i": "milk",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "500",
+        "u": "g",
+        "i": "lamb mince",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "5",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "egg",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "mixed herbs",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "4",
+        "u": "",
+        "i": "anchovy fillets",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "pinch",
+        "i": "chilli flakes",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "",
+        "i": "onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "250",
+        "u": "g",
+        "i": "broad beans",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "100",
+        "u": "g",
+        "i": "peas",
+        "s": false,
+        "sea": true,
+        "p": "pea"
+      },
+      {
+        "q": "100",
+        "u": "ml",
+        "i": "chicken stock",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "0.5",
+        "u": "",
+        "i": "lemon",
+        "s": false,
+        "sea": true,
+        "p": "lemon"
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "pecorino",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r135",
+    "name": "Braised Lamb with Chickpeas",
+    "ref": "Ostro, p.182",
+    "serves": "4-6",
+    "cookMin": 203,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "200",
+        "u": "g",
+        "i": "dried chickpeas",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1.5",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "kg",
+        "i": "lamb shoulder",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "onion",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "600",
+        "u": "g",
+        "i": "tomatoes",
+        "s": false,
+        "sea": true,
+        "p": "tomato"
+      },
+      {
+        "q": "2",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "bay leaf",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "150",
+        "u": "ml",
+        "i": "dry white wine",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "800",
+        "u": "ml",
+        "i": "vegetable stock",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "flat-leaf parsley",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "lemon",
+        "s": false,
+        "sea": true,
+        "p": "lemon"
+      }
+    ]
+  },
+  {
+    "id": "r136",
+    "name": "Lamb Shoulder with Peas and Anchovies",
+    "ref": "Ostro, p.184",
+    "serves": "4-6",
+    "cookMin": 333,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "3",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "sprig",
+        "i": "rosemary",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "4",
+        "u": "",
+        "i": "anchovy fillets",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1.2",
+        "u": "kg",
+        "i": "lamb shoulder",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "250",
+        "u": "ml",
+        "i": "dry white wine",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "200",
+        "u": "g",
+        "i": "peas",
+        "s": false,
+        "sea": true,
+        "p": "pea"
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "mint",
+        "s": false,
+        "sea": true,
+        "p": "mint"
+      },
+      {
+        "q": "",
+        "u": "handful",
+        "i": "dill",
+        "s": false,
+        "sea": true,
+        "p": "dill"
+      },
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "red wine vinegar",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  },
+  {
+    "id": "r137",
+    "name": "Tray-roasted Chicken with Grapes, Olives and Walnuts",
+    "ref": "Ostro, p.162",
+    "serves": "4-6",
+    "cookMin": 55,
+    "slot": "fresh",
+    "ings": [
+      {
+        "q": "6",
+        "u": "",
+        "i": "chicken thigh fillets",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "120",
+        "u": "g",
+        "i": "red grapes",
+        "s": false,
+        "sea": true,
+        "p": "grape"
+      },
+      {
+        "q": "50",
+        "u": "g",
+        "i": "olives",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "2",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "30",
+        "u": "g",
+        "i": "walnuts",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "sprig",
+        "i": "rosemary",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "lemon",
+        "s": false,
+        "sea": true,
+        "p": "lemon"
+      },
+      {
+        "q": "2",
+        "u": "tbsp",
+        "i": "olive oil",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "",
+        "u": "",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      }
+    ]
   }
 ]
