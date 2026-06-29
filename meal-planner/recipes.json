@@ -16354,7 +16354,7 @@
     "name": "Crispy Lemon Garlic Butter Chicken",
     "ref": "RecipeTin Eats, Tonight, p.26",
     "serves": "5",
-    "cookMin": 50,
+    "cookMin": 60,
     "slot": "fresh",
     "ings": [
       {
@@ -16468,8 +16468,8 @@
     "name": "Creamy Sausage Pasta",
     "ref": "RecipeTin Eats, Tonight, p.28",
     "serves": "4",
-    "cookMin": 12,
-    "slot": "quick",
+    "cookMin": 35,
+    "slot": "fresh",
     "ings": [
       {
         "q": "2",
@@ -16590,7 +16590,7 @@
     "name": "Honey Sesame Ginger Beef",
     "ref": "RecipeTin Eats, Tonight, p.31",
     "serves": "4",
-    "cookMin": 10,
+    "cookMin": 25,
     "slot": "quick",
     "ings": [
       {
@@ -16712,7 +16712,7 @@
     "name": "Sticky Asian Meatballs",
     "ref": "RecipeTin Eats, Tonight, p.38",
     "serves": "4",
-    "cookMin": 10,
+    "cookMin": 30,
     "slot": "quick",
     "ings": [
       {
@@ -16906,7 +16906,7 @@
     "name": "Creamy Mushroom Wild Rice Soup",
     "ref": "RecipeTin Eats, Tonight, p.37",
     "serves": "4",
-    "cookMin": 45,
+    "cookMin": 60,
     "slot": "fresh",
     "ings": [
       {
@@ -17060,7 +17060,7 @@
     "name": "Korean BBQ Chicken",
     "ref": "RecipeTin Eats, Tonight, p.34",
     "serves": "5",
-    "cookMin": 15,
+    "cookMin": 25,
     "slot": "quick",
     "ings": [
       {
@@ -17166,7 +17166,7 @@
     "name": "Texas Cowboy Chicken",
     "ref": "RecipeTin Eats, Tonight, p.51",
     "serves": "4",
-    "cookMin": 12,
+    "cookMin": 25,
     "slot": "quick",
     "ings": [
       {
@@ -17288,7 +17288,7 @@
     "name": "Crispy Rice Paper Fish Rolls",
     "ref": "RecipeTin Eats, Tonight, p.48",
     "serves": "2",
-    "cookMin": 6,
+    "cookMin": 21,
     "slot": "quick",
     "ings": [
       {
@@ -17410,8 +17410,8 @@
     "name": "Golden Chicken Noodle Soup",
     "ref": "RecipeTin Eats, Tonight, p.44",
     "serves": "4",
-    "cookMin": 28,
-    "slot": "quick",
+    "cookMin": 45,
+    "slot": "fresh",
     "ings": [
       {
         "q": "500",
@@ -17564,7 +17564,7 @@
     "name": "Normandy Pork Chops",
     "ref": "RecipeTin Eats, Tonight, p.58",
     "serves": "4",
-    "cookMin": 18,
+    "cookMin": 30,
     "slot": "quick",
     "ings": [
       {
@@ -17686,7 +17686,7 @@
     "name": "Thai Chicken Wings",
     "ref": "RecipeTin Eats, Tonight, p.54",
     "serves": "4",
-    "cookMin": 45,
+    "cookMin": 60,
     "slot": "fresh",
     "ings": [
       {
@@ -17816,8 +17816,8 @@
     "name": "Tomato Pasta with Crunchy Garlic Parmesan Crumbs",
     "ref": "RecipeTin Eats, Tonight, p.52",
     "serves": "4",
-    "cookMin": 20,
-    "slot": "quick",
+    "cookMin": 35,
+    "slot": "fresh",
     "ings": [
       {
         "q": "60",
@@ -17954,7 +17954,7 @@
     "name": "Spicy Korean Kimchi Noodles",
     "ref": "RecipeTin Eats, Tonight, p.74",
     "serves": "1",
-    "cookMin": 8,
+    "cookMin": 15,
     "slot": "quick",
     "ings": [
       {
@@ -18052,7 +18052,7 @@
     "name": "Creamy Feta Asparagus Pasta",
     "ref": "RecipeTin Eats, Tonight, p.71",
     "serves": "2",
-    "cookMin": 9,
+    "cookMin": 15,
     "slot": "quick",
     "ings": [
       {
@@ -18150,7 +18150,7 @@
     "name": "Haloumi Burgers",
     "ref": "RecipeTin Eats, Tonight, p.66",
     "serves": "2",
-    "cookMin": 7,
+    "cookMin": 12,
     "slot": "quick",
     "ings": [
       {
@@ -18264,8 +18264,8 @@
     "name": "Crispy One-Pot Beef Burritos",
     "ref": "RecipeTin Eats, Tonight, p.86",
     "serves": "8",
-    "cookMin": 24,
-    "slot": "quick",
+    "cookMin": 40,
+    "slot": "fresh",
     "ings": [
       {
         "q": "2",
@@ -18442,7 +18442,7 @@
     "name": "Baked Satay Chicken",
     "ref": "RecipeTin Eats, Tonight, p.84",
     "serves": "4-6",
-    "cookMin": 50,
+    "cookMin": 60,
     "slot": "fresh",
     "ings": [
       {
@@ -18612,7 +18612,7 @@
     "name": "One-Pan Chorizo Couscous",
     "ref": "RecipeTin Eats, Tonight, p.77",
     "serves": "2-3",
-    "cookMin": 12,
+    "cookMin": 15,
     "slot": "quick",
     "ings": [
       {
@@ -18742,7 +18742,7 @@
     "name": "Chicken Guinness Stew",
     "ref": "RecipeTin Eats, Tonight, p.95",
     "serves": "4-5",
-    "cookMin": 45,
+    "cookMin": 55,
     "slot": "fresh",
     "ings": [
       {
@@ -18872,7 +18872,7 @@
     "name": "Easier Meat Pies",
     "ref": "RecipeTin Eats, Tonight, p.92",
     "serves": "4",
-    "cookMin": 50,
+    "cookMin": 70,
     "slot": "fresh",
     "ings": [
       {
@@ -19042,7 +19042,7 @@
     "name": "Spicy Sesame Ginger Noodle Soup",
     "ref": "RecipeTin Eats, Tonight, p.89",
     "serves": "1",
-    "cookMin": 7,
+    "cookMin": 25,
     "slot": "quick",
     "ings": [
       {
@@ -19180,8 +19180,8 @@
     "name": "Beef Pot-Fried Rice",
     "ref": "RecipeTin Eats, Tonight, p.101",
     "serves": "4-5",
-    "cookMin": 20,
-    "slot": "quick",
+    "cookMin": 40,
+    "slot": "fresh",
     "ings": [
       {
         "q": "2",
@@ -19318,7 +19318,7 @@
     "name": "JB's 20-Minute Laksa",
     "ref": "RecipeTin Eats, Tonight, p.98",
     "serves": "4",
-    "cookMin": 16,
+    "cookMin": 20,
     "slot": "quick",
     "ings": [
       {
@@ -19448,7 +19448,7 @@
     "name": "Eggplant Parmigiana Boats",
     "ref": "RecipeTin Eats, Tonight, p.96",
     "serves": "4",
-    "cookMin": 55,
+    "cookMin": 70,
     "slot": "fresh",
     "ings": [
       {
@@ -19586,7 +19586,7 @@
     "name": "Pea Pesto Pasta",
     "ref": "RecipeTin Eats, Tonight, p.110",
     "serves": "5",
-    "cookMin": 12,
+    "cookMin": 30,
     "slot": "quick",
     "ings": [
       {
@@ -19692,7 +19692,7 @@
     "name": "Indian Lentil Coconut Stew-Soup",
     "ref": "RecipeTin Eats, Tonight, p.108",
     "serves": "4 as a soup, 8 as a stew over rice",
-    "cookMin": 19,
+    "cookMin": 30,
     "slot": "quick",
     "ings": [
       {
@@ -19846,8 +19846,8 @@
     "name": "Mini Meatball Soup",
     "ref": "RecipeTin Eats, Tonight, p.102",
     "serves": "5",
-    "cookMin": 23,
-    "slot": "quick",
+    "cookMin": 45,
+    "slot": "fresh",
     "ings": [
       {
         "q": "2",
@@ -20008,7 +20008,7 @@
     "name": "Black Bean Chilli",
     "ref": "RecipeTin Eats, Tonight, p.114",
     "serves": "5",
-    "cookMin": 40,
+    "cookMin": 50,
     "slot": "fresh",
     "ings": [
       {
@@ -20162,7 +20162,7 @@
     "name": "Spicy Peanut Noodles",
     "ref": "RecipeTin Eats, Tonight, p.113",
     "serves": "1",
-    "cookMin": 10,
+    "cookMin": 20,
     "slot": "quick",
     "ings": [
       {
@@ -20252,7 +20252,7 @@
     "name": "Creamy, Cheesy Spaghetti",
     "ref": "RecipeTin Eats, Tonight, p.120",
     "serves": "2",
-    "cookMin": 11,
+    "cookMin": 20,
     "slot": "quick",
     "ings": [
       {
@@ -20350,7 +20350,7 @@
     "name": "Curried Chickpea Crunch",
     "ref": "RecipeTin Eats, Tonight, p.119",
     "serves": "2",
-    "cookMin": 10,
+    "cookMin": 17,
     "slot": "quick",
     "ings": [
       {
@@ -20480,7 +20480,7 @@
     "name": "Vietnamese Pizza",
     "ref": "RecipeTin Eats, Tonight, p.116",
     "serves": "1",
-    "cookMin": 5,
+    "cookMin": 8,
     "slot": "quick",
     "ings": [
       {
@@ -20538,7 +20538,7 @@
     "name": "The Most Amazing Pantry Tomato Soup",
     "ref": "RecipeTin Eats, Tonight, p.128",
     "serves": "4",
-    "cookMin": 33,
+    "cookMin": 40,
     "slot": "fresh",
     "ings": [
       {
@@ -20644,7 +20644,7 @@
     "name": "Lion White Beans",
     "ref": "RecipeTin Eats, Tonight, p.127",
     "serves": "3 as a main, 5-6 as a side",
-    "cookMin": 10,
+    "cookMin": 25,
     "slot": "quick",
     "ings": [
       {
@@ -20814,7 +20814,7 @@
     "name": "Sticky Pantry Chicken",
     "ref": "RecipeTin Eats, Tonight, p.122",
     "serves": "4",
-    "cookMin": 7,
+    "cookMin": 15,
     "slot": "quick",
     "ings": [
       {
@@ -20944,7 +20944,7 @@
     "name": "Chilli Garlic Eggplant",
     "ref": "RecipeTin Eats, Tonight, p.147",
     "serves": "3-4",
-    "cookMin": 8,
+    "cookMin": 15,
     "slot": "quick",
     "ings": [
       {
@@ -21058,7 +21058,7 @@
     "name": "Stir-Fried Noodles",
     "ref": "RecipeTin Eats, Tonight, p.141",
     "serves": "2",
-    "cookMin": 6,
+    "cookMin": 18,
     "slot": "quick",
     "ings": [
       {
@@ -21140,7 +21140,7 @@
     "name": "Everyday Stir-Fry",
     "ref": "RecipeTin Eats, Tonight, p.138",
     "serves": "2-3",
-    "cookMin": 5,
+    "cookMin": 16,
     "slot": "quick",
     "ings": [
       {
@@ -21238,7 +21238,7 @@
     "name": "Firecracker Beef & Cabbage",
     "ref": "RecipeTin Eats, Tonight, p.154",
     "serves": "4",
-    "cookMin": 9,
+    "cookMin": 20,
     "slot": "quick",
     "ings": [
       {
@@ -21360,7 +21360,7 @@
     "name": "Chinese Sweetcorn Soup",
     "ref": "RecipeTin Eats, Tonight, p.153",
     "serves": "2",
-    "cookMin": 6,
+    "cookMin": 15,
     "slot": "quick",
     "ings": [
       {
@@ -21458,7 +21458,7 @@
     "name": "Chinese Chicken with Mushroom Sauce",
     "ref": "RecipeTin Eats, Tonight, p.148",
     "serves": "4",
-    "cookMin": 13,
+    "cookMin": 22,
     "slot": "quick",
     "ings": [
       {
@@ -21564,7 +21564,7 @@
     "name": "Simple, Tasty Vegetable Stir-Fry",
     "ref": "RecipeTin Eats, Tonight, p.162",
     "serves": "2-3",
-    "cookMin": 6,
+    "cookMin": 16,
     "slot": "quick",
     "ings": [
       {
@@ -21654,7 +21654,7 @@
     "name": "Sweet & Sour Crispy Pork Chops",
     "ref": "RecipeTin Eats, Tonight, p.160",
     "serves": "4",
-    "cookMin": 12,
+    "cookMin": 30,
     "slot": "quick",
     "ings": [
       {
@@ -21784,7 +21784,7 @@
     "name": "Supreme Soy Hokkien Noodles",
     "ref": "RecipeTin Eats, Tonight, p.159",
     "serves": "2",
-    "cookMin": 5,
+    "cookMin": 19,
     "slot": "quick",
     "ings": [
       {
@@ -21882,8 +21882,8 @@
     "name": "One-Pot Chicken Tomato Pasta",
     "ref": "RecipeTin Eats, Tonight, p.176",
     "serves": "4",
-    "cookMin": 22,
-    "slot": "quick",
+    "cookMin": 35,
+    "slot": "fresh",
     "ings": [
       {
         "q": "500",
@@ -22036,7 +22036,7 @@
     "name": "Honey Pepper Chicken",
     "ref": "RecipeTin Eats, Tonight, p.166",
     "serves": "4",
-    "cookMin": 7,
+    "cookMin": 18,
     "slot": "quick",
     "ings": [
       {
@@ -22142,7 +22142,7 @@
     "name": "Stir-Fried Prawns with Snow Peas",
     "ref": "RecipeTin Eats, Tonight, p.165",
     "serves": "2",
-    "cookMin": 5,
+    "cookMin": 15,
     "slot": "quick",
     "ings": [
       {
@@ -22224,8 +22224,8 @@
     "name": "Vegetable Cashew Biryani",
     "ref": "RecipeTin Eats, Tonight, p.184",
     "serves": "4-5",
-    "cookMin": 22,
-    "slot": "quick",
+    "cookMin": 50,
+    "slot": "fresh",
     "ings": [
       {
         "q": "2",
@@ -22466,8 +22466,8 @@
     "name": "Baked Beef Koftas",
     "ref": "RecipeTin Eats, Tonight, p.182",
     "serves": "4",
-    "cookMin": 20,
-    "slot": "quick",
+    "cookMin": 40,
+    "slot": "fresh",
     "ings": [
       {
         "q": "8",
@@ -22676,7 +22676,7 @@
     "name": "Arabic Chicken & Potatoes",
     "ref": "RecipeTin Eats, Tonight, p.181",
     "serves": "5",
-    "cookMin": 50,
+    "cookMin": 60,
     "slot": "fresh",
     "ings": [
       {
@@ -22838,8 +22838,8 @@
     "name": "Sticky Soy Chicken with Sesame Broccolini",
     "ref": "RecipeTin Eats, Tonight, p.193",
     "serves": "5",
-    "cookMin": 18,
-    "slot": "quick",
+    "cookMin": 40,
+    "slot": "fresh",
     "ings": [
       {
         "q": "600",
@@ -22984,7 +22984,7 @@
     "name": "Prosciutto-Wrapped Pork with Greek Lemon Potatoes",
     "ref": "RecipeTin Eats, Tonight, p.190",
     "serves": "5",
-    "cookMin": 70,
+    "cookMin": 85,
     "slot": "fresh",
     "ings": [
       {
@@ -23098,8 +23098,8 @@
     "name": "One-Pot Pizza Mac",
     "ref": "RecipeTin Eats, Tonight, p.188",
     "serves": "4",
-    "cookMin": 20,
-    "slot": "quick",
+    "cookMin": 45,
+    "slot": "fresh",
     "ings": [
       {
         "q": "1",
@@ -23228,8 +23228,8 @@
     "name": "Cowboy Chicken Salad with Smoky Chipotle Dressing",
     "ref": "RecipeTin Eats, Tonight, p.200",
     "serves": "4",
-    "cookMin": 10,
-    "slot": "quick",
+    "cookMin": 35,
+    "slot": "fresh",
     "ings": [
       {
         "q": "",
@@ -23390,8 +23390,8 @@
     "name": "One-Pot Cajun Chicken & Rice",
     "ref": "RecipeTin Eats, Tonight, p.196",
     "serves": "5",
-    "cookMin": 21,
-    "slot": "quick",
+    "cookMin": 45,
+    "slot": "fresh",
     "ings": [
       {
         "q": "750",
@@ -23536,7 +23536,7 @@
     "name": "Tapas-y Chorizo Tray Bake",
     "ref": "RecipeTin Eats, Tonight, p.194",
     "serves": "4",
-    "cookMin": 60,
+    "cookMin": 70,
     "slot": "fresh",
     "ings": [
       {
@@ -23674,7 +23674,7 @@
     "name": "The Aussie Chop",
     "ref": "RecipeTin Eats, Tonight, p.212",
     "serves": "4",
-    "cookMin": 0,
+    "cookMin": 15,
     "slot": "quick",
     "ings": [
       {
@@ -23812,8 +23812,8 @@
     "name": "Kale & Apple Salad with Maple Bacon Pecan Crumble",
     "ref": "RecipeTin Eats, Tonight, p.205",
     "serves": "3 as a main, 5 as a side",
-    "cookMin": 9,
-    "slot": "quick",
+    "cookMin": 45,
+    "slot": "fresh",
     "ings": [
       {
         "q": "100",
@@ -23942,7 +23942,7 @@
     "name": "Thai Beef Noodle Salad",
     "ref": "RecipeTin Eats, Tonight, p.202",
     "serves": "2",
-    "cookMin": 3,
+    "cookMin": 28,
     "slot": "quick",
     "ings": [
       {
@@ -24160,8 +24160,8 @@
     "name": "Green Goddess Dressing with Roasted Cauliflower",
     "ref": "RecipeTin Eats, Tonight, p.224",
     "serves": "4-5 as a side",
-    "cookMin": 25,
-    "slot": "quick",
+    "cookMin": 50,
+    "slot": "fresh",
     "ings": [
       {
         "q": "50",
@@ -24314,7 +24314,7 @@
     "name": "Whipped Ricotta with Burst Tomatoes",
     "ref": "RecipeTin Eats, Tonight, p.222",
     "serves": "2 as a main, 4 as a side or starter",
-    "cookMin": 15,
+    "cookMin": 25,
     "slot": "quick",
     "ings": [
       {
@@ -24412,7 +24412,7 @@
     "name": "Chicken Soba Salad with Creamy Miso Dressing",
     "ref": "RecipeTin Eats, Tonight, p.214",
     "serves": "2",
-    "cookMin": 5,
+    "cookMin": 20,
     "slot": "quick",
     "ings": [
       {
@@ -24550,8 +24550,8 @@
     "name": "Lemon Yoghurt Sauce with Eggplant",
     "ref": "RecipeTin Eats, Tonight, p.228",
     "serves": "4 as a side",
-    "cookMin": 30,
-    "slot": "quick",
+    "cookMin": 45,
+    "slot": "fresh",
     "ings": [
       {
         "q": "260",
@@ -24672,8 +24672,8 @@
     "name": "Crunchy Maple Bacon Pecan Crumble & Goat's Cheese on Pumpkin",
     "ref": "RecipeTin Eats, Tonight, p.227",
     "serves": "2 as a main, 4 as a side",
-    "cookMin": 25,
-    "slot": "quick",
+    "cookMin": 45,
+    "slot": "fresh",
     "ings": [
       {
         "q": "",
