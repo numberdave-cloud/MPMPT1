@@ -189,7 +189,31 @@ only.
   re-folded from live recipes.json (227) with the five fixes kept, so index.html and recipes.json are
   back in sync at 227.
 
-CURRENT LIVE COMMIT: 59af1e556d.
+## Shipped this session (5 Jul 2026), one atomic commit
+Five app-change items in a single build + deploy (dev/dinner-engine.jsx + meal-planner/index.html +
+this doc; recipes.json unchanged, catalogue still 227).
+- (1) Use-up matcher precision fix. ingMatchesUseUp no longer matches on a single shared token.
+  Category members (pasta/greens) still match by exact name; otherwise EVERY literal (non-category)
+  word of the use-up name must be present in the ingredient. Added cookLiteralWords; dishUsesUseUp
+  and cookSuggestionsFor now pass literal words. Result: "white wine" no longer pulls white-rice
+  dishes, colour/qualifier words stop over-matching. Tested on the live catalogue.
+- (2) Meal Plan placed-dish fave moved onto the book/page line as a star-only toggle (filled violet =
+  faved, muted outline = not); the "Fave"/"Faved" text is gone. Shows whenever day.dish.catId exists.
+- (3) Meal Plan placed-dish action row is now icon-only, uniform 38x38 squares (new iconBtn style):
+  Ingredients, Add to shop, Move, Edit, Clear. "Recipes" dropped from a placed dish (clear, then
+  browse). Move uses ArrowUpDown (up/down) and still opens the day picker. Suggested-state
+  Another / Use this kept as labelled buttons on their own line above the icon row.
+- (4) To-do Tonight card: the meal name renders ALL CAPS via CSS textTransform on the name div. The
+  "No dinner set" placeholder also uppercases; flagged to Dave, easy to scope to the name only later.
+- (5) Night Off suggestion pool gained "Dry white toast" and "Drink ten to fifteen beers" alongside
+  Takeaway / Leftovers (POOLS.off).
+
+OPEN QUESTION for Dave: after the matcher fix, "tomato puree" matches nothing, because the catalogue
+stores the concentrated product as "tomato paste" (15 dishes) and the thin one as passata. Decide
+whether "tomato puree" should alias to tomato paste (UK sense) or passata (US sense) so it surfaces
+dishes. Nothing added yet.
+
+CURRENT LIVE COMMIT: this 5 Jul 2026 five-item pass (previous tip 59af1e556d; interim HEAD 0b7578625b).
 
 ## Backlog status
 - DONE: items 1, 4, 5, 7, 8, 9, 10, 11, plus the seasonal-slot autofill fix and the two UI tweaks

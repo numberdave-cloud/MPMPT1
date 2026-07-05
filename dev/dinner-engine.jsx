@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Wand2, RefreshCw, Pencil, X, Check, AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, Lock, ShoppingCart, Star, Trash2, Undo2, List, ArrowLeftRight, Download, Upload } from "lucide-react";
+import { Plus, Wand2, RefreshCw, Pencil, X, Check, AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, Lock, ShoppingCart, Star, Trash2, Undo2, List, ArrowUpDown, Download, Upload } from "lucide-react";
 
 /* ---------- palette: Mercado Dark ---------- */
 const C = {
@@ -33,7 +33,7 @@ const POOLS = {
   fresh:   [{ name: "Silverbeet & ricotta pasta", ref: "" }, { name: "Pork & cabbage stir fry", ref: "" }, { name: "Roast cauliflower tacos", ref: "" }, { name: "Mushroom & barley risotto", ref: "" }, { name: "Dahl with roti", ref: "" }],
   freezer: [{ name: "Beef ragu (from freezer)", ref: "" }, { name: "Lamb & pea curry (from freezer)", ref: "" }, { name: "Minestrone (from freezer)", ref: "" }, { name: "Pulled pork (from freezer)", ref: "" }, { name: "Pumpkin soup (from freezer)", ref: "" }],
   quick:   [{ name: "Garlic & chilli broccoli orecchiette", ref: "" }, { name: "Egg & greens fried rice", ref: "" }, { name: "Cheese & kimchi toasties", ref: "" }, { name: "Tuna & white bean salad", ref: "" }, { name: "Veg & noodle stir fry", ref: "" }],
-  off:     [{ name: "Takeaway", ref: "" }, { name: "Leftovers", ref: "" }],
+  off:     [{ name: "Takeaway", ref: "" }, { name: "Leftovers", ref: "" }, { name: "Dry white toast", ref: "" }, { name: "Drink ten to fifteen beers", ref: "" }],
 };
 const SEED_HISTORY = [];
 const EMERGENCY    = ["Noodles + fried eggs", "Reheat soup + cheese toasties"];
@@ -183,8 +183,12 @@ const USEUP_CATEGORIES = {
 // keyed by the normalised trigger word (e.g. "greens" -> "green") -> set of member names (lower-case)
 const CAT_TRIGGER = (() => { const o={}; for(const k in USEUP_CATEGORIES){ o[cookNorm(k)] = new Set(USEUP_CATEGORIES[k].map(m=>m.toLowerCase())); } return o; })();
 function useUpCatMembers(words){ const m=new Set(); for(const w of words){ const set=CAT_TRIGGER[w]; if(set) for(const x of set) m.add(x); } return m; }
-function ingMatchesUseUp(x, words, catMembers){ if(!x.i) return false; const toks=cookIngTokens(x.i); return words.some(w=>toks.has(w)) || catMembers.has(x.i.toLowerCase()); }
-function dishUsesUseUp(dish, useUpName){ const words=cookContentWords(useUpName); if(!words.length) return false; const cm=useUpCatMembers(words); return dish.ings.some(x=>ingMatchesUseUp(x,words,cm)); }
+function cookLiteralWords(words){ return words.filter(w=>!CAT_TRIGGER[w]); }
+// Match an ingredient to a use-up item. Category members (pasta shapes, greens) match by exact name.
+// Otherwise EVERY literal word of the use-up name must be present, so "white wine" no longer matches
+// "white rice" and "tomato puree" no longer matches fresh tomatoes on a single shared word.
+function ingMatchesUseUp(x, litWords, catMembers){ if(!x.i) return false; if(catMembers.has(x.i.toLowerCase())) return true; if(!litWords.length) return false; const toks=cookIngTokens(x.i); return litWords.every(w=>toks.has(w)); }
+function dishUsesUseUp(dish, useUpName){ const words=cookContentWords(useUpName); if(!words.length) return false; const cm=useUpCatMembers(words); const lit=cookLiteralWords(words); return dish.ings.some(x=>ingMatchesUseUp(x,lit,cm)); }
 function useUpUrgencyWeight(useBy, today0){ if(!useBy) return 1; const d=startOfDay(new Date(useBy)); if(isNaN(d)) return 1; const days=Math.round((d-today0)/86400000); if(days<=0) return 3; if(days<=7) return 2; return 1; }
 function useUpScoreFor(dish, useUp, today0){ let sc=0; for(const u of (useUp||[])){ if(dishUsesUseUp(dish,u.name)) sc+=useUpUrgencyWeight(u.useBy,today0); } return sc; }
 function dishSeasonalScore(dish, inSeasonProduce){ const seen=new Set(); for(const x of dish.ings){ if(x.sea&&x.p&&inSeasonProduce.has(x.p)) seen.add(x.p); } return seen.size; }
@@ -213,11 +217,12 @@ function cookSuggestionsFor(name){
   const words=cookContentWords(name);
   if(!words.length) return [];
   const cm=useUpCatMembers(words);
+  const lit=cookLiteralWords(words);
   const out=[];
   for(const c of CATALOGUE){
     let best=null;
     for(const x of c.ings){
-      if(!ingMatchesUseUp(x,words,cm)) continue;
+      if(!ingMatchesUseUp(x,lit,cm)) continue;
       const amt=cookAmount(x.q,x.u); if(!best||amt>best.amt) best={amt,q:x.q,u:x.u,i:x.i};
     }
     if(best) out.push({ id:c.id, name:c.name, ref:c.ref, label:cookLabel(best.q,best.u,best.i), amt:best.amt, cookMin:c.cookMin, serves:c.serves });
@@ -877,6 +882,7 @@ export default function KitchenApp() {
   /* ---- shared styles ---- */
   const primary = { display:"inline-flex", alignItems:"center", gap:6, background:C.ember, color:C.ink, border:"none", borderRadius:9, padding:"8px 13px", fontSize:13.5, fontWeight:600, fontFamily:SANS };
   const ghost   = { display:"inline-flex", alignItems:"center", gap:6, background:"transparent", color:C.muted, border:`1px solid ${C.line}`, borderRadius:9, padding:"8px 12px", fontSize:13, fontFamily:SANS };
+  const iconBtn = { display:"inline-flex", alignItems:"center", justifyContent:"center", width:38, height:38, background:"transparent", color:C.muted, border:`1px solid ${C.line}`, borderRadius:9, padding:0, flexShrink:0, fontFamily:SANS };
   const inStyle = { background:C.ink, border:`1px solid ${C.line}`, color:C.cream, borderRadius:8, padding:"9px 11px", fontFamily:SANS, fontSize:14, width:"100%", boxSizing:"border-box" };
   const eyebrow = { fontFamily:MONO, fontSize:11, letterSpacing:"1.5px", color:C.muted };
 
@@ -1019,17 +1025,24 @@ export default function KitchenApp() {
                 <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16.5, color:C.cream }}>{day.dish.name}</span>
                 {day.suggested && <span style={{ fontFamily:MONO, fontSize:10, letterSpacing:"1px", color:C.ember, border:`1px solid ${rgba(C.ember,0.5)}`, padding:"1px 6px", borderRadius:99 }}>SUGGESTED</span>}
               </div>
-              {day.dish.ref && <div style={{ fontSize:13, color:C.muted, marginTop:4 }}>{/^https?:\/\//.test(day.dish.ref)?<a className="de-link" href={day.dish.ref} target="_blank" rel="noreferrer">{day.dish.ref}</a>:day.dish.ref}</div>}
+              {(day.dish.catId || day.dish.ref) && (
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:4 }}>
+                  {day.dish.catId && <button className="de-btn" onClick={()=>toggleFave(day.dish.catId)} title={favesSet.has(day.dish.catId)?"Remove from Midweek Faves":"Save to Midweek Faves"} style={{ background:"none", border:"none", padding:0, cursor:"pointer", display:"inline-flex", alignItems:"center", flexShrink:0 }}><Star size={15} fill={favesSet.has(day.dish.catId)?SLOTS.faves.color:"none"} color={favesSet.has(day.dish.catId)?SLOTS.faves.color:C.muted} strokeWidth={1.8}/></button>}
+                  {day.dish.ref && <span style={{ fontSize:13, color:C.muted }}>{/^https?:\/\//.test(day.dish.ref)?<a className="de-link" href={day.dish.ref} target="_blank" rel="noreferrer">{day.dish.ref}</a>:day.dish.ref}</span>}
+                </div>
+              )}
+              {day.suggested && (
+                <div style={{ display:"flex", gap:7, marginTop:10, flexWrap:"wrap" }}>
+                  <button className="de-btn" onClick={()=>suggest(o,day.id)} style={ghost}><RefreshCw size={13}/> Another</button>
+                  <button className="de-btn" onClick={()=>accept(o,day.id)} style={primary}><Check size={13}/> Use this</button>
+                </div>
+              )}
               <div style={{ display:"flex", gap:7, marginTop:10, flexWrap:"wrap" }}>
-                {day.suggested && <button className="de-btn" onClick={()=>suggest(o,day.id)} style={ghost}><RefreshCw size={13}/> Another</button>}
-                {day.suggested && <button className="de-btn" onClick={()=>accept(o,day.id)} style={primary}><Check size={13}/> Use this</button>}
-                <button className="de-btn" onClick={()=>openCatalogue(day.id)} style={ghost}>{day.type==="freezer"?"From freezer":"Recipes"}</button>
-                <button className="de-btn" onClick={()=>setIngPreviewFor(ingPreviewFor===day.id?null:day.id)} style={ghost}><List size={13}/> Ingredients</button>
-                {dishShopIngs(day.dish).length>0 && <button className="de-btn" onClick={()=>addDishIngredients(o,day.id)} style={ghost}><ShoppingCart size={13}/> Add to shop</button>}
-                {day.dish.catId && <button className="de-btn" onClick={()=>toggleFave(day.dish.catId)} style={ghost} title={favesSet.has(day.dish.catId)?"Remove from Midweek Faves":"Save to Midweek Faves"}><Star size={13} fill={favesSet.has(day.dish.catId)?SLOTS.faves.color:"none"} color={favesSet.has(day.dish.catId)?SLOTS.faves.color:undefined} strokeWidth={1.8}/> {favesSet.has(day.dish.catId)?"Faved":"Fave"}</button>}
-                <button className="de-btn" onClick={()=>{ setIngPreviewFor(null); setMoveFor(moveFor===day.id?null:day.id); }} style={ghost}><ArrowLeftRight size={13}/> Move</button>
-                <button className="de-btn" onClick={()=>beginEdit(o,day.id)} style={ghost}><Pencil size={13}/> Edit</button>
-                <button className="de-btn" onClick={()=>clearDish(o,day.id)} style={ghost}><X size={13}/> Clear</button>
+                <button className="de-btn" onClick={()=>setIngPreviewFor(ingPreviewFor===day.id?null:day.id)} style={iconBtn} title="Ingredients" aria-label="Ingredients"><List size={16}/></button>
+                {dishShopIngs(day.dish).length>0 && <button className="de-btn" onClick={()=>addDishIngredients(o,day.id)} style={iconBtn} title="Add to shop" aria-label="Add to shop"><ShoppingCart size={16}/></button>}
+                <button className="de-btn" onClick={()=>{ setIngPreviewFor(null); setMoveFor(moveFor===day.id?null:day.id); }} style={iconBtn} title="Move to another day" aria-label="Move to another day"><ArrowUpDown size={16}/></button>
+                <button className="de-btn" onClick={()=>beginEdit(o,day.id)} style={iconBtn} title="Edit" aria-label="Edit"><Pencil size={16}/></button>
+                <button className="de-btn" onClick={()=>clearDish(o,day.id)} style={iconBtn} title="Clear" aria-label="Clear"><X size={16}/></button>
               </div>
               {ingPreviewFor===day.id && (
                 <div style={{ marginTop:10, background:C.cardEmpty, border:`1px solid ${C.line}`, borderRadius:10, padding:"10px 12px" }}>
@@ -1187,7 +1200,7 @@ export default function KitchenApp() {
 
             <div style={{ marginTop:16, background:`linear-gradient(180deg,${rgba(C.ember,0.12)},${C.card})`, border:`1px solid ${rgba(C.ember,0.4)}`, borderRadius:16, padding:"16px 18px" }}>
               <div style={eyebrow}>TONIGHT</div>
-              <div style={{ fontFamily:SERIF, fontWeight:800, letterSpacing:"-0.02em", fontSize:24, marginTop:6 }}>{tonight&&tonight.dish?tonight.dish.name:"No dinner set"}</div>
+              <div style={{ fontFamily:SERIF, fontWeight:800, letterSpacing:"-0.02em", fontSize:24, marginTop:6, textTransform:"uppercase" }}>{tonight&&tonight.dish?tonight.dish.name:"No dinner set"}</div>
               {defrostTomorrow && (
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:12, background:rgba(SLOTS.freezer.color,0.13), border:`1px solid ${rgba(SLOTS.freezer.color,0.45)}`, borderRadius:10, padding:"8px 11px" }}>
                   <span style={{ width:7, height:7, borderRadius:99, background:SLOTS.freezer.color, flexShrink:0 }} />
