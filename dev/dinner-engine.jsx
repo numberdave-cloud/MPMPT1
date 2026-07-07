@@ -507,7 +507,11 @@ export default function KitchenApp() {
   const pickCatalogue = (o,id,c) => {
     const dish={name:c.name, ref:c.ref, catId:c.id};
     reconcileFreezer(o,id,dish);
-    patch(o,id,{ dish, suggested:false });
+    const day=weeks[o].find(d=>d.id===id);
+    const extra = (day && !day.type)
+      ? { type: favesSet.has(c.id) ? "faves" : dishSeasonalScore(c,inSeasonProduce)>0 ? "seasonal" : c.slot==="quick" ? "quick" : "fresh" }
+      : {};
+    patch(o,id,{ dish, suggested:false, ...extra });
     setHistory(h=>[c.name,...h.filter(x=>x.toLowerCase()!==c.name.toLowerCase())].slice(0,12));
     setCatPickFor(null); setCatQuery(""); setCatAdded(null);
   };
@@ -543,6 +547,7 @@ export default function KitchenApp() {
     const day=weeks[o].find(d=>d.id===id);
     const wanted = dishShopIngs(day && day.dish);
     if(!wanted.length){ setCatAdded({ day:id, added:0, merged:0 }); return; }
+    const prev = shopItems;
     const next = shopItems.map(it=>({...it}));
     const idx = {}; next.forEach((it,i)=>{ idx[it.name.toLowerCase()]=i; });
     const seen = new Set();
@@ -566,6 +571,7 @@ export default function KitchenApp() {
     });
     setShopItems(next);
     setCatAdded({ day:id, added, merged });
+    if(added||merged) offerTaskUndo(`Added ${day.dish.name} to the shop`, ()=>{ setShopItems(prev); setCatAdded(a=>(a&&a.day===id)?null:a); });
   };
   const addWeekIngredients = (o) => {
     const days = (weeks[o] || []).filter(d => startOfDay(d.date) >= today0); // skip meals already past
@@ -885,6 +891,7 @@ export default function KitchenApp() {
   const iconBtn = { display:"inline-flex", alignItems:"center", justifyContent:"center", width:38, height:38, background:"transparent", color:C.muted, border:`1px solid ${C.line}`, borderRadius:9, padding:0, flexShrink:0, fontFamily:SANS };
   const inStyle = { background:C.ink, border:`1px solid ${C.line}`, color:C.cream, borderRadius:8, padding:"9px 11px", fontFamily:SANS, fontSize:14, width:"100%", boxSizing:"border-box" };
   const eyebrow = { fontFamily:MONO, fontSize:11, letterSpacing:"1.5px", color:C.muted };
+  const sectionHead = { fontFamily:SERIF, fontWeight:800, fontSize:17, letterSpacing:"0.02em", color:C.cream, textTransform:"uppercase" };
 
   const checkbox = (isDone,onClick) => (
     <button className="de-btn" onClick={onClick} aria-label="toggle done" style={{ width:22, height:22, borderRadius:7, border:`1.5px solid ${isDone?C.ember:C.line}`, background:isDone?C.ember:"transparent", display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
@@ -998,7 +1005,7 @@ export default function KitchenApp() {
                     <button className="de-btn" onClick={()=>setCatAll(a=>!a)} style={{ background:"transparent", border:"none", color:C.ember, padding:"2px 2px", fontFamily:SANS, fontWeight:600, fontSize:12.5 }}>{catAll?`Show ${tlabel.toLowerCase()} only`:"Show all dishes"}</button>
                   </div>
                 )}
-                <input className="de-in" autoFocus value={catQuery} onChange={e=>setCatQuery(e.target.value)} placeholder={`Search ${pool.length} dishes`} style={inStyle} />
+                <input className="de-in" value={catQuery} onChange={e=>setCatQuery(e.target.value)} placeholder={`Search ${pool.length} dishes`} style={inStyle} />
                 <div style={{ maxHeight:236, overflowY:"auto", display:"flex", flexDirection:"column", gap:6, margin:"0 -2px", padding:"0 2px" }}>
                   {list.map(c=>{
                     const nonst=c.ings.filter(x=>!x.s&&x.i).length;
@@ -1069,11 +1076,11 @@ export default function KitchenApp() {
               {moveFor===day.id && (
                 <div style={{ marginTop:10, background:C.cardEmpty, border:`1px solid ${C.line}`, borderRadius:10, padding:"10px 12px" }}>
                   <div style={{ fontSize:12, color:C.muted, marginBottom:8 }}>Move to which day? Swaps if that day's taken.</div>
-                  <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                     {weeks[o].filter(d=>d.id!==day.id).map(d=>(
-                      <button key={d.id} className="de-btn" onClick={()=>moveDish(o,day.id,d.id)} style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:1, background:C.card, border:`1px solid ${C.line}`, borderRadius:9, padding:"6px 10px", minWidth:62, color:C.cream }}>
-                        <span style={{ fontSize:13, fontWeight:600 }}>{d.weekday}</span>
-                        <span style={{ fontSize:10.5, color:C.muted, maxWidth:104, whiteSpace:"normal", lineHeight:1.2, wordBreak:"break-word" }}>{d.dish?d.dish.name:"free"}</span>
+                      <button key={d.id} className="de-btn" onClick={()=>moveDish(o,day.id,d.id)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, width:"100%", textAlign:"left", background:C.card, border:`1px solid ${C.line}`, borderRadius:9, padding:"9px 12px", color:C.cream }}>
+                        <span style={{ fontSize:13.5, fontWeight:600, flexShrink:0 }}>{d.weekday}</span>
+                        <span style={{ fontSize:12.5, color:C.muted, textAlign:"right", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", minWidth:0 }}>{d.dish?d.dish.name:"free"}</span>
                       </button>
                     ))}
                   </div>
@@ -1288,7 +1295,7 @@ export default function KitchenApp() {
                   {lbl}{n>0 && (n===7 ? <Check size={12} color={SRC.plan}/> : <span style={{ fontFamily:MONO, fontSize:11, color:C.muted }}>{n}/7</span>)}
                 </button> ); })}
             </div>
-            <div style={{ ...eyebrow, marginTop:22, marginBottom:4 }}>USE THESE FIRST</div>
+            <div style={{ ...sectionHead, marginTop:22, marginBottom:4 }}>USE THESE FIRST</div>
             <div style={{ fontSize:13, color:C.muted, marginBottom:12 }}>Sorted by what'll go off soonest. Deal with these, then fill the rest of the week.</div>
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {planUrgent.map(item=>{
@@ -1382,13 +1389,12 @@ export default function KitchenApp() {
 
             {favePicks.length>0 && (
               <div style={{ marginTop:26 }}>
-                <div style={{ ...eyebrow, marginBottom:4 }}>MIDWEEK FAVES</div>
+                <div style={{ ...sectionHead, marginBottom:4 }}>MIDWEEK FAVES</div>
                 <div style={{ fontSize:13, color:C.muted, marginBottom:12 }}>Dishes you've starred. Most seasonal and use-up first.</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                   {favePicks.slice(0,favesShown).map(c=>(
                     <div key={c.id} style={{ background:C.card, border:`1px solid ${rgba(SLOTS.faves.color,0.35)}`, borderRadius:13, padding:"13px 15px" }}>
                       <div style={{ display:"flex", alignItems:"center", gap:9, flexWrap:"wrap" }}>
-                        <span style={{ width:9, height:9, borderRadius:99, background:SLOTS.faves.color }} />
                         <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16, color:C.cream }}>{c.name}</span>
                         <span style={{ fontFamily:MONO, fontSize:10, letterSpacing:"0.5px", color:C.muted, border:`1px solid ${C.line}`, padding:"1px 6px", borderRadius:99 }}>{c.cookMin} MIN</span>
                         {c.serves && <span style={{ fontSize:11.5, color:C.muted }}>{/^makes/i.test(c.serves)?c.serves:"Serves "+c.serves}</span>}
@@ -1432,13 +1438,12 @@ export default function KitchenApp() {
 
             {seasonalPicks.length>0 && (
               <div style={{ marginTop:26 }}>
-                <div style={{ ...eyebrow, marginBottom:4 }}>SEASONAL PICKS</div>
+                <div style={{ ...sectionHead, marginBottom:4 }}>SEASONAL PICKS</div>
                 <div style={{ fontSize:13, color:C.muted, marginBottom:12 }}>Best value in {monthName}, built on what's in season around Castlemaine. Most seasonal first.</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                   {seasonalPicks.slice(0,seasonalShown).map(({c,score,produce})=>(
                     <div key={c.id} style={{ background:C.card, border:`1px solid ${rgba(SRC.garden,0.35)}`, borderRadius:13, padding:"13px 15px" }}>
                       <div style={{ display:"flex", alignItems:"center", gap:9, flexWrap:"wrap" }}>
-                        <span style={{ width:9, height:9, borderRadius:99, background:SRC.garden }} />
                         <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16, color:C.cream }}>{c.name}</span>
                         <span style={{ fontFamily:MONO, fontSize:10, letterSpacing:"0.5px", color:C.muted, border:`1px solid ${C.line}`, padding:"1px 6px", borderRadius:99 }}>{c.cookMin} MIN</span>
                         {c.serves && <span style={{ fontSize:11.5, color:C.muted }}>{/^makes/i.test(c.serves)?c.serves:"Serves "+c.serves}</span>}
@@ -1590,13 +1595,6 @@ export default function KitchenApp() {
                 <div style={{ fontFamily:MONO, fontSize:11.5, color:C.muted, letterSpacing:"0.5px", marginTop:2 }}>{weekRange.toUpperCase()}</div>
               </div>
               <button className="de-btn" onClick={()=>changeWeek(1)} disabled={weekOffset===3} style={{ ...ghost, padding:"8px 10px", opacity:weekOffset===3?0.3:1 }}><ChevronRight size={16}/></button>
-            </div>
-            <div style={{ display:"flex", flexWrap:"wrap", gap:"8px 16px", padding:"0 2px 16px" }}>
-              {SLOT_ORDER.map(k=>(
-                <span key={k} style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize:12, color:C.muted }}>
-                  <span style={{ width:8, height:8, borderRadius:99, background:SLOTS[k].color }}/>{SLOTS[k].full}
-                </span>
-              ))}
             </div>
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {weeks[weekOffset].map(day=>renderDay(weekOffset,day))}

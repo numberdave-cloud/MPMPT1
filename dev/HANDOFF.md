@@ -213,7 +213,32 @@ stores the concentrated product as "tomato paste" (15 dishes) and the thin one a
 whether "tomato puree" should alias to tomato paste (UK sense) or passata (US sense) so it surfaces
 dishes. Nothing added yet.
 
-CURRENT LIVE COMMIT: this 5 Jul 2026 five-item pass (previous tip 59af1e556d; interim HEAD 0b7578625b).
+## Shipped this session (7 Jul 2026), one atomic commit
+Seven UI / behaviour items in a single build + deploy (dev/dinner-engine.jsx + meal-planner/index.html
++ this doc; recipes.json unchanged, catalogue still 227). The ambiguous-amounts audit (bare "q" with
+no unit, e.g. "Rosemary 1", "Parmesan 1") was explicitly PARKED by Dave, not done.
+- (1) Plan-wizard section headers. New `sectionHead` style (SERIF, 800, 17px, uppercase, C.cream)
+  replaces the small mono `eyebrow` on the three planning headers: USE THESE FIRST, MIDWEEK FAVES,
+  SEASONAL PICKS. Top h1 ("Plan next week", 26) stays largest; body/ingredient text unchanged. Other
+  eyebrow headers elsewhere (TONIGHT, THIS WEEK, etc.) deliberately left as the small mono style.
+- (2) Dropped the coloured slot-type dot on the Midweek Faves and Seasonal Picks pick cards (it wrapped
+  onto its own line on long titles and is redundant inside a labelled section).
+- (3) Removed the colour-key legend row at the top of the Meal Plan week view (SLOT_ORDER map). The
+  day-type pills already label themselves.
+- (4) pickCatalogue (the Recipes browser) now sets a day type when the day had none: fave dish ->
+  faves, else in-season dish -> seasonal, else quick slot -> quick, else fresh. A day that already has
+  a deliberate type is left alone. The Midweek Faves / Seasonal Picks "Add to week" flows already set
+  their type (placeFavePick/placeSeasonalPick) and still win outright.
+- (5) Move-to-another-day picker is now a single-column list of full-width rows (weekday left, dish or
+  "free" right), replacing the ragged wrap-grid. NOTE: the fave-place and seasonal-place day pickers,
+  and the use-up "which day" step, still use the old wrap-grid; matched only the move picker per scope.
+- (6) Adding one night's dish to the shop now offers the same hovering Undo toast as the tick-undo.
+  addDishIngredients snapshots shopItems before writing and offerTaskUndo restores the whole list
+  (needed because the add both inserts new items and merges amounts into existing ones).
+- (7) Recipes browser no longer autofocuses its search box, so the phone keyboard stays down until you
+  tap the field and you can scroll the list first. (Other add-item inputs keep their autoFocus.)
+
+CURRENT LIVE COMMIT: this 7 Jul 2026 seven-item pass (previous tip 59af1e556d; supersedes the 5 Jul pass).
 
 ## Backlog status
 - DONE: items 1, 4, 5, 7, 8, 9, 10, 11, plus the seasonal-slot autofill fix and the two UI tweaks
