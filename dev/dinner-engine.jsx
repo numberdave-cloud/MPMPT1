@@ -319,6 +319,7 @@ export default function KitchenApp() {
   const [menuFor, setMenuFor]     = useState(null);
   const [editFor, setEditFor]     = useState(null);
   const [catPickFor, setCatPickFor] = useState(null);
+  useEffect(()=>{ if(!catPickFor) return; const el=document.getElementById("plan-day-"+catPickFor); if(el) requestAnimationFrame(()=>el.scrollIntoView({ behavior:"smooth", block:"center" })); }, [catPickFor]);
   const [catQuery, setCatQuery]   = useState("");
   const [catAdded, setCatAdded]   = useState(null);
   const [catAll, setCatAll]       = useState(false); // recipe browser: show all dishes vs only the day's category
@@ -363,6 +364,8 @@ export default function KitchenApp() {
   const clearTimer = useRef(null);
   const [undoTask, setUndoTask] = useState(null);   // { msg, revert } after a to-do box is ticked
   const taskUndoTimer = useRef(null);
+  const [shopUndo, setShopUndo] = useState(null);   // { day, prev } for the inline add-to-shop undo icon
+  const shopUndoTimer = useRef(null);
   const suggestMemory = useRef({});                 // per-day recently suggested dish names, for variety on re-roll
   const [newItemName, setNewItemName] = useState("");
   const [addingItem, setAddingItem]   = useState(false);
@@ -571,7 +574,18 @@ export default function KitchenApp() {
     });
     setShopItems(next);
     setCatAdded({ day:id, added, merged });
-    if(added||merged) offerTaskUndo(`Added ${day.dish.name} to the shop`, ()=>{ setShopItems(prev); setCatAdded(a=>(a&&a.day===id)?null:a); });
+    if(added||merged){
+      if(shopUndoTimer.current) clearTimeout(shopUndoTimer.current);
+      setShopUndo({ day:id, prev });
+      shopUndoTimer.current = setTimeout(()=>setShopUndo(null), 5000);
+    }
+  };
+  const undoAddToShop = () => {
+    if(!shopUndo) return;
+    setShopItems(shopUndo.prev);
+    setCatAdded(a=>(a&&a.day===shopUndo.day)?null:a);
+    if(shopUndoTimer.current) clearTimeout(shopUndoTimer.current);
+    setShopUndo(null);
   };
   const addWeekIngredients = (o) => {
     const days = (weeks[o] || []).filter(d => startOfDay(d.date) >= today0); // skip meals already past
@@ -918,7 +932,7 @@ export default function KitchenApp() {
   const renderDay = (o,day) => {
     const accent=day.isToday;
     return (
-      <div key={day.id} style={{ position:"relative", background:day.dish?C.card:C.cardEmpty, border:`1px solid ${accent?rgba(C.ember,0.55):C.line}`, borderLeft:accent?`3px solid ${C.ember}`:`1px solid ${C.line}`, borderRadius:14, padding:"13px 15px", boxShadow:accent?`0 10px 30px ${rgba(C.ember,0.13)}`:"none" }}>
+      <div key={day.id} id={"plan-day-"+day.id} style={{ position:"relative", background:day.dish?C.card:C.cardEmpty, border:`1px solid ${accent?rgba(C.ember,0.55):C.line}`, borderLeft:accent?`3px solid ${C.ember}`:`1px solid ${C.line}`, borderRadius:14, padding:"13px 15px", boxShadow:accent?`0 10px 30px ${rgba(C.ember,0.13)}`:"none" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10 }}>
           <div style={{ display:"flex", alignItems:"baseline", gap:10, flexWrap:"wrap" }}>
             <span style={{ fontFamily:SERIF, fontWeight:700, letterSpacing:"-0.02em", fontSize:18, color:accent?C.ember:C.cream }}>{FULL_WEEKDAY[day.weekday]}</span>
@@ -1050,6 +1064,7 @@ export default function KitchenApp() {
                 <button className="de-btn" onClick={()=>{ setIngPreviewFor(null); setMoveFor(moveFor===day.id?null:day.id); }} style={iconBtn} title="Move to another day" aria-label="Move to another day"><ArrowUpDown size={16}/></button>
                 <button className="de-btn" onClick={()=>beginEdit(o,day.id)} style={iconBtn} title="Edit" aria-label="Edit"><Pencil size={16}/></button>
                 <button className="de-btn" onClick={()=>clearDish(o,day.id)} style={iconBtn} title="Clear" aria-label="Clear"><X size={16}/></button>
+                {shopUndo && shopUndo.day===day.id && <button className="de-btn" onClick={undoAddToShop} style={{ ...iconBtn, border:`1px solid ${rgba(C.ember,0.55)}`, color:C.ember }} title="Undo add to shop" aria-label="Undo add to shop"><Undo2 size={16}/></button>}
               </div>
               {ingPreviewFor===day.id && (
                 <div style={{ marginTop:10, background:C.cardEmpty, border:`1px solid ${C.line}`, borderRadius:10, padding:"10px 12px" }}>
@@ -1304,7 +1319,6 @@ export default function KitchenApp() {
                 return (
                   <div key={item.id} style={{ background:res?C.cardEmpty:C.card, border:`1px solid ${res?C.line:rgba(SRC[item.src],0.35)}`, borderRadius:13, padding:"13px 15px", opacity:res&&res.type==="snoozed"?0.55:1 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:9, flexWrap:"wrap" }}>
-                      <span style={{ width:9, height:9, borderRadius:99, background:SRC[item.src] }} />
                       <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16, color:C.cream }}>{item.title}</span>
                       <span style={{ fontFamily:MONO, fontSize:10, letterSpacing:"0.5px", color:C.muted, border:`1px solid ${C.line}`, padding:"1px 6px", borderRadius:99 }}>{item.kind==="meal"?"MEAL":"INGREDIENT"}</span>
                     </div>
@@ -1361,11 +1375,11 @@ export default function KitchenApp() {
                     })():ui.step==="day"?(
                       <div style={{ marginTop:11 }}>
                         <div style={{ fontSize:12.5, color:C.muted, marginBottom:8 }}>Add "{ui.pendingDish?ui.pendingDish.name:""}" to which day?</div>
-                        <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                        <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                           {weeks[planWeek].map(d=>(
-                            <button key={d.id} className="de-btn" onClick={()=>chooseDay(item,d.id)} title={slotMeta(d.type).full} style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:1, background:d.dish?C.card:"transparent", border:`1px solid ${rgba(slotMeta(d.type).color,0.5)}`, color:C.cream, borderRadius:9, padding:"6px 10px", minWidth:62, fontFamily:SANS }}>
-                              <span style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600 }}><span style={{ width:7, height:7, borderRadius:99, background:slotMeta(d.type).color }}/>{d.weekday}</span>
-                              <span style={{ fontSize:10.5, color:C.muted, maxWidth:104, whiteSpace:"normal", lineHeight:1.2, wordBreak:"break-word" }}>{d.dish?d.dish.name:"free"}</span>
+                            <button key={d.id} className="de-btn" onClick={()=>chooseDay(item,d.id)} title={slotMeta(d.type).full} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, width:"100%", textAlign:"left", background:C.card, border:`1px solid ${C.line}`, borderRadius:9, padding:"9px 12px", color:C.cream }}>
+                              <span style={{ fontSize:13.5, fontWeight:600, flexShrink:0 }}>{d.weekday}</span>
+                              <span style={{ fontSize:12.5, color:C.muted, textAlign:"right", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", minWidth:0 }}>{d.dish?d.dish.name:"free"}</span>
                             </button>
                           ))}
                         </div>
@@ -1417,11 +1431,11 @@ export default function KitchenApp() {
                       {favePickFor===c.id && (
                         <div style={{ marginTop:10, background:C.cardEmpty, border:`1px solid ${C.line}`, borderRadius:10, padding:"10px 12px" }}>
                           <div style={{ fontSize:12, color:C.muted, marginBottom:8 }}>Which day? Tapping a taken day replaces it.</div>
-                          <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                          <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                             {weeks[planWeek].map(d=>(
-                              <button key={d.id} className="de-btn" onClick={()=>placeFavePick(c,d.id)} style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:1, background:d.dish?C.card:rgba(SLOTS.faves.color,0.14), border:`1px solid ${d.dish?C.line:rgba(SLOTS.faves.color,0.45)}`, borderRadius:9, padding:"6px 10px", minWidth:62, color:C.cream }}>
-                                <span style={{ fontSize:13, fontWeight:600 }}>{d.weekday}</span>
-                                <span style={{ fontSize:10.5, color:C.muted, maxWidth:104, whiteSpace:"normal", lineHeight:1.2, wordBreak:"break-word" }}>{d.dish?d.dish.name:"free"}</span>
+                              <button key={d.id} className="de-btn" onClick={()=>placeFavePick(c,d.id)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, width:"100%", textAlign:"left", background:C.card, border:`1px solid ${C.line}`, borderRadius:9, padding:"9px 12px", color:C.cream }}>
+                                <span style={{ fontSize:13.5, fontWeight:600, flexShrink:0 }}>{d.weekday}</span>
+                                <span style={{ fontSize:12.5, color:C.muted, textAlign:"right", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", minWidth:0 }}>{d.dish?d.dish.name:"free"}</span>
                               </button>
                             ))}
                           </div>
@@ -1467,11 +1481,11 @@ export default function KitchenApp() {
                       {seasonalPickFor===c.id && (
                         <div style={{ marginTop:10, background:C.cardEmpty, border:`1px solid ${C.line}`, borderRadius:10, padding:"10px 12px" }}>
                           <div style={{ fontSize:12, color:C.muted, marginBottom:8 }}>Which day? Tapping a taken day replaces it.</div>
-                          <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                          <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                             {weeks[planWeek].map(d=>(
-                              <button key={d.id} className="de-btn" onClick={()=>placeSeasonalPick(c,d.id)} style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:1, background:d.dish?C.card:rgba(SRC.garden,0.14), border:`1px solid ${d.dish?C.line:rgba(SRC.garden,0.45)}`, borderRadius:9, padding:"6px 10px", minWidth:62, color:C.cream }}>
-                                <span style={{ fontSize:13, fontWeight:600 }}>{d.weekday}</span>
-                                <span style={{ fontSize:10.5, color:C.muted, maxWidth:104, whiteSpace:"normal", lineHeight:1.2, wordBreak:"break-word" }}>{d.dish?d.dish.name:"free"}</span>
+                              <button key={d.id} className="de-btn" onClick={()=>placeSeasonalPick(c,d.id)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, width:"100%", textAlign:"left", background:C.card, border:`1px solid ${C.line}`, borderRadius:9, padding:"9px 12px", color:C.cream }}>
+                                <span style={{ fontSize:13.5, fontWeight:600, flexShrink:0 }}>{d.weekday}</span>
+                                <span style={{ fontSize:12.5, color:C.muted, textAlign:"right", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", minWidth:0 }}>{d.dish?d.dish.name:"free"}</span>
                               </button>
                             ))}
                           </div>

@@ -238,7 +238,23 @@ no unit, e.g. "Rosemary 1", "Parmesan 1") was explicitly PARKED by Dave, not don
 - (7) Recipes browser no longer autofocuses its search box, so the phone keyboard stays down until you
   tap the field and you can scroll the list first. (Other add-item inputs keep their autoFocus.)
 
-CURRENT LIVE COMMIT: this 7 Jul 2026 seven-item pass (previous tip 59af1e556d; supersedes the 5 Jul pass).
+## Shipped this session (7 Jul 2026, second pass), one atomic commit
+Four follow-up tweaks after the seven-item pass (dev/dinner-engine.jsx + meal-planner/index.html +
+this doc; recipes.json unchanged, catalogue still 227).
+- Dropped the coloured slot dot on the USE THESE FIRST urgent cards too (the earlier pass only did
+  the Faves and Seasonal pick cards). No dot remains on any plan-wizard pick card.
+- Made the remaining plan-wizard day pickers vertical to match the move picker: the use-up "which
+  day" step (chooseDay), the Midweek Faves place picker, and the Seasonal place picker. All four day
+  pickers now render as a single column of full-width rows (weekday left, dish or "free" right).
+- Add-to-shop undo is now an inline icon, not the bottom toast. New state shopUndo {day, prev} +
+  shopUndoTimer; addDishIngredients snapshots shopItems and sets shopUndo; an ember Undo2 icon appears
+  at the end of that day's icon row for 5s; undoAddToShop restores the whole list. The global
+  offerTaskUndo toast is untouched and still used for tick / maintenance / dismiss undos.
+- Recipes browser now scrolls its day into view. Each week-view day card has id="plan-day-<day.id>"
+  and a useEffect on catPickFor calls scrollIntoView({block:"center"}) via requestAnimationFrame, so
+  opening Recipes centres that day instead of leaving it at the bottom with the list off-screen.
+
+CURRENT LIVE COMMIT: this 7 Jul 2026 second pass (four tweaks; supersedes the seven-item pass earlier the same day).
 
 ## Backlog status
 - DONE: items 1, 4, 5, 7, 8, 9, 10, 11, plus the seasonal-slot autofill fix and the two UI tweaks
