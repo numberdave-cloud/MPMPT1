@@ -254,7 +254,24 @@ this doc; recipes.json unchanged, catalogue still 227).
   and a useEffect on catPickFor calls scrollIntoView({block:"center"}) via requestAnimationFrame, so
   opening Recipes centres that day instead of leaving it at the bottom with the list off-screen.
 
-CURRENT LIVE COMMIT: this 7 Jul 2026 second pass (four tweaks; supersedes the seven-item pass earlier the same day).
+## Shipped this session (7 Jul 2026, third pass), one atomic commit
+New Shop feature: a "By section" grouping (dev/dinner-engine.jsx + meal-planner/index.html + this doc;
+recipes.json unchanged, catalogue still 227).
+- Third shopMode alongside "onestop" and "best": "section". Renders like Best Shop (grouped headers +
+  item count) but groups the whole list by Woolworths-style aisle instead of by store, for a one-shop run.
+- Classifier: module-level SHOP_SECTIONS (12 aisles, "Other" last) + SECTION_RULES (ordered keyword
+  rules, first match wins) + shopSection(name). groupedBySection mirrors groupedByStore, in section
+  order, empty sections dropped. Rules were tuned against all 492 distinct non-staple ingredient names
+  in the live catalogue: only 5 land in "Other" (tofu puffs, ratatouille, "seeds or nuts", skewers,
+  bare "zest"), and known collisions are handled by rule order (butternut vs butter, prawns vs peeled
+  tomatoes, ground/powder spices vs fresh, mustard seeds vs mustard, cooking wine vs wine, coconut
+  milk/cream vs dairy, stock vs meat). It is a display-time sort only; it does not touch item data.
+- Sections used: Fruit & Veg, Bakery, Meat & Seafood, Dairy & Eggs, Cans & Jars, Pasta Rice & Grains,
+  Herbs Spices & Baking, Oils Sauces & Condiments, Nuts & Dried Fruit, Freezer, Drinks, Other. All
+  tinned goods sit in one "Cans & Jars" aisle (not split into canned veg/fruit) per how the aisle runs;
+  flagged to Dave in case he wants them split. Easy to retune: edit SECTION_RULES / SHOP_SECTIONS.
+
+CURRENT LIVE COMMIT: this 7 Jul 2026 third pass (By section shop grouping; supersedes the earlier passes).
 
 ## Backlog status
 - DONE: items 1, 4, 5, 7, 8, 9, 10, 11, plus the seasonal-slot autofill fix and the two UI tweaks

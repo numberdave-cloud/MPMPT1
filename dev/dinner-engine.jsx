@@ -242,6 +242,27 @@ const INIT_BEST = {
   "Chuck steak":"Clifford's Butchers",
   "Ricotta":    "Maxi IGA",
 };
+/* ---------- shop aisle sections (Woolworths-style), for the By Section sort ---------- */
+const SHOP_SECTIONS = ["Fruit & Veg", "Bakery", "Meat & Seafood", "Dairy & Eggs", "Cans & Jars", "Pasta, Rice & Grains", "Herbs, Spices & Baking", "Oils, Sauces & Condiments", "Nuts & Dried Fruit", "Freezer", "Drinks", "Other"];
+const SECTION_RULES = [
+  ["Freezer",["frozen"]],
+  ["Fruit & Veg",["eggplant", "aubergine", "jalapeno", "butternut"]],
+  ["Oils, Sauces & Condiments",["peanut butter", "fish sauce", "wine vinegar", "cider vinegar", "vinegar", "cooking wine", "rice wine", "sesame oil", "chilli oil", "mustard oil", "grapeseed oil", "canola oil"]],
+  ["Cans & Jars",["coconut milk", "coconut cream", "creamed corn", "corn kernels", "sun-dried tomato", "sundried tomato", "stock", "bouillon"]],
+  ["Pasta, Rice & Grains",["split pea", "lentil", "chana dal", "moong dal"]],
+  ["Dairy & Eggs",["creme fraiche", "fraiche"]],
+  ["Cans & Jars",["canned", "tinned", "passata", "chopped tomatoes", "crushed tomatoes", "tomato paste", "tomato pasta sauce", "pasta sauce", "tuna", "sardine", "anchov", "olives", "kalamata", "caper", "cornichon", "pickled", "preserved lemon", "kimchi", "chipotle", "adobo", "water chestnut", "peeled tomato", "bamboo shoot", "gherkin", "borlotti", "cannellini", "kidney bean", "black beans", "chickpea", "coconut"]],
+  ["Oils, Sauces & Condiments",["oil", "soy sauce", "oyster sauce", "hoisin", "worcestershire", "sriracha", "gochujang", "sambal", "miso", "curry paste", "laksa", "chilli crisp", "chilli paste", "sesame paste", "tahini", "mayonnaise", "kewpie", "dijon", "wholegrain mustard", "honey", "maple", "mirin", "pesto", "dressing", "tomato sauce", "sweet and sour", "sweet chilli", "stir-fry sauce", "stir fry sauce", "ketchup", "jam", "chutney", "relish", "sauce"]],
+  ["Meat & Seafood",["chicken", "beef", "pork", "lamb", "veal", "mince", "sausage", "bacon", "pancetta", "prosciutto", "guanciale", "salami", "chorizo", "mortadella", "kielbasa", "pepperoni", "parma ham", "culatello", "ham", "prawn", "snapper", "fish", "crab", "calamari", "squid", "maryland", "drumstick", "wings", "thigh", "breast", "rump", "shin", "shoulder", "chops", "tenderloin", " loin", "steak", "bones", "chuck", "hanger", "brisket", "protein", "neck fillet"]],
+  ["Dairy & Eggs",["butter", "milk", "cream", "yoghurt", "yogurt", "cheese", "parmesan", "pecorino", "mozzarella", "cheddar", "colby", "fontina", "gorgonzola", "mascarpone", "ricotta", "feta", "haloumi", "halloumi", "provolone", "taleggio", "asiago", "goat", "paneer", "brie", "camembert", "gruyere", "egg", "eggs", "ghee"]],
+  ["Bakery",["bread", "sourdough", "ciabatta", "focaccia", "baguette", "brioche", "bun", "tortilla", "wrap", "lebanese bread", "flatbread", "pastry", "naan", "roti", "breadcrumb", "panko", "crouton"]],
+  ["Nuts & Dried Fruit",["almond", "walnut", "pecan", "pine nut", "cashew", "peanut", "hazelnut", "pistachio", "raisin", "sultana", "cranberr", "apricot", "date", "prune", "dried fruit", "dried cranberr"]],
+  ["Pasta, Rice & Grains",["pasta", "spaghetti", "rigatoni", "penne", "linguine", "bucatini", "bigoli", "orecchiette", "tagliatelle", "pappardelle", "ditali", "ditalini", "orzo", "strozzapreti", "tortiglioni", "gnocchetti", "macaroni", "calamarata", "lasagne", "noodle", "rice", "risotto", "arborio", "carnaroli", "basmati", "jasmine", "couscous", "polenta", "barley", "wheat grain", "wheat noodles", "quinoa", "oats"]],
+  ["Herbs, Spices & Baking",["cumin", "coriander seed", "turmeric", "paprika", "cinnamon", "cardamom", "clove", "nutmeg", "garam masala", "curry powder", "cayenne", "chilli flake", "chilli powder", "mustard seed", "fennel seed", "sesame seed", "star anise", "saffron", "sumac", "asafoetida", "bay leaf", "bay leaves", "oregano", "peppercorn", "white pepper", "sichuan pepper", "five spice", "dried", "ground", "powder", "mustard seed", "flour", "sugar", "baking powder", "bicarbonate", "cornflour", "cocoa", "vanilla", "yeast", "gelatine", "italian herbs", "mixed herbs", "mixed dried herbs"]],
+  ["Drinks",["wine", "beer", "brandy", "vermouth", "marsala", "guinness", "cider", "pineapple juice"]],
+  ["Fruit & Veg",["garlic", "onion", "shallot", "ginger", "chilli", "lemon", "lime", "orange", "apple", "avocado", "tomato", "potato", "carrot", "cauliflower", "broccoli", "broccolini", "cabbage", "wombok", "zucchini", "capsicum", "mushroom", "porcini", "leek", "fennel", "celery", "spinach", "silverbeet", "kale", "cavolo", "chicory", "rocket", "lettuce", "radicchio", "radish", "beetroot", "swede", "turnip", "pumpkin", "corn", "asparagus", "snow pea", "bean sprout", "pea", "cucumber", "parsley", "coriander", "basil", "mint", "dill", "thyme", "rosemary", "sage", "chive", "tarragon", "marjoram", "lemongrass", "grape", "salad", "greens", "green leaves", "leaf", "herb", "cime di rapa", "gai lan", "bok choy", "edamame", "broad bean", "green bean", "vegetable", "dutch carrot", "fig"]]
+];
+function shopSection(name){ const n=(name||"").toLowerCase(); for(const r of SECTION_RULES){ for(const kw of r[1]){ if(n.indexOf(kw)!==-1) return r[0]; } } return "Other"; }
 const SHOP_SEED = [];
 
 /* ---------- maintenance ---------- */
@@ -442,6 +463,15 @@ export default function KitchenApp() {
     stores.forEach(s=>{
       const items = shopItems.filter(it=>it.store===s);
       if (items.length) groups.push({ store: s, items });
+    });
+    return groups;
+  })();
+  // By Section view: group by supermarket aisle, in SHOP_SECTIONS order, empties dropped.
+  const groupedBySection = (() => {
+    const groups = [];
+    SHOP_SECTIONS.forEach(sec=>{
+      const items = shopItems.filter(it=>shopSection(it.name)===sec);
+      if(items.length) groups.push({ section: sec, items });
     });
     return groups;
   })();
@@ -1521,12 +1551,12 @@ export default function KitchenApp() {
             {/* Mode toggle */}
             <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:20, flexWrap:"wrap" }}>
               <div style={{ display:"inline-flex", background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:3 }}>
-                {[["onestop","One stop"],["best","Best shop"]].map(([k,label])=>(
+                {[["onestop","One stop"],["best","Best shop"],["section","By section"]].map(([k,label])=>(
                   <button key={k} className="de-btn" onClick={()=>{ setShopMode(k); setStorePickerFor(null); }} style={{ border:"none", borderRadius:99, padding:"6px 14px", fontSize:12.5, fontFamily:SANS, background:shopMode===k?C.ember:"transparent", color:shopMode===k?C.ink:C.muted, fontWeight:shopMode===k?600:400 }}>{label}</button>
                 ))}
               </div>
               <span style={{ fontSize:12, color:C.faint }}>
-                {shopMode==="onestop" ? "Everything in one list" : "Split by where it's best"}
+                {shopMode==="onestop" ? "Everything in one list" : shopMode==="best" ? "Split by where it's best" : "Grouped by supermarket aisle"}
               </span>
             </div>
 
@@ -1570,6 +1600,32 @@ export default function KitchenApp() {
               </div>
             )}
 
+
+            {/* ---- BY SECTION: grouped by supermarket aisle ---- */}
+            {shopMode==="section" && (
+              <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
+                {shopItems.length===0 && (
+                  <div style={{ fontSize:14, color:C.faint, padding:"10px 0" }}>
+                    No items yet. Add one below, or plan next week to generate a list.
+                  </div>
+                )}
+                {groupedBySection.map(group=>{
+                  const open = group.items.filter(it=>!it.done).length;
+                  return (
+                    <div key={group.section}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:9 }}>
+                        <span style={{ fontFamily:SERIF, fontWeight:700, letterSpacing:"-0.02em", fontSize:18, color:C.cream }}>{group.section}</span>
+                        <span style={{ fontFamily:MONO, fontSize:11, color:C.faint }}>{open} item{open!==1?"s":""}</span>
+                      </div>
+                      <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+                        {group.items.map(renderShopItem)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Add item + add store */}
             <div style={{ marginTop:16, display:"flex", flexDirection:"column", gap:9 }}>
               {addingItem?(
@@ -1594,7 +1650,7 @@ export default function KitchenApp() {
             </div>
 
             <div style={{ fontSize:12, color:C.faint, marginTop:24, lineHeight:1.6 }}>
-              One stop shows the whole list with store tags, for a single run. Best shop splits it by store, with unassigned items up top. ★ saves a store as the default for that item, so it arrives pre-tagged next time.
+              One stop shows the whole list with store tags, for a single run. Best shop splits it by store, with unassigned items up top. By section groups the whole list into supermarket aisles for a single shop. ★ saves a store as the default for that item, so it arrives pre-tagged next time.
             </div>
           </div>
         )}
