@@ -123,11 +123,11 @@ Source of truth is the live app on GitHub: the embedded CATALOGUE array in dinne
 sync, atomically, on every change. recipes-master.xlsx in project knowledge is an optional export
 only.
 
-- Current count: 227 recipes, r001 to r227. Next ID: r228.
+- Current count: 250 recipes, r001 to r250. Next ID: r251.
 - Sources: r001 RecipeTin Eats Tonight; r002-r038 Madhur Jaffrey's Indian Cookery; r039-r058 Gourmet
   Traveller Italian; r059-r077 Use It All (Cornersmith); r078-r095 Rosa Mitchell My Cousin Rosa;
   r096-r118 Gino D'Acampo Gino's Italian Escape: A Taste of the Sun; r119-r137 Ostro (Julia Busuttil
-  Nishimura); r138-r163 Alison Roman Something from Nothing; r164-r227 RecipeTin Eats Tonight (added
+  Nishimura); r138-r163 Alison Roman Something from Nothing; r164-r227 RecipeTin Eats Tonight; r228-r250 Samsung Food web imports (Serious Eats, Gourmet Traveller, America's Test Kitchen, Bon Appetit, The Guardian, Hot Thai Kitchen, RecipeTin Eats, taste.com.au) - web recipes, ref format "Publication (domain)" (added
   by the recipe workstream chat). The jsx CATALOGUE is folded from live recipes.json; recipes.json
   refs are authoritative per recipe.
 
@@ -290,6 +290,7 @@ CURRENT LIVE COMMIT: this 7 Jul 2026 third pass (By section shop grouping; super
 ## Data pending Dave's book lookup (still "(page to confirm)")
 - r015 p.135, r029 p.158, r038 p.146 — guessed pages to verify against the book.
 - r157 Buttered Tomato Soup — no page at all.
+- Open flag: new produce **pineapple** (r234) not in SEASONALITY; committed sea:false, needs a Victorian window. Other non-seasonal items introduced: makrut lime leaves, Vietnamese mint, shiitake mushrooms (not tracked in SEASONALITY).
 
 ## Known code gotchas
 - CSS stacking: a transform on a SwipeRow creates a stacking context that hides dropdowns behind
