@@ -1,5 +1,27 @@
 # Dinner Engine — handoff
 
+## Session note - 14 Jul 2026
+
+- FILES MOVED. In the 13 Jul MOTE reorg the whole planner was shifted under `archive/`:
+  `archive/meal-planner/index.html`, `archive/meal-planner/recipes.json`,
+  `archive/dev/dinner-engine.jsx`, `archive/dev/HANDOFF.md`. Still live, "kept by request".
+  LIVE URL is now https://numberdave-cloud.github.io/MPMPT1/archive/meal-planner/ .
+  Path references further down predate the move; the archive/ paths are the real ones.
+- Added r251-r261 (11 recipes) from DJ's Recipe Book (Dave's handwritten book): Massimo's
+  Breadcrumb Pesto, Jay Fai's Tom Yum, Stephanie Alexander's Sardine + Fennel Pasta, Massi's
+  Ossobuco Ragu w/ Pappardelle, Stir-fried Beef w/ Chillies and Holy Basil, Vegetarian Moussaka,
+  Pork + Fennel Sausage Pasta Bake, Masoor Dal Take 2, Carbonara, Lamb Rogan Josh, Beef +
+  Guinness Stew. All three copies in sync at 261.
+- Resolved the standing "tomato puree" question: puree maps to tomato paste (not passata).
+  Applied to the moussaka, rogan josh and guinness stew.
+- New produce committed sea:false, pending Victorian windows: galangal, holy basil, thai basil.
+  (kaffir lime leaves folded to the existing makrut lime leaves; lemongrass already an item.)
+- Sub-recipes folded into their parent's shopping list: Sauce Mornay into the moussaka;
+  chillies-in-fish-sauce into the stir-fry. Garam masala kept as one bought item, not exploded.
+- TO CONFIRM: Beef + Guinness stock reads "1L, half veg, half [chicken or porcini]"; committed as
+  "chicken or vegetable stock". Switch the porcini half in if Dave confirms.
+
+
 A personal household meal-planner for Dave (home cook, Campbells Creek, Victoria). Single-file
 React component, bundled to a standalone HTML file, hosted on GitHub Pages, run as a PWA on a
 Samsung Galaxy phone. Dave is not a programmer, so this chat does all the editing, building and
