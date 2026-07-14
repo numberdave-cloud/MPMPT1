@@ -1,5 +1,30 @@
 # Dinner Engine — handoff
 
+## Session note - 14 Jul 2026 (Itsu batch)
+
+- Added r262-r271 (10 recipes) from a new source, Itsu: The Cookbook. All three copies in sync
+  at 271, ids contiguous r001-r271, next free id r272. Every recipe is under 30 min so all are
+  slot "quick".
+- METRIC CONVERSION: Itsu is a US book (oz, cups, inches). On Dave's call this source is converted
+  to metric as transcribed: oz x 28.35 to g, cups x 250 ml (Aus cup), ginger recorded as
+  "1 piece" per catalogue norm. This overrides the old "record in the book's own units" line for
+  the Itsu source.
+- HELD, waiting on sauce pages. Three Itsu recipes are NOT in yet because they call for house-made
+  Itsu sauces that are not in the catalogue and were not photographed:
+  Broiled chicken teriyaki (p.120, needs Teriyaki & Ginger Sauce p.169),
+  Baby broccoli with sesame sauce (p.97, needs Sesame Sauce p.168),
+  Soba noodle salad (p.90, needs Sesame Sauce p.168).
+  Dave will send p.168 and p.169 to break the sauces out into each dish. They take r272 onward.
+- Sweet Chili Sauce (p.167) folded to the existing 'sweet chilli sauce' item as a single line
+  (used in r267 Vietnamese chicken salad and r269 Mini Thai pork burgers). Send p.167 too if Dave
+  wants it broken out for consistency.
+- New produce committed sea:false, pending Victorian windows: bamboo shoots, baby corn,
+  sugar snap peas.
+- New pantry items (no window needed): sake, wasabi paste, cellophane noodles (mung-bean glass
+  noodles, kept distinct from the existing rice vermicelli noodles).
+- TO CONFIRM: r271 Beef salad with green beans page number was unreadable in the photo; committed
+  ref as "(page to confirm)".
+
 ## Session note - 14 Jul 2026
 
 - FILES MOVED. In the 13 Jul MOTE reorg the whole planner was shifted under `archive/`:
