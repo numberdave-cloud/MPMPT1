@@ -24,7 +24,7 @@ Pending:
 - **Guitar**: chip is present but disabled, awaiting guitar samples (same format as piano/strings).
 - **Survival voice**: entry plays a placeholder synth sting; a digitised voice sample drops in when recorded.
 - **Strings loudness**: matched by trim length, not loudness-matched to piano.
-- **Standalone leaderboard**: a separate, more arcade-styled view-only scoreboard is being built by design; it reads the same sheet.
+- **Standalone leaderboard**: shipped as a separate arcade-styled view-only scoreboard reading the same sheet. Live at `../arcade-high-scores/` (https://numberdave-cloud.github.io/MPMPT1/arcade-high-scores/).
 
 ## Modes and controls
 
