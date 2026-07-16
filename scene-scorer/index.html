@@ -32,7 +32,7 @@
 
   body {
     padding: 20px 24px 28px;
-    max-width: 1000px;
+    max-width: 740px;
     margin: 0 auto;
   }
 
@@ -61,7 +61,7 @@
     border: 1px solid var(--border);
     margin-bottom: 16px;
   }
-  .video-wrap > div,
+  .video-wrap > div#scenePlayer,
   .video-wrap iframe {
     position: absolute;
     inset: 0;
@@ -70,9 +70,20 @@
     border: none;
   }
 
+  /* Transparent shield: intercepts clicks so YouTube never receives them.
+     Stops the centre play button and click-to-pause from desyncing the beds. */
+  .click-shield {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    cursor: pointer;
+    background: transparent;
+  }
+
   .transport {
     display: flex;
     gap: 8px;
+    align-items: center;
     margin-bottom: 20px;
     flex-wrap: wrap;
   }
@@ -102,6 +113,45 @@
   .transport-btn.primary:hover:not(:disabled) {
     background: var(--accent-glow);
     border-color: var(--accent-glow);
+  }
+
+  /* ─── VOLUME KNOB ─── */
+  .vol-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 6px;
+  }
+  .knob {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border-bright);
+    border-radius: 50%;
+    position: relative;
+    cursor: ns-resize;
+    background: transparent;
+    flex: none;
+    touch-action: none;
+    outline: none;
+  }
+  .knob:hover { border-color: var(--accent); }
+  .knob:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(192,120,56,0.35); }
+  .knob-indicator {
+    position: absolute;
+    left: calc(50% - 1px);
+    top: 5px;
+    width: 2px;
+    height: 15px;
+    background: var(--accent);
+    border-radius: 1px;
+    transform-origin: 50% 15px;
+    transform: rotate(135deg);
+  }
+  .knob-label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    text-transform: uppercase;
   }
 
   .selector-label {
@@ -167,11 +217,18 @@
 
   <div class="video-wrap">
     <div id="scenePlayer"></div>
+    <div class="click-shield" id="clickShield"></div>
   </div>
 
   <div class="transport">
     <button class="transport-btn primary" id="playBtn" disabled>LOADING</button>
     <button class="transport-btn" id="restartBtn" disabled>RESTART</button>
+    <div class="vol-control">
+      <div class="knob" id="volKnob" role="slider" aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" tabindex="0">
+        <div class="knob-indicator" id="volIndicator"></div>
+      </div>
+      <div class="knob-label">Vol</div>
+    </div>
   </div>
 
   <div class="selector-label">Music Bed</div>
@@ -188,12 +245,14 @@
   //   tracks[].label — button text students see
   //   tracks[].start — seconds into the bed to begin (0 for now)
   //   startWith      — which bed is audible on first play: 0..n, or 'none'
+  // The Vol knob on screen is a MASTER control that scales everything
+  // together, so the balance you set above is preserved.
   const CONFIG = {
     scene:  { id: 'KXESQsRHs6E', volume: 100, start: 0 },
     tracks: [
       { label: 'MUSIC 1', id: 'k4zh8RwhjZ0', volume: 100, start: 0 },
-      { label: 'MUSIC 2', id: 'k4zh8RwhjZ0', volume: 100, start: 0 },
-      { label: 'MUSIC 3', id: 'k4zh8RwhjZ0', volume: 100, start: 0 }
+      { label: 'MUSIC 2', id: 'WUC7MgkOgKA', volume: 100, start: 0 },
+      { label: 'MUSIC 3', id: 'mIQ_UuZPCX0', volume: 100, start: 0 }
     ],
     startWith: 0
   };
@@ -206,12 +265,38 @@
   let allReady = false;
   let isPlaying = false;
   let activeTrack = (CONFIG.startWith === 'none') ? -1 : CONFIG.startWith;
+  let masterVol = 100;
+  let ccKilledOnce = false;
 
   // ─── DOM REFS ────────────────────────────────────────────────────
   const $playBtn = document.getElementById('playBtn');
   const $restartBtn = document.getElementById('restartBtn');
   const $selector = document.getElementById('selector');
   const $hidden = document.getElementById('hiddenPlayers');
+  const $shield = document.getElementById('clickShield');
+  const $knob = document.getElementById('volKnob');
+  const $indicator = document.getElementById('volIndicator');
+
+  // ─── VOLUME HELPERS ──────────────────────────────────────────────
+  function effVol(base) {
+    return Math.max(0, Math.min(100, Math.round(base * masterVol / 100)));
+  }
+  function applyMasterVol() {
+    if (scenePlayer) { try { scenePlayer.setVolume(effVol(CONFIG.scene.volume)); } catch (e) {} }
+    if (activeTrack >= 0 && musicPlayers[activeTrack]) {
+      try { musicPlayers[activeTrack].setVolume(effVol(CONFIG.tracks[activeTrack].volume)); } catch (e) {}
+    }
+  }
+  function setKnobVisual() {
+    const angle = -135 + (masterVol / 100) * 270;
+    $indicator.style.transform = 'rotate(' + angle + 'deg)';
+    $knob.setAttribute('aria-valuenow', String(masterVol));
+  }
+  function nudgeVol(delta) {
+    masterVol = Math.max(0, Math.min(100, masterVol + delta));
+    setKnobVisual();
+    applyMasterVol();
+  }
 
   // ─── BUILD DOM FROM CONFIG ───────────────────────────────────────
   function buildDom() {
@@ -244,7 +329,7 @@
 
   // ─── YT PLAYERS ──────────────────────────────────────────────────
   function onYouTubeIframeAPIReady() {
-    const vars = { controls: 0, disablekb: 1, modestbranding: 1, rel: 0, playsinline: 1, fs: 0, iv_load_policy: 3 };
+    const vars = { controls: 0, disablekb: 1, modestbranding: 1, rel: 0, playsinline: 1, fs: 0, iv_load_policy: 3, cc_load_policy: 0 };
 
     scenePlayer = new YT.Player('scenePlayer', {
       videoId: CONFIG.scene.id,
@@ -262,14 +347,14 @@
   }
 
   function onSceneReady() {
-    try { scenePlayer.setVolume(CONFIG.scene.volume); } catch (e) {}
+    try { scenePlayer.setVolume(effVol(CONFIG.scene.volume)); } catch (e) {}
     if (CONFIG.scene.start) { try { scenePlayer.seekTo(CONFIG.scene.start, true); } catch (e) {} }
     markReady();
   }
 
   function onMusicReady(i) {
     const p = musicPlayers[i], t = CONFIG.tracks[i];
-    try { p.setVolume(t.volume); p.mute(); } catch (e) {}
+    try { p.setVolume(effVol(t.volume)); p.mute(); } catch (e) {}
     if (t.start) { try { p.seekTo(t.start, true); } catch (e) {} }
     markReady();
   }
@@ -285,13 +370,19 @@
     }
   }
 
+  // ─── CAPTIONS ────────────────────────────────────────────────────
+  function killCaptions() {
+    try { scenePlayer.unloadModule('captions'); } catch (e) {}
+    try { scenePlayer.unloadModule('cc'); } catch (e) {}
+  }
+
   // ─── TRANSPORT ───────────────────────────────────────────────────
   function play() {
     if (!allReady) return;
     scenePlayer.playVideo();
     musicPlayers.forEach((p, i) => {
       p.playVideo();
-      if (i === activeTrack) { p.setVolume(CONFIG.tracks[i].volume); p.unMute(); }
+      if (i === activeTrack) { p.setVolume(effVol(CONFIG.tracks[i].volume)); p.unMute(); }
       else { p.mute(); }
     });
     isPlaying = true;
@@ -318,7 +409,7 @@
   function selectTrack(idx) {
     activeTrack = idx;
     musicPlayers.forEach((p, i) => {
-      if (i === idx) { p.setVolume(CONFIG.tracks[i].volume); p.unMute(); }
+      if (i === idx) { p.setVolume(effVol(CONFIG.tracks[i].volume)); p.unMute(); }
       else { p.mute(); }
     });
     setActiveTrackUI();
@@ -336,6 +427,10 @@
   }
 
   function onSceneStateChange(e) {
+    if (e.data === YT.PlayerState.PLAYING) {
+      killCaptions();
+      if (!ccKilledOnce) { setTimeout(killCaptions, 800); ccKilledOnce = true; }
+    }
     if (e.data === YT.PlayerState.ENDED) {
       musicPlayers.forEach(p => { try { p.pauseVideo(); } catch (err) {} });
       isPlaying = false;
@@ -343,9 +438,39 @@
     }
   }
 
+  // ─── VOLUME KNOB INTERACTION ─────────────────────────────────────
+  let knobDragging = false, knobStartY = 0, knobStartVal = 100;
+  $knob.addEventListener('pointerdown', (e) => {
+    knobDragging = true;
+    knobStartY = e.clientY;
+    knobStartVal = masterVol;
+    try { $knob.setPointerCapture(e.pointerId); } catch (_) {}
+    e.preventDefault();
+  });
+  $knob.addEventListener('pointermove', (e) => {
+    if (!knobDragging) return;
+    const dy = knobStartY - e.clientY;   // drag up = louder
+    masterVol = Math.max(0, Math.min(100, Math.round(knobStartVal + dy)));
+    setKnobVisual();
+    applyMasterVol();
+  });
+  function endKnobDrag(e) {
+    knobDragging = false;
+    if (e && e.pointerId != null) { try { $knob.releasePointerCapture(e.pointerId); } catch (_) {} }
+  }
+  $knob.addEventListener('pointerup', endKnobDrag);
+  $knob.addEventListener('pointercancel', endKnobDrag);
+  $knob.addEventListener('wheel', (e) => { e.preventDefault(); nudgeVol(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+  $knob.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { nudgeVol(2); e.preventDefault(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { nudgeVol(-2); e.preventDefault(); }
+  });
+
   // ─── WIRE UP ─────────────────────────────────────────────────────
   $playBtn.addEventListener('click', togglePlay);
   $restartBtn.addEventListener('click', restart);
+  $shield.addEventListener('click', togglePlay);   // video click runs OUR transport, never YouTube's
+  setKnobVisual();
   buildDom();
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
