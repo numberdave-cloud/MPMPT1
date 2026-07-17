@@ -16,7 +16,7 @@ Height `900` (non-default). The two boards sit side by side, so on a wide Canvas
 
 ## Build state
 
-**v1.0 — shipped.** Ported from the Claude Design `.dc.html` source (the `x-dc` template runtime removed) into a single self-contained HTML file. Wired to the live board with the trainer's fetch-then-JSONP fallback, demo-row fallback, attract-mode auto-refresh, and the three source palettes.
+**v1.1 — shipped.** Ported from the Claude Design `.dc.html` source (the `x-dc` template runtime removed) into a single self-contained HTML file. Wired to the live board with the trainer's fetch-then-JSONP fallback, demo-row fallback, attract-mode auto-refresh, and the three source palettes.
 
 ## Technical notes
 
@@ -27,6 +27,7 @@ Height `900` (non-default). The two boards sit side by side, so on a wide Canvas
 - Attract-mode auto-refresh every 45s (`REFRESH_MS`).
 - Champ image optimised from a 2.4 MB PNG to a ~37 KB WebP at display size (170px), inlined as base64 to keep it one file.
 - Palettes: `classic` (default), `synthwave`, `outrun` via `?palette=`. Scanlines off via `?scanlines=0`.
+- Page background is transparent: the rounded stage is the only edge, so on the embed it reads as a floating rounded panel and takes on the Canvas page colour behind it (no hard square dark buffer). The neon glow bleeds softly onto the page.
 - INSERT COIN links to `interval-trainer/` and opens in a new tab. Works as long as the Canvas iframe is not sandboxed (the standard embed above is not).
 
 ## Open decisions / TODOs
@@ -36,5 +37,7 @@ Height `900` (non-default). The two boards sit side by side, so on a wide Canvas
 - Champ photo is a fixed decorative image, not dynamically the current #1.
 
 ## Last updated
+
+2026-07-17 — v1.1. Made the page background transparent so the embed shows rounded corners instead of a hard square dark edge; panel now floats on the Canvas page colour.
 
 2026-07-16 — v1.0 shipped. First deploy of the standalone arcade leaderboard: eyebrow reads INTERVAL TRAINER, Survival labelled SCORE, champ caption is the earplugs safety line, INSERT COIN links to the trainer.
