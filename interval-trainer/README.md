@@ -9,14 +9,14 @@ https://numberdave-cloud.github.io/MPMPT1/interval-trainer/
 ## Canvas iframe embed
 
 ```html
-<iframe src="https://numberdave-cloud.github.io/MPMPT1/interval-trainer/" width="100%" height="760" title="Interval Trainer" style="border: none;" allow="autoplay" loading="lazy"></iframe>
+<iframe src="https://numberdave-cloud.github.io/MPMPT1/interval-trainer/" width="100%" height="800" title="Interval Trainer" style="border: none;" allow="autoplay" loading="lazy"></iframe>
 ```
 
-Height `760`. The tallest state is Practice on the hardest tier with the direction row showing (~756px). Challenge and normal Practice are shorter. The device scales ~14% on desktop for readability and drops to 100% below 600px so it still fits a phone. If you previously embedded at `720`, bump it to `760`.
+Height `800`. The trainer sits in a rounded black bumper on a transparent surround, so it floats as a contained card on the Canvas page rather than filling the column width. The tallest state (Practice on the hardest tier, ~788px) drives the height. The device scales ~14% on desktop and drops to 100% below 600px so it still fits a phone. If you previously embedded at `760` or `720`, bump it to `800`.
 
 ## Build state
 
-**v0.7 — shipped. Piano + strings + two synth voices, Practice + Challenge + Survival, shared leaderboard live.**
+**v0.8 — shipped. Piano + strings + two synth voices, Practice + Challenge + Survival, shared leaderboard live, floating bumper frame.**
 
 Working: full audio engine, six difficulty tiers, harmonic / ascending / descending, root transposition on the top tiers, octave-reduced compounds, speed-bonus scoring, Practice mode with direction toggles, 20-question Challenge run, hidden Survival mode, arcade high-score entry, shared Challenge (top 10) and Survival (top 3) leaderboards backed by a Google Sheet.
 
@@ -75,4 +75,4 @@ Two sampled instruments sit near the practical base64 ceiling. Adding a third (g
 
 ## Last updated
 
-2026-07-14 — v0.7 shipped. Added Practice direction toggles, swapped Soft for a Guitar placeholder, and built the arcade high-score entry + shared Challenge/Survival leaderboards wired to the live Google Sheet endpoint. Embed height raised to 760.
+2026-07-17 — v0.8 shipped. Reframed the widget as a floating card: transparent surround (no more full-width fill), rounded black rubber-bumper band, thicker trainer edge. Internal layout unchanged. Embed height raised to 800.
