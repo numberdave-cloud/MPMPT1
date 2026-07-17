@@ -22,6 +22,7 @@
   }
   *{box-sizing:border-box;}
   html,body{margin:0;background:transparent;overflow-x:hidden;font-family:'Orbitron',sans-serif;}
+  body{padding:16px;}
   .orb{font-family:'Orbitron',sans-serif;}
   .ps{font-family:'Press Start 2P','Courier New',monospace;}
 
@@ -33,11 +34,14 @@
   @keyframes crtpulse{0%,100%{opacity:.9}50%{opacity:1}}
   @keyframes rowin{0%{opacity:0;transform:translateY(4px)}100%{opacity:1;transform:none}}
 
-  .shell{width:100%;max-width:1320px;margin:0 auto;padding:clamp(18px,3vw,44px);}
+  .shell{width:100%;max-width:1320px;margin:0 auto;padding:clamp(16px,2.2vw,24px);
+    background:linear-gradient(158deg,#14100C 0%,#0A0705 55%,#030201 100%);
+    border-radius:clamp(34px,4.5vw,60px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.055), inset 0 0 0 1px rgba(0,0,0,.55);}
 
   .stage{position:relative;width:100%;min-height:820px;margin:0 auto;overflow:hidden;
-    border-radius:clamp(26px,4vw,52px) / clamp(30px,5vw,66px);background:#050208;
-    box-shadow:0 0 0 2px rgba(0,0,0,.6), 0 0 34px rgba(var(--glow-rgb),.35), 0 0 90px rgba(var(--g1-rgb),.3), 0 30px 80px rgba(0,0,0,.65);}
+    border-radius:clamp(18px,3vw,40px);background:#050208;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);}
 
   .sky{position:absolute;inset:0 0 40% 0;background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 62%,var(--sky3) 100%);animation:hueflicker 8s ease-in-out infinite;}
   .stars{position:absolute;top:0;left:0;right:0;height:46%;background-size:520px 340px;animation:stardrift 26s linear infinite;opacity:.7;}
