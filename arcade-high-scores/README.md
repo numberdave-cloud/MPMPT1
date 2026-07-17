@@ -16,7 +16,7 @@ Height `900` (non-default). The two boards sit side by side, so on a wide Canvas
 
 ## Build state
 
-**v1.2 — shipped.** Ported from the Claude Design `.dc.html` source (the `x-dc` template runtime removed) into a single self-contained HTML file. Wired to the live board with the trainer's fetch-then-JSONP fallback, demo-row fallback, attract-mode auto-refresh, and the three source palettes.
+**v1.3 — shipped.** Ported from the Claude Design `.dc.html` source (the `x-dc` template runtime removed) into a single self-contained HTML file. Wired to the live board with the trainer's fetch-then-JSONP fallback, demo-row fallback, attract-mode auto-refresh, and the three source palettes.
 
 ## Technical notes
 
@@ -27,6 +27,7 @@ Height `900` (non-default). The two boards sit side by side, so on a wide Canvas
 - Attract-mode auto-refresh every 45s (`REFRESH_MS`).
 - Champ image optimised from a 2.4 MB PNG to a ~37 KB WebP at display size (170px), inlined as base64 to keep it one file.
 - Palettes: `classic` (default), `synthwave`, `outrun` via `?palette=`. Scanlines off via `?scanlines=0`.
+- Board columns are `RK 34 / NAME minmax(0,1fr) / SCORE 68 / DATE 74` with 8px gaps and 14px board padding. Kept deliberately tight so both boards sit side by side without the DATE clipping at 100% Canvas zoom on a laptop. Challenge board capped at 520px, Survival at 400px. Boards go side by side above ~950px container width and stack cleanly below; NAME ellipsizes rather than overflowing.
 - Framing (matches the trainer's v0.8 bumper): transparent page surround so the corners read rounded on the embed and take the Canvas page colour behind them; a dark thick bezel frame (near-black gradient, inset edges only) wraps the scene at a slightly larger radius. No outward glow and no drop shadow, so nothing bleeds onto the surround.
 - INSERT COIN links to `interval-trainer/` and opens in a new tab. Works as long as the Canvas iframe is not sandboxed (the standard embed above is not).
 
@@ -37,6 +38,8 @@ Height `900` (non-default). The two boards sit side by side, so on a wide Canvas
 - Champ photo is a fixed decorative image, not dynamically the current #1.
 
 ## Last updated
+
+2026-07-17 — v1.3. Tightened board columns (narrower RK/SCORE/DATE, smaller gaps and padding, Challenge capped at 520px) so the DATE no longer clips at 100% Canvas zoom on a laptop.
 
 2026-07-17 — v1.2. Added a dark thick bezel frame around the panel (like the trainer's bumper); removed the outward neon glow and the drop shadow so the transparent surround stays clean.
 
