@@ -1,5 +1,32 @@
 # Dinner Engine — handoff
 
+## Session note - 18 Jul 2026 (duplicates + item edit)
+
+- DUPLICATE ITEM CLEANUP. Audited all 271 recipes for item names that split the shopping list
+  (singular/plural, case, spelling). Folded 18 pairs, 97 ingredient rows in total. All tags were
+  already consistent between each source and target, so this was a pure rename, no tag changes.
+  Folds applied:
+    case: Fontina->fontina, guinness->Guinness, kashmiri chilli powder->Kashmiri chilli powder,
+      worcestershire sauce->Worcestershire sauce
+    number (standardised on singular, matching the earlier carrot fold): eggs->egg, onions->onion,
+      potatoes->potato, tomatoes->tomato, bay leaves->bay leaf
+    spelling/wording: natural yogurt + yogurt -> plain yoghurt (Aus spelling), tomato passata->passata,
+      birdseye chillies->bird's eye chilli, peeled and cleaned green prawns->prawns
+    Dave's judgement calls (approved): sugar->white sugar (already s:true, so those 4 stay staples
+      and are suppressed from the shop list), fresh coriander->coriander, golden shallots->shallot,
+      pecorino romano->pecorino
+  Left separate on purpose: coloured capsicums, the stocks, the vinegars, other sugars (brown/caster/
+    palm), the flours, breadcrumb types, coconut cream vs milk, whole peppercorns, Dutch carrots.
+  The jsx CATALOGUE was regenerated from the fixed recipes.json (compact JSON, one line), so it is
+  no longer hand-wrapped per entry. Still valid, esbuild compiles it, and it is deep-equal to
+  recipes.json (271).
+- SHOP ITEM EDIT. Double-tap a shopping row to edit its name and amount inline. Two taps within
+  300ms on the item text opens name + amount inputs with a green tick to save and X to cancel
+  (Enter saves, Escape cancels). The checkbox still single-taps to tick; the store controls hide
+  while editing. Amount is a free-text override stored as `item.amt` with `item.amtEdited=true`;
+  `amtText` returns that override when set, otherwise the derived qty/unit/more as before. Editing
+  a plan-derived row's amount overrides its computed amount. Test the double-tap timing on the Galaxy.
+
 ## Session note - 18 Jul 2026
 
 - SHOPPING LIST FEATURE: added a "Clear ticked" button to the Shop header, beside "Clear list".
