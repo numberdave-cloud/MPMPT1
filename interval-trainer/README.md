@@ -75,4 +75,4 @@ Two sampled instruments sit near the practical base64 ceiling. Adding a third (g
 
 ## Last updated
 
-2026-07-17 — v0.8 shipped. Reframed the widget as a floating card: transparent surround (no more full-width fill), rounded black rubber-bumper band, thicker trainer edge. Internal layout unchanged. Embed height raised to 800.
+2026-07-17 — v0.8.1 shipped. Removed the outer drop shadow behind the bumper (it was casting onto the Canvas page); the bumper now sits flat with only its own inset edge. No other changes.
