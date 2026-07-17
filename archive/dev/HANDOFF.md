@@ -1,5 +1,21 @@
 # Dinner Engine — handoff
 
+## Session note - 18 Jul 2026
+
+- SHOPPING LIST FEATURE: added a "Clear ticked" button to the Shop header, beside "Clear list".
+  It removes all ticked (done) items in one go and leaves the open items. Reuses the existing
+  clear-undo snackbar (7 second window, "Undo"). To make the snackbar count correct for both
+  buttons, `undoClear` state changed from a bare array to `{ prev, n }`: `prev` is the full
+  pre-clear list to restore, `n` is the number cleared. `restoreClear` now restores `undoClear.prev`.
+  Button is disabled when nothing is ticked; styled neutral cream to sit lighter than the red
+  "Clear list". Test the wrap of the three header buttons on the Galaxy.
+- CATALOGUE FIX: folded item `carrots` to `carrot` in r015, r031 and r250 so the shopping list
+  stops splitting carrot into two lines. All carrot rows already shared sea:true p:"carrot", so
+  no tag change. `Dutch carrots` (r213) left as its own item on purpose (different buy); fold it
+  later only if Dave asks.
+- All three copies rebuilt and in sync at 271, ids r001-r271, next free id still r272. index.html
+  rebuilt from the jsx via the normal esbuild + splice pipeline.
+
 ## Session note - 14 Jul 2026 (Itsu batch)
 
 - Added r262-r271 (10 recipes) from a new source, Itsu: The Cookbook. All three copies in sync
