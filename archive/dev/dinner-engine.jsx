@@ -270,6 +270,9 @@ const SECTION_RULES = [
 function shopSection(name){ const n=(name||"").toLowerCase(); for(const r of SECTION_RULES){ for(const kw of r[1]){ if(n.indexOf(kw)!==-1) return r[0]; } } return "Other"; }
 const SHOP_SEED = [];
 
+// The six locked, built-in pantry staples (s:true in the catalogue). Always kept off the shopping list.
+const LOCKED_STAPLES = ["olive oil","vegetable oil","salt","black pepper","white sugar","water"];
+
 /* ---------- maintenance ---------- */
 const FREQS = {
   weekly:     { label: "Weekly",          days: 7   },
@@ -1909,7 +1912,19 @@ export default function KitchenApp() {
 
             {storedTab==="staples" && (
               <div>
-                <div style={{ ...eyebrow, marginBottom:6 }}>STAPLES · {staples.length} item{staples.length!==1?"s":""}</div>
+                <div style={{ ...eyebrow, marginBottom:6 }}>ALWAYS IN · {LOCKED_STAPLES.length}</div>
+                <div style={{ fontSize:13, color:C.muted, marginBottom:12, lineHeight:1.6 }}>
+                  Built-in pantry staples, always kept off the shopping list.
+                </div>
+                <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:24 }}>
+                  {LOCKED_STAPLES.map(name=>(
+                    <div key={name} style={{ display:"flex", alignItems:"center", gap:10, background:C.card, border:`1px solid ${C.line}`, borderRadius:12, padding:"11px 13px" }}>
+                      <Lock size={15} style={{ color:C.faint, flexShrink:0 }} />
+                      <span style={{ fontSize:15, color:C.cream }}>{name.charAt(0).toUpperCase()+name.slice(1)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ ...eyebrow, marginBottom:6 }}>ADDED BY YOU · {staples.length} item{staples.length!==1?"s":""}</div>
                 <div style={{ fontSize:13, color:C.muted, marginBottom:14, lineHeight:1.6 }}>
                   Things you always have in, kept off the shopping list. Swipe a shop item right to add one here. Press X when you run out and it goes back on the list to buy.
                 </div>

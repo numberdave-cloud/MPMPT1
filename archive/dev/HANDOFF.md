@@ -1,5 +1,17 @@
 # Dinner Engine — handoff
 
+## Session note - 18 Jul 2026 (staples page)
+
+- The six locked staples (olive oil, vegetable oil, salt, black pepper, white sugar, water) show as
+  "· pantry staple" in recipe ingredient lists (from the catalogue s:true flag) but were absent from
+  the Staples page, which only listed user-added staples (the `staples` state, swipe-right on Shop).
+  Added an "ALWAYS IN" section at the top of Stored > Staples listing the six built-ins read-only
+  (Lock icon, no remove), from a new module const LOCKED_STAPLES. The user section below is now
+  headed "ADDED BY YOU" to distinguish. Built-ins are display-only: their off-list behaviour is baked
+  into the catalogue s:true flag, not the staples state, so there is no "Out of it" rebuy for them
+  (would need catalogue-level logic if ever wanted).
+- Catalogue untouched (271). recipes.json unchanged.
+
 ## Session note - 18 Jul 2026 (unstar + snackbar fix)
 
 - The Midweek Faves X now UNSTARS the dish (removes it from faves) rather than just hiding it, with
