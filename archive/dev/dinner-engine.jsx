@@ -1495,7 +1495,7 @@ export default function KitchenApp() {
                         <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16, color:C.cream }}>{c.name}</span>
                         <span style={{ fontFamily:MONO, fontSize:10, letterSpacing:"0.5px", color:C.muted, border:`1px solid ${C.line}`, padding:"1px 6px", borderRadius:99 }}>{c.cookMin} MIN</span>
                         {c.serves && <span style={{ fontSize:11.5, color:C.muted }}>{/^makes/i.test(c.serves)?c.serves:"Serves "+c.serves}</span>}
-                        <button className="de-btn" onClick={()=>unstarFave(c)} title="Unstar (remove from Midweek Faves)" style={{ marginLeft:"auto", background:"none", border:"none", padding:"2px 4px", color:C.faint, display:"inline-flex", alignItems:"center", cursor:"pointer" }}><X size={15}/></button>
+                        <button className="de-btn" onClick={()=>unstarFave(c)} title="Unstar (remove from Midweek Faves)" style={{ marginLeft:"auto", background:"none", border:"none", padding:"2px 4px", display:"inline-flex", alignItems:"center", cursor:"pointer" }}><Star size={18} color={SLOTS.faves.color} fill={SLOTS.faves.color} strokeWidth={1.8} /></button>
                       </div>
                       {c.ref && <div style={{ fontFamily:MONO, fontSize:10.5, color:C.faint, letterSpacing:"0.3px", marginTop:4 }}>{c.ref}</div>}
                       <div style={{ display:"flex", gap:7, marginTop:11, flexWrap:"wrap" }}>
