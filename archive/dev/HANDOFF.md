@@ -1,5 +1,26 @@
 # Dinner Engine — handoff
 
+## Session note - 18 Jul 2026 (suggestions + hide fave)
+
+- SUGGESTION VARIETY. chooseBiased no longer collapses to the top-scoring few. It now does a
+  weighted random draw over the whole available pool: weight = 1 + useUpScore*3 + seasonalScore*1.5
+  (seasonal term only on seasonal slots). Use-up and in-season dishes are favoured but every dish
+  keeps a real base chance, so re-rolls stop repeating the same handful. The existing exclude list
+  (history + per-day recent memory) still avoids immediate repeats. Pools themselves can still be
+  small (few faves starred, small quick set); that is inherent, not a bug.
+- HIDE FROM MIDWEEK. New persistent set `favesHidden` (usePersistentState "favesHidden"). An X on
+  each Midweek Faves card on the Meal Plan page hides that dish from the list, keeps the star, and a
+  6 second undo snackbar ("Hidden X from midweek" + Undo) reverses it. Hidden ids are also excluded
+  from the fave-slot suggestion pool and the faves browse pool, so a hidden fave stops being
+  offered until un-hidden. Star (favesSet) is untouched. Handlers: hideFave/restoreFave; state
+  faveHideUndo + faveHideTimer.
+- Catalogue untouched this session (still 271, r001-r271). recipes.json unchanged.
+- OPEN / NEXT: the full recipes-management tab (Stored > Recipes: star, tag, edit ingredients/time)
+  is still to design. Key constraint discussed with Dave: in-app edits save only to the phone's
+  local storage and cannot write back to the GitHub master, so permanent recipe data changes should
+  keep going through the GitHub workflow, and the app should handle only per-user things (star,
+  hide-from-midweek, clearly-marked local tweaks). Decide the split before building it.
+
 ## Session note - 18 Jul 2026 (duplicates + item edit)
 
 - DUPLICATE ITEM CLEANUP. Audited all 271 recipes for item names that split the shopping list

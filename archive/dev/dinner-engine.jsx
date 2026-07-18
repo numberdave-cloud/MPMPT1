@@ -196,12 +196,17 @@ function dishSeasonalScore(dish, inSeasonProduce){ const seen=new Set(); for(con
 function chooseBiased(pool, exclude, biasSeasonal, useUp, today0, inSeasonProduce){
   const ex=(exclude||[]).filter(Boolean).map(s=>s.toLowerCase());
   let avail=pool.filter(c=>!ex.includes(c.name.toLowerCase())); if(!avail.length) avail=pool; if(!avail.length) return null;
-  const scored=avail.map(c=>({c, sc: useUpScoreFor(c,useUp,today0)*10 + (biasSeasonal?dishSeasonalScore(c,inSeasonProduce):0)}));
-  const max=Math.max(...scored.map(o=>o.sc));
-  if(max<=0) return avail[Math.floor(Math.random()*avail.length)];
-  let top=scored.filter(o=>o.sc>=max).map(o=>o.c);
-  if(top.length<3){ const sorted=scored.slice().sort((a,b)=>b.sc-a.sc).map(o=>o.c); top=sorted.slice(0,Math.min(5,sorted.length)); }
-  return top[Math.floor(Math.random()*top.length)];
+  // Weighted random over the whole available pool: use-up urgency, and in-season produce on seasonal
+  // days, raise a dish's odds, but every dish keeps a real base chance so suggestions stay varied.
+  const scored=avail.map(c=>{
+    const uu=useUpScoreFor(c,useUp,today0);
+    const se=biasSeasonal?dishSeasonalScore(c,inSeasonProduce):0;
+    return { c, w: 1 + uu*3 + se*1.5 };
+  });
+  const total=scored.reduce((s,o)=>s+o.w, 0);
+  let r=Math.random()*total;
+  for(const o of scored){ r-=o.w; if(r<=0) return o.c; }
+  return scored[scored.length-1].c;
 }
 // Rough comparable scale so most-used sorts first across mixed units. Volume -> ml; grams kept on the same axis; whole items get a nominal. Order is approximate by design.
 function cookAmount(q,u){
@@ -356,8 +361,12 @@ export default function KitchenApp() {
   const [favePickFor, setFavePickFor] = useState(null);     // fave pick id currently choosing a day
   const [pickIngFor, setPickIngFor] = useState(null);       // "seasonal:<id>" / "fave:<id>" whose ingredients are expanded in the planner picks
   const [faves, setFaves] = usePersistentState("faves", []);       // catalogue ids the user has starred as midweek faves
+  const [favesHidden, setFavesHidden] = usePersistentState("favesHidden", []);   // starred ids hidden from the midweek plan list (star kept)
+  const [faveHideUndo, setFaveHideUndo] = useState(null);   // { id, name } after hiding a fave, for undo
+  const faveHideTimer = useRef(null);
   const [staples, setStaples] = usePersistentState("staples", []); // shop item names kept off future lists until removed
   const favesSet = new Set(faves);
+  const favesHiddenSet = new Set(favesHidden);
   const staplesSet = new Set(staples.map(s=>s.toLowerCase()));
   const [history, setHistory]     = usePersistentState("history", SEED_HISTORY);
   const [doneTasks, setDoneTasks] = usePersistentState("doneTasks", {});
@@ -438,7 +447,7 @@ export default function KitchenApp() {
   }).filter(p=>p.score>0 && !placedCatIds.has(p.c.id))
     .sort((a,b)=> b.score-a.score || a.c.cookMin-b.c.cookMin || a.c.id.localeCompare(b.c.id))
     .slice(0,24);
-  const favePicks = CATALOGUE.filter(c=>favesSet.has(c.id) && !placedCatIds.has(c.id))
+  const favePicks = CATALOGUE.filter(c=>favesSet.has(c.id) && !favesHiddenSet.has(c.id) && !placedCatIds.has(c.id))
     .map(c=>({ c, sc: useUpScoreFor(c,useUp,today0)*10 + dishSeasonalScore(c,inSeasonProduce) }))
     .sort((a,b)=> b.sc-a.sc || a.c.cookMin-b.c.cookMin || a.c.id.localeCompare(b.c.id))
     .map(o=>o.c).slice(0,24);
@@ -518,7 +527,7 @@ export default function KitchenApp() {
     const catTypes=["faves","quick","seasonal","fresh",""];
     if(catTypes.includes(day.type)){
       let pool;
-      if(day.type==="faves"){ pool=CATALOGUE.filter(c=>favesSet.has(c.id)); if(!pool.length) pool=CATALOGUE; }
+      if(day.type==="faves"){ pool=CATALOGUE.filter(c=>favesSet.has(c.id) && !favesHiddenSet.has(c.id)); if(!pool.length) pool=CATALOGUE; }
       else if(day.type==="quick"){ pool=CATALOGUE.filter(c=>c.slot==="quick"); }
       else if(day.type==="seasonal"){ pool=CATALOGUE.filter(c=>dishSeasonalScore(c,inSeasonProduce)>0); if(!pool.length) pool=CATALOGUE; } // seasonal slot actually draws on what's in season now
       else { pool=CATALOGUE; }
@@ -558,7 +567,7 @@ export default function KitchenApp() {
   const openCatalogue = id => { setEditFor(null); setMenuFor(null); setCatAdded(null); setCatQuery(""); setCatAll(false); setIngPreviewFor(null); setCatPickFor(id); };
   const browsePoolFor = (type) => {
     if(type==="quick"){ const q=CATALOGUE.filter(c=>c.slot==="quick"); return q.length?q:CATALOGUE; }
-    if(type==="faves"){ const q=CATALOGUE.filter(c=>favesSet.has(c.id)); return q.length?q:CATALOGUE; }
+    if(type==="faves"){ const q=CATALOGUE.filter(c=>favesSet.has(c.id) && !favesHiddenSet.has(c.id)); return q.length?q:CATALOGUE; }
     if(type==="seasonal"){ const q=CATALOGUE.filter(c=>dishSeasonalScore(c,inSeasonProduce)>0); return q.length?q:CATALOGUE; }
     return CATALOGUE;
   };
@@ -718,6 +727,18 @@ export default function KitchenApp() {
     setSeasonalPickFor(null);
   };
   const toggleFave = (catId) => { if(!catId) return; setFaves(f=> f.includes(catId) ? f.filter(x=>x!==catId) : [...f, catId]); };
+  const hideFave = c => {
+    setFavesHidden(h=> h.includes(c.id) ? h : [...h, c.id]);
+    setFaveHideUndo({ id:c.id, name:c.name });
+    if(faveHideTimer.current) clearTimeout(faveHideTimer.current);
+    faveHideTimer.current = setTimeout(()=>setFaveHideUndo(null), 6000);
+  };
+  const restoreFave = () => {
+    if(!faveHideUndo) return;
+    setFavesHidden(h=>h.filter(x=>x!==faveHideUndo.id));
+    setFaveHideUndo(null);
+    if(faveHideTimer.current) clearTimeout(faveHideTimer.current);
+  };
   const placeFavePick = (c, dayId) => {
     setWeeks(w=>({ ...w, [planWeek]: w[planWeek].map(d=> d.id===dayId ? {...d, dish:{name:c.name, ref:c.ref, catId:c.id}, type:"faves", suggested:false} : d) }));
     setFavePickFor(null);
@@ -1476,6 +1497,7 @@ export default function KitchenApp() {
                         <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16, color:C.cream }}>{c.name}</span>
                         <span style={{ fontFamily:MONO, fontSize:10, letterSpacing:"0.5px", color:C.muted, border:`1px solid ${C.line}`, padding:"1px 6px", borderRadius:99 }}>{c.cookMin} MIN</span>
                         {c.serves && <span style={{ fontSize:11.5, color:C.muted }}>{/^makes/i.test(c.serves)?c.serves:"Serves "+c.serves}</span>}
+                        <button className="de-btn" onClick={()=>hideFave(c)} title="Hide from midweek (keeps the star)" style={{ marginLeft:"auto", background:"none", border:"none", padding:"2px 4px", color:C.faint, display:"inline-flex", alignItems:"center", cursor:"pointer" }}><X size={15}/></button>
                       </div>
                       {c.ref && <div style={{ fontFamily:MONO, fontSize:10.5, color:C.faint, letterSpacing:"0.3px", marginTop:4 }}>{c.ref}</div>}
                       <div style={{ display:"flex", gap:7, marginTop:11, flexWrap:"wrap" }}>
@@ -2019,6 +2041,15 @@ export default function KitchenApp() {
           <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:14, background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:"10px 12px 10px 16px", boxShadow:"0 14px 34px rgba(0,0,0,0.55)", maxWidth:420 }}>
             <span style={{ fontSize:13.5, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Removed {undoRemove.item.name}</span>
             <button className="de-btn" onClick={restoreItem} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"transparent", border:`1px solid ${rgba(C.ember,0.45)}`, color:C.ember, borderRadius:99, padding:"5px 12px", fontFamily:SANS, fontWeight:600, fontSize:13, flexShrink:0 }}><Undo2 size={15}/> Undo</button>
+          </div>
+        </div>
+      )}
+
+      {faveHideUndo && (
+        <div style={{ position:"fixed", left:0, right:0, bottom:24, display:"flex", justifyContent:"center", zIndex:60, pointerEvents:"none", padding:"0 14px" }}>
+          <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:14, background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:"10px 12px 10px 16px", boxShadow:"0 14px 34px rgba(0,0,0,0.55)", maxWidth:420 }}>
+            <span style={{ fontSize:13.5, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Hidden {faveHideUndo.name} from midweek</span>
+            <button className="de-btn" onClick={restoreFave} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"transparent", border:`1px solid ${rgba(C.ember,0.45)}`, color:C.ember, borderRadius:99, padding:"5px 12px", fontFamily:SANS, fontWeight:600, fontSize:13, flexShrink:0 }}><Undo2 size={15}/> Undo</button>
           </div>
         </div>
       )}
