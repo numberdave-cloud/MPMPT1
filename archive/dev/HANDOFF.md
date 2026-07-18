@@ -1,5 +1,20 @@
 # Dinner Engine — handoff
 
+## Session note - 18 Jul 2026 (unstar + snackbar fix)
+
+- The Midweek Faves X now UNSTARS the dish (removes it from faves) rather than just hiding it, with
+  a 6 second undo ("Unstarred X" + Undo, which re-stars). Dave wanted to remove a dish from faves
+  straight from that list without adding it to a day and unstarring there. The earlier hide feature
+  (favesHidden set + pool filters) has been removed entirely, since a starred-but-hidden fave served
+  no purpose (the star only exists for midweek faves). Handlers: unstarFave/restoreStar; state
+  unstarUndo + unstarTimer.
+- Undo snackbars were overflowing on the phone (fixed maxWidth:420 is wider than the screen, pushing
+  the Undo button off the right edge). All four undo snackbars now use
+  maxWidth:"min(420px, calc(100vw - 28px))", so the bar never exceeds the viewport and the long name
+  crops with an ellipsis (span already had overflow:hidden + textOverflow:ellipsis + nowrap) while
+  the Undo button stays on screen.
+- Catalogue untouched (271, r001-r271). recipes.json unchanged.
+
 ## Session note - 18 Jul 2026 (suggestions + hide fave)
 
 - SUGGESTION VARIETY. chooseBiased no longer collapses to the top-scoring few. It now does a

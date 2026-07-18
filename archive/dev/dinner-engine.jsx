@@ -361,12 +361,10 @@ export default function KitchenApp() {
   const [favePickFor, setFavePickFor] = useState(null);     // fave pick id currently choosing a day
   const [pickIngFor, setPickIngFor] = useState(null);       // "seasonal:<id>" / "fave:<id>" whose ingredients are expanded in the planner picks
   const [faves, setFaves] = usePersistentState("faves", []);       // catalogue ids the user has starred as midweek faves
-  const [favesHidden, setFavesHidden] = usePersistentState("favesHidden", []);   // starred ids hidden from the midweek plan list (star kept)
-  const [faveHideUndo, setFaveHideUndo] = useState(null);   // { id, name } after hiding a fave, for undo
-  const faveHideTimer = useRef(null);
+  const [unstarUndo, setUnstarUndo] = useState(null);   // { id, name } after unstarring a fave, for undo
+  const unstarTimer = useRef(null);
   const [staples, setStaples] = usePersistentState("staples", []); // shop item names kept off future lists until removed
   const favesSet = new Set(faves);
-  const favesHiddenSet = new Set(favesHidden);
   const staplesSet = new Set(staples.map(s=>s.toLowerCase()));
   const [history, setHistory]     = usePersistentState("history", SEED_HISTORY);
   const [doneTasks, setDoneTasks] = usePersistentState("doneTasks", {});
@@ -447,7 +445,7 @@ export default function KitchenApp() {
   }).filter(p=>p.score>0 && !placedCatIds.has(p.c.id))
     .sort((a,b)=> b.score-a.score || a.c.cookMin-b.c.cookMin || a.c.id.localeCompare(b.c.id))
     .slice(0,24);
-  const favePicks = CATALOGUE.filter(c=>favesSet.has(c.id) && !favesHiddenSet.has(c.id) && !placedCatIds.has(c.id))
+  const favePicks = CATALOGUE.filter(c=>favesSet.has(c.id) && !placedCatIds.has(c.id))
     .map(c=>({ c, sc: useUpScoreFor(c,useUp,today0)*10 + dishSeasonalScore(c,inSeasonProduce) }))
     .sort((a,b)=> b.sc-a.sc || a.c.cookMin-b.c.cookMin || a.c.id.localeCompare(b.c.id))
     .map(o=>o.c).slice(0,24);
@@ -527,7 +525,7 @@ export default function KitchenApp() {
     const catTypes=["faves","quick","seasonal","fresh",""];
     if(catTypes.includes(day.type)){
       let pool;
-      if(day.type==="faves"){ pool=CATALOGUE.filter(c=>favesSet.has(c.id) && !favesHiddenSet.has(c.id)); if(!pool.length) pool=CATALOGUE; }
+      if(day.type==="faves"){ pool=CATALOGUE.filter(c=>favesSet.has(c.id)); if(!pool.length) pool=CATALOGUE; }
       else if(day.type==="quick"){ pool=CATALOGUE.filter(c=>c.slot==="quick"); }
       else if(day.type==="seasonal"){ pool=CATALOGUE.filter(c=>dishSeasonalScore(c,inSeasonProduce)>0); if(!pool.length) pool=CATALOGUE; } // seasonal slot actually draws on what's in season now
       else { pool=CATALOGUE; }
@@ -567,7 +565,7 @@ export default function KitchenApp() {
   const openCatalogue = id => { setEditFor(null); setMenuFor(null); setCatAdded(null); setCatQuery(""); setCatAll(false); setIngPreviewFor(null); setCatPickFor(id); };
   const browsePoolFor = (type) => {
     if(type==="quick"){ const q=CATALOGUE.filter(c=>c.slot==="quick"); return q.length?q:CATALOGUE; }
-    if(type==="faves"){ const q=CATALOGUE.filter(c=>favesSet.has(c.id) && !favesHiddenSet.has(c.id)); return q.length?q:CATALOGUE; }
+    if(type==="faves"){ const q=CATALOGUE.filter(c=>favesSet.has(c.id)); return q.length?q:CATALOGUE; }
     if(type==="seasonal"){ const q=CATALOGUE.filter(c=>dishSeasonalScore(c,inSeasonProduce)>0); return q.length?q:CATALOGUE; }
     return CATALOGUE;
   };
@@ -727,17 +725,17 @@ export default function KitchenApp() {
     setSeasonalPickFor(null);
   };
   const toggleFave = (catId) => { if(!catId) return; setFaves(f=> f.includes(catId) ? f.filter(x=>x!==catId) : [...f, catId]); };
-  const hideFave = c => {
-    setFavesHidden(h=> h.includes(c.id) ? h : [...h, c.id]);
-    setFaveHideUndo({ id:c.id, name:c.name });
-    if(faveHideTimer.current) clearTimeout(faveHideTimer.current);
-    faveHideTimer.current = setTimeout(()=>setFaveHideUndo(null), 6000);
+  const unstarFave = c => {
+    setFaves(f=>f.filter(x=>x!==c.id));
+    setUnstarUndo({ id:c.id, name:c.name });
+    if(unstarTimer.current) clearTimeout(unstarTimer.current);
+    unstarTimer.current = setTimeout(()=>setUnstarUndo(null), 6000);
   };
-  const restoreFave = () => {
-    if(!faveHideUndo) return;
-    setFavesHidden(h=>h.filter(x=>x!==faveHideUndo.id));
-    setFaveHideUndo(null);
-    if(faveHideTimer.current) clearTimeout(faveHideTimer.current);
+  const restoreStar = () => {
+    if(!unstarUndo) return;
+    setFaves(f=> f.includes(unstarUndo.id) ? f : [...f, unstarUndo.id]);
+    setUnstarUndo(null);
+    if(unstarTimer.current) clearTimeout(unstarTimer.current);
   };
   const placeFavePick = (c, dayId) => {
     setWeeks(w=>({ ...w, [planWeek]: w[planWeek].map(d=> d.id===dayId ? {...d, dish:{name:c.name, ref:c.ref, catId:c.id}, type:"faves", suggested:false} : d) }));
@@ -1497,7 +1495,7 @@ export default function KitchenApp() {
                         <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16, color:C.cream }}>{c.name}</span>
                         <span style={{ fontFamily:MONO, fontSize:10, letterSpacing:"0.5px", color:C.muted, border:`1px solid ${C.line}`, padding:"1px 6px", borderRadius:99 }}>{c.cookMin} MIN</span>
                         {c.serves && <span style={{ fontSize:11.5, color:C.muted }}>{/^makes/i.test(c.serves)?c.serves:"Serves "+c.serves}</span>}
-                        <button className="de-btn" onClick={()=>hideFave(c)} title="Hide from midweek (keeps the star)" style={{ marginLeft:"auto", background:"none", border:"none", padding:"2px 4px", color:C.faint, display:"inline-flex", alignItems:"center", cursor:"pointer" }}><X size={15}/></button>
+                        <button className="de-btn" onClick={()=>unstarFave(c)} title="Unstar (remove from Midweek Faves)" style={{ marginLeft:"auto", background:"none", border:"none", padding:"2px 4px", color:C.faint, display:"inline-flex", alignItems:"center", cursor:"pointer" }}><X size={15}/></button>
                       </div>
                       {c.ref && <div style={{ fontFamily:MONO, fontSize:10.5, color:C.faint, letterSpacing:"0.3px", marginTop:4 }}>{c.ref}</div>}
                       <div style={{ display:"flex", gap:7, marginTop:11, flexWrap:"wrap" }}>
@@ -2038,25 +2036,25 @@ export default function KitchenApp() {
 
       {undoRemove && (
         <div style={{ position:"fixed", left:0, right:0, bottom:24, display:"flex", justifyContent:"center", zIndex:60, pointerEvents:"none", padding:"0 14px" }}>
-          <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:14, background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:"10px 12px 10px 16px", boxShadow:"0 14px 34px rgba(0,0,0,0.55)", maxWidth:420 }}>
+          <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:14, background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:"10px 12px 10px 16px", boxShadow:"0 14px 34px rgba(0,0,0,0.55)", maxWidth:"min(420px, calc(100vw - 28px))" }}>
             <span style={{ fontSize:13.5, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Removed {undoRemove.item.name}</span>
             <button className="de-btn" onClick={restoreItem} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"transparent", border:`1px solid ${rgba(C.ember,0.45)}`, color:C.ember, borderRadius:99, padding:"5px 12px", fontFamily:SANS, fontWeight:600, fontSize:13, flexShrink:0 }}><Undo2 size={15}/> Undo</button>
           </div>
         </div>
       )}
 
-      {faveHideUndo && (
+      {unstarUndo && (
         <div style={{ position:"fixed", left:0, right:0, bottom:24, display:"flex", justifyContent:"center", zIndex:60, pointerEvents:"none", padding:"0 14px" }}>
-          <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:14, background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:"10px 12px 10px 16px", boxShadow:"0 14px 34px rgba(0,0,0,0.55)", maxWidth:420 }}>
-            <span style={{ fontSize:13.5, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Hidden {faveHideUndo.name} from midweek</span>
-            <button className="de-btn" onClick={restoreFave} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"transparent", border:`1px solid ${rgba(C.ember,0.45)}`, color:C.ember, borderRadius:99, padding:"5px 12px", fontFamily:SANS, fontWeight:600, fontSize:13, flexShrink:0 }}><Undo2 size={15}/> Undo</button>
+          <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:14, background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:"10px 12px 10px 16px", boxShadow:"0 14px 34px rgba(0,0,0,0.55)", maxWidth:"min(420px, calc(100vw - 28px))" }}>
+            <span style={{ fontSize:13.5, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Unstarred {unstarUndo.name}</span>
+            <button className="de-btn" onClick={restoreStar} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"transparent", border:`1px solid ${rgba(C.ember,0.45)}`, color:C.ember, borderRadius:99, padding:"5px 12px", fontFamily:SANS, fontWeight:600, fontSize:13, flexShrink:0 }}><Undo2 size={15}/> Undo</button>
           </div>
         </div>
       )}
 
       {undoClear && (
         <div style={{ position:"fixed", left:0, right:0, bottom:24, display:"flex", justifyContent:"center", zIndex:60, pointerEvents:"none", padding:"0 14px" }}>
-          <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:14, background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:"10px 12px 10px 16px", boxShadow:"0 14px 34px rgba(0,0,0,0.55)", maxWidth:420 }}>
+          <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:14, background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:"10px 12px 10px 16px", boxShadow:"0 14px 34px rgba(0,0,0,0.55)", maxWidth:"min(420px, calc(100vw - 28px))" }}>
             <span style={{ fontSize:13.5, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Cleared {undoClear.n} item{undoClear.n===1?"":"s"}</span>
             <button className="de-btn" onClick={restoreClear} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"transparent", border:`1px solid ${rgba(C.ember,0.45)}`, color:C.ember, borderRadius:99, padding:"5px 12px", fontFamily:SANS, fontWeight:600, fontSize:13, flexShrink:0 }}><Undo2 size={15}/> Undo</button>
           </div>
@@ -2065,7 +2063,7 @@ export default function KitchenApp() {
 
       {undoTask && (
         <div style={{ position:"fixed", left:0, right:0, bottom:24, display:"flex", justifyContent:"center", zIndex:60, pointerEvents:"none", padding:"0 14px" }}>
-          <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:14, background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:"10px 12px 10px 16px", boxShadow:"0 14px 34px rgba(0,0,0,0.55)", maxWidth:420 }}>
+          <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:14, background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:"10px 12px 10px 16px", boxShadow:"0 14px 34px rgba(0,0,0,0.55)", maxWidth:"min(420px, calc(100vw - 28px))" }}>
             <span style={{ fontSize:13.5, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{undoTask.msg}</span>
             <button className="de-btn" onClick={runTaskUndo} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"transparent", border:`1px solid ${rgba(C.ember,0.45)}`, color:C.ember, borderRadius:99, padding:"5px 12px", fontFamily:SANS, fontWeight:600, fontSize:13, flexShrink:0 }}><Undo2 size={15}/> Undo</button>
           </div>
