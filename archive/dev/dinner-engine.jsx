@@ -575,16 +575,18 @@ export default function KitchenApp() {
   // Ingredients that would go on the shop list: catalogue non-staples, or a custom dish's typed-in list.
   const dishShopIngs = (dish) => {
     if(!dish) return [];
-    if(dish.catId && CAT_BY_ID[dish.catId]) return CAT_BY_ID[dish.catId].ings.filter(x=>!x.s && x.i && !staplesSet.has(x.i.toLowerCase())).map(x=>({i:x.i,q:x.q,u:x.u}));
-    if(dish.ings) return dish.ings.filter(x=>x.i && !staplesSet.has(x.i.toLowerCase())).map(x=>({i:x.i,q:x.q||"",u:x.u||""}));
-    return [];
+    let out=[];
+    if(dish.catId && CAT_BY_ID[dish.catId]) out=CAT_BY_ID[dish.catId].ings.filter(x=>!x.s && x.i && !staplesSet.has(x.i.toLowerCase())).map(x=>({i:x.i,q:x.q,u:x.u}));
+    if(dish.ings) out=[...out, ...dish.ings.filter(x=>x.i && !staplesSet.has(x.i.toLowerCase())).map(x=>({i:x.i,q:x.q||"",u:x.u||""}))];
+    return out;
   };
   // Full ingredient list for the preview, with staple flag where known.
   const dishAllIngs = (dish) => {
     if(!dish) return [];
-    if(dish.catId && CAT_BY_ID[dish.catId]) return CAT_BY_ID[dish.catId].ings.filter(x=>x.i);
-    if(dish.ings) return dish.ings.filter(x=>x.i).map(x=>({i:x.i,q:x.q||"",u:x.u||"",s:false}));
-    return [];
+    let out=[];
+    if(dish.catId && CAT_BY_ID[dish.catId]) out=CAT_BY_ID[dish.catId].ings.filter(x=>x.i);
+    if(dish.ings) out=[...out, ...dish.ings.filter(x=>x.i).map(x=>({i:x.i,q:x.q||"",u:x.u||"",s:false}))];
+    return out;
   };
   const addDishIngredients = (o,id) => {
     const day=weeks[o].find(d=>d.id===id);

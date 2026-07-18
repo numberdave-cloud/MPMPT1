@@ -1,5 +1,17 @@
 # Dinner Engine — handoff
 
+## Session note - 18 Jul 2026 (extras on recipe dishes)
+
+- BUG FIX. Adding extra shopping ingredients (e.g. crusty bread) to a recipe-based day dish did
+  nothing on the shop list. saveEdit stores extras on dish.ings while the dish keeps its catId, but
+  dishShopIngs and dishAllIngs both checked catId first and returned only the catalogue ings, so
+  dish.ings extras were never reached. Both now combine: catalogue ings (when catId) PLUS dish.ings.
+  No duplication risk because for a catId dish, dish.ings only ever holds the user's extras (draftIngs
+  is seeded from day.dish.ings, never the catalogue). Fixes both the shop list (dishShopIngs, via
+  addDishIngredients) and the day ingredient preview (dishAllIngs). Extras still pass the staple
+  filter on the shop side.
+- Catalogue untouched (271). recipes.json unchanged.
+
 ## Session note - 18 Jul 2026 (staples page)
 
 - The six locked staples (olive oil, vegetable oil, salt, black pepper, white sugar, water) show as
