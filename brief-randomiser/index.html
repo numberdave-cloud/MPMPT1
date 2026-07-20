@@ -19,46 +19,39 @@
     --success: #7BA968;
     --border: rgba(234, 224, 208, 0.15);
     --border-bright: rgba(234, 224, 208, 0.35);
+    --frame: 20px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html, body {
-    background: var(--bg);
+    background: transparent;
     color: var(--text);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
-    min-height: 100vh;
   }
 
-  body {
-    padding: 28px 24px 32px;
-    max-width: 680px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
+  body { padding: var(--frame); }
 
-  /* ─── BRIEF CARD ─── */
-  .brief-card {
+  /* ─── DEVICE ─── */
+  .device {
+    background: var(--bg);
     border: 1px solid var(--border);
     border-top: 2px solid var(--accent);
-    padding: 22px 26px 26px;
-    margin-bottom: 22px;
+    padding: 22px 26px 24px;
   }
 
-  .brief-head {
+  .device-head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     padding-bottom: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     border-bottom: 1px solid var(--border);
     gap: 16px;
   }
 
-  .brief-title {
+  .device-title {
     font-size: 14px;
     letter-spacing: 0.28em;
     font-weight: 600;
@@ -73,10 +66,10 @@
 
   /* ─── FIELDS ─── */
   .field {
-    padding: 12px 0;
+    padding: 11px 0;
     border-bottom: 1px solid var(--border);
   }
-  .field:last-child { border-bottom: none; padding-bottom: 2px; }
+  .field:last-child { border-bottom: none; }
 
   .field-label {
     font-size: 10px;
@@ -86,7 +79,6 @@
     font-weight: 500;
     margin-bottom: 6px;
   }
-
   .field.avoid .field-label { color: var(--clip); opacity: 0.85; }
 
   .field-value {
@@ -94,20 +86,11 @@
     line-height: 1.35;
     font-weight: 500;
     color: var(--text);
-    transition: color 0.12s, transform 0.06s, opacity 0.06s;
+    transition: color 0.12s, opacity 0.06s;
     min-height: 27px;
   }
-
-  .field.catch .field-value {
-    color: var(--accent-glow);
-    font-weight: 600;
-  }
-
-  /* cycling / landing states */
-  .field-value.cycling {
-    color: var(--text-dim);
-    opacity: 0.7;
-  }
+  .field.catch .field-value { color: var(--accent-glow); font-weight: 600; }
+  .field-value.cycling { color: var(--text-dim); opacity: 0.7; }
   .field.catch .field-value.cycling { color: var(--text-dim); }
   .field-value.land { color: var(--accent); }
   .field.catch .field-value.land { color: var(--accent-glow); }
@@ -116,6 +99,9 @@
   .actions {
     display: flex;
     gap: 10px;
+    margin-top: 16px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
   }
 
   .spin-btn {
@@ -123,7 +109,7 @@
     background: var(--accent);
     color: var(--bg);
     border: 1px solid var(--accent);
-    padding: 17px 24px;
+    padding: 16px 24px;
     font-family: inherit;
     font-size: 14px;
     letter-spacing: 0.28em;
@@ -132,10 +118,7 @@
     cursor: pointer;
     transition: background 0.1s, border-color 0.1s, opacity 0.1s, transform 0.05s;
   }
-  .spin-btn:hover:not(:disabled) {
-    background: var(--accent-glow);
-    border-color: var(--accent-glow);
-  }
+  .spin-btn:hover:not(:disabled) { background: var(--accent-glow); border-color: var(--accent-glow); }
   .spin-btn:active:not(:disabled) { transform: translateY(1px); }
   .spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -144,14 +127,14 @@
     background: transparent;
     color: var(--text);
     border: 1px solid var(--border);
-    padding: 17px 20px;
+    padding: 16px 20px;
     font-family: inherit;
     font-size: 13px;
     letter-spacing: 0.2em;
     font-weight: 600;
     text-transform: uppercase;
     cursor: pointer;
-    transition: border-color 0.1s, color 0.1s, background 0.1s, transform 0.05s;
+    transition: border-color 0.1s, color 0.1s, transform 0.05s;
   }
   .copy-btn:hover:not(:disabled) { border-color: var(--border-bright); }
   .copy-btn:active:not(:disabled) { transform: translateY(1px); }
@@ -159,29 +142,27 @@
   .copy-btn.copied { border-color: var(--success); color: var(--success); }
 
   @media (max-width: 560px) {
-    body { padding: 18px 16px 24px; }
-    .brief-card { padding: 18px 18px 22px; }
+    :root { --frame: 12px; }
+    .device { padding: 18px 18px 20px; }
     .field-value { font-size: 18px; }
     .spin-btn { font-size: 13px; letter-spacing: 0.22em; }
   }
 </style>
 </head>
 <body>
-  <div class="brief-card">
-    <div class="brief-head">
-      <div class="brief-title">BRIEF GENERATOR</div>
+  <div class="device">
+    <div class="device-head">
+      <div class="device-title">BRIEF GENERATOR</div>
       <div class="brief-no" id="briefNo">BRIEF NO. 0000</div>
     </div>
     <div id="fields"></div>
-  </div>
-
-  <div class="actions">
-    <button class="spin-btn" id="spinBtn">New Brief</button>
-    <button class="copy-btn" id="copyBtn">Copy</button>
+    <div class="actions">
+      <button class="spin-btn" id="spinBtn">New Brief</button>
+      <button class="copy-btn" id="copyBtn">Copy</button>
+    </div>
   </div>
 
 <script>
-  // ─── POOLS (approved) ──────────────────────────────────────────
   const POOLS = {
     genre: [
       'Space Opera','Cyberpunk Dystopia','Cosmic Horror','Slasher','Psychological Horror',
@@ -221,56 +202,55 @@
     ]
   };
 
-  // Include / off-limits carry family tags so the same thing can't land in both.
   const INCLUDE = [
-    { t: 'solo piano',                 tags: ['piano'] },
-    { t: 'full orchestra',             tags: ['orchestra','strings','brass','drums'] },
-    { t: 'analog synths',              tags: ['electronic'] },
-    { t: 'a modular bleep bed',        tags: ['electronic'] },
-    { t: 'a string quartet',           tags: ['strings'] },
-    { t: 'taiko drums',                tags: ['drums'] },
-    { t: 'a lone cello',               tags: ['strings'] },
-    { t: 'distorted electric guitar',  tags: ['guitars'] },
+    { t: 'solo piano', tags: ['piano'] },
+    { t: 'full orchestra', tags: ['orchestra','strings','brass','drums'] },
+    { t: 'analog synths', tags: ['electronic'] },
+    { t: 'a modular bleep bed', tags: ['electronic'] },
+    { t: 'a string quartet', tags: ['strings'] },
+    { t: 'taiko drums', tags: ['drums'] },
+    { t: 'a lone cello', tags: ['strings'] },
+    { t: 'distorted electric guitar', tags: ['guitars'] },
     { t: 'fingerpicked acoustic guitar', tags: ['guitars'] },
-    { t: 'adult choir',                tags: ['vocals'] },
-    { t: "children's choir",           tags: ['vocals'] },
-    { t: 'a wordless female vocal',    tags: ['vocals'] },
-    { t: 'brass section',              tags: ['brass'] },
-    { t: 'a solo trumpet',             tags: ['brass'] },
-    { t: 'prepared piano',             tags: ['piano'] },
-    { t: 'harp',                       tags: [] },
-    { t: 'pipe organ',                 tags: [] },
-    { t: 'a music box',                tags: [] },
-    { t: 'banjo',                      tags: [] },
-    { t: 'a Rhodes',                   tags: [] },
-    { t: 'a Mellotron',                tags: [] },
-    { t: 'a theremin',                 tags: ['electronic'] },
-    { t: 'an 808',                     tags: ['electronic','drums'] },
-    { t: 'hand percussion',            tags: ['drums'] },
-    { t: 'a whistled melody',          tags: ['melody'] },
-    { t: 'a ukulele',                  tags: ['guitars'] },
-    { t: 'a duduk',                    tags: [] },
-    { t: 'sub bass',                   tags: ['sublow'] },
-    { t: 'saxophone',                  tags: [] }
+    { t: 'adult choir', tags: ['vocals'] },
+    { t: "children's choir", tags: ['vocals'] },
+    { t: 'a wordless female vocal', tags: ['vocals'] },
+    { t: 'brass section', tags: ['brass'] },
+    { t: 'a solo trumpet', tags: ['brass'] },
+    { t: 'prepared piano', tags: ['piano'] },
+    { t: 'harp', tags: [] },
+    { t: 'pipe organ', tags: [] },
+    { t: 'a music box', tags: [] },
+    { t: 'banjo', tags: [] },
+    { t: 'a Rhodes', tags: [] },
+    { t: 'a Mellotron', tags: [] },
+    { t: 'a theremin', tags: ['electronic'] },
+    { t: 'an 808', tags: ['electronic','drums'] },
+    { t: 'hand percussion', tags: ['drums'] },
+    { t: 'a whistled melody', tags: ['melody'] },
+    { t: 'a ukulele', tags: ['guitars'] },
+    { t: 'a duduk', tags: [] },
+    { t: 'sub bass', tags: ['sublow'] },
+    { t: 'saxophone', tags: [] }
   ];
 
   const AVOID = [
-    { t: 'drums or percussion',        bans: ['drums'] },
-    { t: 'piano',                      bans: ['piano'] },
-    { t: 'orchestra',                  bans: ['orchestra'] },
-    { t: 'anything electronic',        bans: ['electronic'] },
-    { t: 'strings',                    bans: ['strings'] },
-    { t: 'melody',                     bans: ['melody'] },
-    { t: 'guitars',                    bans: ['guitars'] },
-    { t: 'sub or low end',             bans: ['sublow'] },
-    { t: 'anything epic',              bans: [] },
-    { t: 'brass',                      bans: ['brass'] },
-    { t: 'vocals',                     bans: ['vocals'] },
-    { t: 'major keys',                 bans: [] },
-    { t: 'reverb',                     bans: [] },
-    { t: 'traditional harmony',        bans: [] },
+    { t: 'drums or percussion', bans: ['drums'] },
+    { t: 'piano', bans: ['piano'] },
+    { t: 'orchestra', bans: ['orchestra'] },
+    { t: 'anything electronic', bans: ['electronic'] },
+    { t: 'strings', bans: ['strings'] },
+    { t: 'melody', bans: ['melody'] },
+    { t: 'guitars', bans: ['guitars'] },
+    { t: 'sub or low end', bans: ['sublow'] },
+    { t: 'anything epic', bans: [] },
+    { t: 'brass', bans: ['brass'] },
+    { t: 'vocals', bans: ['vocals'] },
+    { t: 'major keys', bans: [] },
+    { t: 'reverb', bans: [] },
+    { t: 'traditional harmony', bans: [] },
     { t: 'anything that sounds like a trailer', bans: [] },
-    { t: 'metronomic tempo',           bans: [] },
+    { t: 'metronomic tempo', bans: [] },
     { t: 'anything recognisably "movie music"', bans: [] }
   ];
 
@@ -284,12 +264,10 @@
     { key: 'catch',   label: 'The catch', extraClass: 'catch' }
   ];
 
-  // ─── DOM ───────────────────────────────────────────────────────
   const $fields = document.getElementById('fields');
   const $spin = document.getElementById('spinBtn');
   const $copy = document.getElementById('copyBtn');
   const $briefNo = document.getElementById('briefNo');
-
   const valueEls = {};
   let current = null;
 
@@ -307,140 +285,80 @@
     valueEls[r.key] = value;
   });
 
-  // ─── PICKERS ───────────────────────────────────────────────────
   function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
-  function pickStr(key, prevVal) {
-    const cands = POOLS[key].filter(v => v !== prevVal);
-    return rand(cands.length ? cands : POOLS[key]);
-  }
-  function pickInclude(prevText) {
-    const cands = INCLUDE.filter(o => o.t !== prevText);
-    return rand(cands.length ? cands : INCLUDE);
-  }
+  function pickStr(key, prevVal) { const c = POOLS[key].filter(v => v !== prevVal); return rand(c.length ? c : POOLS[key]); }
+  function pickInclude(prevText) { const c = INCLUDE.filter(o => o.t !== prevText); return rand(c.length ? c : INCLUDE); }
   function pickAvoid(includeTags, prevText) {
     const safe = AVOID.filter(a => a.bans.every(b => !includeTags.includes(b)));
-    let cands = safe.filter(a => a.t !== prevText);
-    if (!cands.length) cands = safe;
-    return rand(cands);
+    let c = safe.filter(a => a.t !== prevText);
+    if (!c.length) c = safe;
+    return rand(c);
   }
-
   function rollBrief(prev) {
     const inc = pickInclude(prev ? prev.include : null);
     const avo = pickAvoid(inc.tags, prev ? prev.avoid : null);
     return {
-      genre:   pickStr('genre', prev ? prev.genre : null),
-      scene:   pickStr('scene', prev ? prev.scene : null),
-      feel:    pickStr('feel',  prev ? prev.feel  : null),
-      style:   pickStr('style', prev ? prev.style : null),
-      include: inc.t,
-      avoid:   avo.t,
-      catch:   pickStr('catch', prev ? prev.catch : null)
+      genre: pickStr('genre', prev ? prev.genre : null),
+      scene: pickStr('scene', prev ? prev.scene : null),
+      feel:  pickStr('feel',  prev ? prev.feel  : null),
+      style: pickStr('style', prev ? prev.style : null),
+      include: inc.t, avoid: avo.t,
+      catch: pickStr('catch', prev ? prev.catch : null)
     };
   }
-
   function randDisplay(key) {
     if (key === 'include') return rand(INCLUDE).t;
-    if (key === 'avoid')   return rand(AVOID).t;
+    if (key === 'avoid') return rand(AVOID).t;
     return rand(POOLS[key]);
   }
-
   function briefNumber() { return String(Math.floor(1000 + Math.random() * 9000)); }
+  function applyBrief(b) { REELS.forEach(r => { valueEls[r.key].textContent = b[r.key]; }); $briefNo.textContent = 'BRIEF NO. ' + briefNumber(); current = b; }
 
-  function applyBrief(brief) {
-    REELS.forEach(r => { valueEls[r.key].textContent = brief[r.key]; });
-    $briefNo.textContent = 'BRIEF NO. ' + briefNumber();
-    current = brief;
-  }
-
-  // ─── SPIN ──────────────────────────────────────────────────────
   let spinning = false;
-
   function spin() {
     if (spinning) return;
-    spinning = true;
-    $spin.disabled = true;
-    $copy.disabled = true;
-    resetCopyBtn();
-
+    spinning = true; $spin.disabled = true; $copy.disabled = true; resetCopyBtn();
     const final = rollBrief(current);
-
-    const CYCLE_MS = 55;
-    const FIRST_STOP = 480;
-    const STAGGER = 165;
-
-    const numTimer = setInterval(() => {
-      $briefNo.textContent = 'BRIEF NO. ' + briefNumber();
-    }, CYCLE_MS);
-
+    const CYCLE_MS = 55, FIRST_STOP = 480, STAGGER = 165;
+    const numTimer = setInterval(() => { $briefNo.textContent = 'BRIEF NO. ' + briefNumber(); }, CYCLE_MS);
     let lastStop = 0;
-
     REELS.forEach((r, i) => {
       const el = valueEls[r.key];
       el.classList.add('cycling');
       const cycleTimer = setInterval(() => { el.textContent = randDisplay(r.key); }, CYCLE_MS);
-      const stopAt = FIRST_STOP + i * STAGGER;
-      lastStop = stopAt;
+      const stopAt = FIRST_STOP + i * STAGGER; lastStop = stopAt;
       setTimeout(() => {
         clearInterval(cycleTimer);
         el.textContent = final[r.key];
-        el.classList.remove('cycling');
-        el.classList.add('land');
+        el.classList.remove('cycling'); el.classList.add('land');
         setTimeout(() => el.classList.remove('land'), 220);
       }, stopAt);
     });
-
     setTimeout(() => {
       clearInterval(numTimer);
       $briefNo.textContent = 'BRIEF NO. ' + briefNumber();
-      current = final;
-      spinning = false;
-      $spin.disabled = false;
-      $copy.disabled = false;
+      current = final; spinning = false; $spin.disabled = false; $copy.disabled = false;
     }, lastStop + 260);
   }
 
-  // ─── COPY ──────────────────────────────────────────────────────
-  function buildCopyText() {
-    const lines = [$briefNo.textContent, ''];
-    REELS.forEach(r => lines.push(r.label.toUpperCase() + ': ' + current[r.key]));
-    return lines.join('\n');
-  }
-
-  function resetCopyBtn() {
-    $copy.textContent = 'Copy';
-    $copy.classList.remove('copied');
-  }
-
-  function flashCopied() {
-    $copy.textContent = 'Copied \u2713';
-    $copy.classList.add('copied');
-    setTimeout(resetCopyBtn, 1800);
-  }
-
+  function buildCopyText() { const lines = [$briefNo.textContent, '']; REELS.forEach(r => lines.push(r.label.toUpperCase() + ': ' + current[r.key])); return lines.join('\n'); }
+  function resetCopyBtn() { $copy.textContent = 'Copy'; $copy.classList.remove('copied'); }
+  function flashCopied() { $copy.textContent = 'Copied \u2713'; $copy.classList.add('copied'); setTimeout(resetCopyBtn, 1800); }
   async function handleCopy() {
     if (spinning || !current) return;
     const text = buildCopyText();
-    try {
-      await navigator.clipboard.writeText(text);
-      flashCopied();
-    } catch (err) {
+    try { await navigator.clipboard.writeText(text); flashCopied(); }
+    catch (err) {
       const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand('copy'); flashCopied(); }
-      catch (e) { $copy.textContent = 'Copy failed'; }
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); flashCopied(); } catch (e) { $copy.textContent = 'Copy failed'; }
       document.body.removeChild(ta);
     }
   }
 
   $spin.addEventListener('click', spin);
   $copy.addEventListener('click', handleCopy);
-
-  // land on a real brief immediately so the card is never empty
   applyBrief(rollBrief(null));
 </script>
 </body>
