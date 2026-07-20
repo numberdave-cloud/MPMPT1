@@ -10,17 +10,17 @@ https://numberdave-cloud.github.io/MPMPT1/brief-randomiser/
 ## Canvas embed
 ```
 <iframe src="https://numberdave-cloud.github.io/MPMPT1/brief-randomiser/"
-  width="100%" height="720" style="border: none;"
+  width="100%" height="760" style="border: none;"
   title="Brief Generator" allow="autoplay" loading="lazy"></iframe>
 ```
-Height 720 (above the 600 default): the seven brief fields at the larger type size plus the button row stand about 704px tall on a full-width desktop column. 720 clears the tallest brief without clipping the buttons. If the embed column is narrower than a full desktop width, long values may wrap and need a little more height.
+Height 760. The panel is capped at 580px wide and centred (portrait, sheet-of-paper proportions), so on a narrow column the longer values (the catch, sometimes the scene) wrap to two lines and the sheet runs taller than a full-width layout would. 760 clears the tallest brief without clipping the button row. Short briefs leave a little white below the sheet, which suits the page-on-a-desk look.
 
 ## Build state
-Shipped. Single self-contained HTML file, no external libraries, no audio. Layout revision: everything now sits in one contained dark panel.
+Shipped. Single self-contained HTML file, no external libraries, no audio.
 
 ## Technical notes
 - No Web Audio. This MOTE is text only, so there is nothing to decode and no loop clock.
-- Layout: the panel background is dark but the iframe/body background is transparent, so Canvas (white) shows around the panel as an even 20px frame on top and sides. This replaced the earlier full-bleed dark background. The `--frame` CSS variable controls the inset (20px desktop, 12px under 560px).
+- Layout: a single dark panel, `max-width: 580px`, centred. The iframe/body background is transparent, so Canvas (white) shows around the panel as a frame, giving the centred-sheet look. The `--frame` CSS variable sets the minimum inset (20px desktop, 12px under 560px); on a wide column the side margins come from the centring, not the frame.
 - The buttons live inside the panel, below a divider, so the whole device is one unit.
 - Fully random across all seven reels with no coherence weighting, by design. The chaos is the pedagogical point.
 - The final brief is pre-rolled before the animation runs. The cycling frames during a spin are cosmetic only; the landed values are what matter. Landing is a staggered cascade (fields lock top to bottom, "the catch" last).
@@ -29,8 +29,7 @@ Shipped. Single self-contained HTML file, no external libraries, no audio. Layou
 - Consecutive spins avoid immediately repeating the previous value in each reel.
 
 ## Open decisions / TODOs
-- Frame size is an even 20px on top and sides. The exact top gap cannot be pixel-matched from inside the iframe because Canvas adds its own spacing above the frame. Nudge `--frame` if the balance looks off in situ.
-- Panel currently runs near the full width of the Canvas column (minus the frame). Alternative not taken: a narrower centred card. Swap on request.
+- None outstanding. Width settled at a centred 580px sheet.
 
 ## Last updated
-2026-07-20. Layout reworked into a single contained panel framed by Canvas white; embed height raised to 720 to stop the button row clipping (previous 680 was scrolling).
+2026-07-20. Narrowed the panel from near-full-width to a centred 580px sheet (paper proportions); embed height moved to 760 to fit the taller wrapped layout.
