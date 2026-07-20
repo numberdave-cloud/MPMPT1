@@ -538,7 +538,7 @@ export default function KitchenApp() {
       let c=chooseBiased(pool, exclude, day.type==="seasonal", useUp, today0, inSeasonProduce);
       if(c && day.dish && c.name===day.dish.name && pool.length>1){ c=chooseBiased(pool, [...exclude, c.name], day.type==="seasonal", useUp, today0, inSeasonProduce) || c; }
       if(c){
-        suggestMemory.current[memKey]=[c.name, ...recent.filter(n=>n!==c.name)].slice(0, Math.max(1, Math.min(8, pool.length-1)));
+        suggestMemory.current[memKey]=[c.name, ...recent.filter(n=>n!==c.name)].slice(0, Math.max(1, pool.length-1));
         const dish={name:c.name, ref:c.ref, catId:c.id}; reconcileFreezer(o,id,dish); patch(o,id,{ dish, suggested:true });
       }
     } else {

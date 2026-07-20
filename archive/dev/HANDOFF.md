@@ -1,5 +1,18 @@
 # Dinner Engine — handoff
 
+## Session note - 18 Jul 2026 (no-repeat suggestions)
+
+- Suggest anti-repeat memory cap raised from min(8, pool.length-1) to pool.length-1. The per-day
+  suggestMemory now holds every name shown for that day up to (pool size - 1), so chooseBiased
+  excludes all of them and effectively does weighted sampling without replacement: it cycles through
+  the whole eligible pool before repeating any recipe. Weighting still shapes the order early in the
+  cycle. Pools are large for most slots (quick 114, seasonal 153, untyped 271 at time of writing), so
+  long no-repeat stretches. The A->B->A->B bounce was small-pool: with only ~2 eligible recipes (most
+  likely a Faves night with few stars) alternation is unavoidable since only two exist. Suggested to
+  Dave to star more faves for a wider rotation. suggestMemory is a per-session useRef (resets on
+  reload), per day; not persisted.
+- Catalogue untouched (271). recipes.json unchanged.
+
 ## Session note - 18 Jul 2026 (extras on recipe dishes)
 
 - BUG FIX. Adding extra shopping ingredients (e.g. crusty bread) to a recipe-based day dish did
