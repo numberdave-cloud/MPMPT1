@@ -542,7 +542,15 @@ export default function KitchenApp() {
         const dish={name:c.name, ref:c.ref, catId:c.id}; reconcileFreezer(o,id,dish); patch(o,id,{ dish, suggested:true });
       }
     } else {
-      const dish={...pickFrom(POOLS[day.type],[...history, day.dish?day.dish.name:""])};
+      const list=POOLS[day.type]||[];
+      if(!list.length) return;
+      const memKey=`${o}:${id}`;
+      const recent=suggestMemory.current[memKey]||[];
+      // Off ideas (Leftovers, Takeaway, etc.) are meant to recur across nights, so exclude only this
+      // day's own recent picks, not the global recently-used list. Cycles all ideas before repeating.
+      const c=pickFrom(list, [day.dish?day.dish.name:"", ...recent]);
+      suggestMemory.current[memKey]=[c.name, ...recent.filter(n=>n!==c.name)].slice(0, Math.max(1, list.length-1));
+      const dish={...c};
       reconcileFreezer(o,id,dish);
       patch(o,id,{ dish, suggested:true });
     }

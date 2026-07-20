@@ -1,5 +1,17 @@
 # Dinner Engine — handoff
 
+## Session note - 18 Jul 2026 (night-off suggestions)
+
+- Night Off ("off" type) Suggest was excluding the global `history` (recently confirmed dishes across
+  the whole plan). With only 4 off ideas (Takeaway, Leftovers, Dry white toast, Drink ten to fifteen
+  beers), using a couple elsewhere in the week collapsed the pool to 2 and made "Another" ping-pong,
+  and it could never re-offer Leftovers on a second night. Off ideas are meant to recur across nights,
+  so the off branch now excludes only the current dish plus this day's own recent picks (the per-day
+  suggestMemory), not the global history. It cycles all 4 ideas before repeating and Leftovers/Takeaway
+  can appear on multiple nights again. Added a guard for an empty/undefined POOLS[day.type].
+- This is the "off" counterpart to the earlier catalogue-branch no-repeat change.
+- Catalogue untouched (271). recipes.json unchanged.
+
 ## Session note - 18 Jul 2026 (no-repeat suggestions)
 
 - Suggest anti-repeat memory cap raised from min(8, pool.length-1) to pool.length-1. The per-day
