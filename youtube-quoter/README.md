@@ -40,6 +40,7 @@ v1, shipped 2026-07-22. Functional, awaiting live Canvas test.
 - Playback is locked to a segment with a config block at the top of `index.html`: `videoId`, `start`, `end`, `fadeIn`, `fadeOut`, `context`, `instruction`, `source`. To make a new quote, duplicate the directory, change those values, restage. No other edits needed.
 - A transparent click-shield sits on top of the iframe and swallows every mouse event, so YouTube never registers a hover or a click. No hover means no title bar, no logo watermark, no end-screen thumbnails. Reinforced with `controls=0`, `rel=0`, `fs=0`, `disablekb=1`, `iv_load_policy=3`, `modestbranding=1`.
 - An opaque cover hides the raw YouTube thumbnail before first play and the frozen frame after the clip ends, showing a clean PLAY / REPLAY button instead.
+- On play, that same cover is held opaque as a curtain over the video for the first few playback-seconds. YouTube flashes its start-up overlay (title bar, channel, centre play/pause button, "More videos" strip, logo) on the play event itself, not on hover, so the click-shield cannot stop it. The curtain hides it, then fades away once it has cleared. Reveal timing is `REVEAL_AT` near the top of the script: `PLAY_START + max(fadeIn, 3.5)` playback-seconds. With a fade-in of about 3s the reveal lands right as the quote proper starts. Nudge the 3.5 if the overlay ever sneaks through or the reveal feels late.
 - Fades are done by hand: the API has no native fade, so volume is ramped via `setVolume` inside a 50ms `setInterval`. The ramp scales off the volume slider, so it fades toward whatever level the student has set rather than a fixed 100.
 - The progress bar is a non-interactive read-out. It spans the full played window including the fade tails, not the whole source video.
 
@@ -60,4 +61,4 @@ v1, shipped 2026-07-22. Functional, awaiting live Canvas test.
 
 ## Last updated
 
-2026-07-22. Initial ship: segment lockdown, click-shield, cover panels, manual fade in/out, progress read-out, stop button.
+2026-07-22. Added a curtain over the video during playback start to hide YouTube's start-up overlay (title, centre button, "More videos" strip, logo), which fires on the play event and so bypassed the click-shield. Curtain fades away once the overlay clears, timed off `REVEAL_AT`.

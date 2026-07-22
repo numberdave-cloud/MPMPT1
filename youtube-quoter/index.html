@@ -90,8 +90,19 @@
     align-items: center;
     justify-content: center;
     background: #16120F;
+    opacity: 1;
+    transition: opacity 0.4s ease;
   }
-  .cover.hidden { display: none; }
+  .cover.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  /* curtain: cover stays opaque over the video during the first
+     seconds of playback so YouTube's start-up overlay flashes
+     behind it, unseen. button hidden in this mode. */
+  .cover.curtain .big-btn,
+  .cover.curtain .cover-msg { display: none; }
 
   .big-btn {
     background: transparent;
@@ -302,6 +313,10 @@
   // the played window extends 3s either side to hold the fades
   const PLAY_START = Math.max(0, QUOTE.start - (QUOTE.fadeIn || 0));
   const PLAY_END   = QUOTE.end + (QUOTE.fadeOut || 0);
+  // hold the curtain over the video this many playback-seconds in,
+  // until YouTube's start-up overlay has faded, then reveal. tune the
+  // 3.5 if the overlay ever sneaks through or the reveal feels late.
+  const REVEAL_AT  = PLAY_START + Math.max(QUOTE.fadeIn || 0, 3.5);
 
   // ─── DOM ───
   const $context   = document.getElementById('context');
@@ -325,6 +340,7 @@
   let player = null;
   let ready = false;
   let hasPlayed = false;
+  let curtainDropped = false;
   let poll = null;
   let lastVol = 100;
 
@@ -391,7 +407,8 @@
   function playClip() {
     if (!ready) return;
     hasPlayed = true;
-    hideCover();
+    curtainDropped = false;
+    enterCurtain();
     $stopBtn.disabled = false;
     safe(() => { player.setVolume(0); player.seekTo(PLAY_START, true); player.playVideo(); });
   }
@@ -434,20 +451,46 @@
       const frac = (t - PLAY_START) / (PLAY_END - PLAY_START);
       $progress.style.width = Math.max(0, Math.min(1, frac)) * 100 + '%';
 
+      // drop the curtain once YouTube's start-up overlay has cleared
+      if (!curtainDropped && t >= REVEAL_AT) {
+        curtainDropped = true;
+        revealVideo();
+      }
+
       if (t >= PLAY_END - 0.05) finishClip();
     }, 50);
   }
   function stopPoll() { if (poll) { clearInterval(poll); poll = null; } }
 
+  // opaque curtain over the video during playback start, button hidden,
+  // shown instantly (no fade in) so nothing leaks through
+  function enterCurtain() {
+    $cover.style.transition = 'none';
+    $cover.classList.add('curtain');
+    $cover.classList.remove('hidden');
+    void $cover.offsetWidth;          // commit before re-enabling transition
+    $cover.style.transition = '';
+  }
+
+  // fade the curtain away to reveal the playing video
+  function revealVideo() {
+    $cover.classList.add('hidden');
+  }
+
+  // show the PLAY / REPLAY panel instantly (hides paused / end frames)
   function showCover() {
+    curtainDropped = true;
+    $cover.style.transition = 'none';
+    $cover.classList.remove('curtain');
     $cover.classList.remove('hidden');
     $coverLabel.textContent = hasPlayed ? 'REPLAY' : 'PLAY';
     if (hasPlayed) {
       $coverBtn.classList.add('replay');
       $coverTri.textContent = '↻';
     }
+    void $cover.offsetWidth;
+    $cover.style.transition = '';
   }
-  function hideCover() { $cover.classList.add('hidden'); }
 
   // ─── VOLUME ───
   function applyVolume(v) {
