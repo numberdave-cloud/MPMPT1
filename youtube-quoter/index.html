@@ -91,11 +91,10 @@
     justify-content: center;
     background: #16120F;
     opacity: 1;
-    transition: opacity 0.4s ease;
+    transition: opacity 0.8s ease;   /* dissolve duration on reveal */
   }
   .cover.hidden {
     opacity: 0;
-    visibility: hidden;
     pointer-events: none;
   }
   /* curtain: cover stays opaque over the video during the first
@@ -243,42 +242,64 @@
     background: var(--border);
   }
 
-  /* ─── INSTRUCTION ─── */
-  .instruction {
-    font-size: 11px;
-    line-height: 1.5;
-    color: var(--text-dim);
-    letter-spacing: 0.03em;
+  /* ─── TITLE CARD (on the curtain) ─── */
+  .card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 0 28px;
     text-align: center;
-    max-width: 520px;
-    margin: 0 auto;
   }
-
-  .source {
-    font-size: 9px;
-    letter-spacing: 0.12em;
+  .card-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+  }
+  .card-title {
+    font-size: 15px;
+    line-height: 1.4;
+    color: var(--text);
+    letter-spacing: 0.01em;
+    max-width: 400px;
+  }
+  .card-meta {
+    font-size: 10px;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--text-faint);
-    text-align: center;
+    color: var(--text-dim);
+  }
+  .card-len {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
   }
 
   @media (max-width: 560px) {
     body { padding: 16px; }
     input[type="range"].vol { width: 60px; }
     .stop-btn { padding: 9px 12px; }
+    .card-title { font-size: 13px; }
   }
 </style>
 </head>
 <body>
 
-  <div class="context" id="context"></div>
-
   <div class="video-stage">
     <div id="player"></div>
     <div class="click-shield"></div>
     <div class="cover" id="cover">
-      <button class="big-btn" id="coverBtn"><span class="tri"></span><span id="coverLabel">PLAY</span></button>
-      <div class="cover-msg" id="coverMsg" style="display:none;"></div>
+      <div class="card">
+        <div class="card-text">
+          <div class="card-title" id="cardTitle"></div>
+          <div class="card-meta" id="cardMeta"></div>
+          <div class="card-len" id="cardLen"></div>
+        </div>
+        <button class="big-btn" id="coverBtn"><span class="tri"></span><span id="coverLabel">PLAY</span></button>
+        <div class="cover-msg" id="coverMsg" style="display:none;"></div>
+      </div>
     </div>
   </div>
 
@@ -291,9 +312,6 @@
     </div>
   </div>
 
-  <div class="instruction" id="instruction"></div>
-  <div class="source" id="sourceLine"></div>
-
 <script>
   // ══════════════════════════════════════════════════════════════
   //  CONFIG — one quote per MOTE. Duplicate this file, change these.
@@ -304,37 +322,44 @@
     end: 64,                  // quote content end (s)   — 1:04
     fadeIn: 3,                // seconds of fade-in BEFORE start (0 = hard cut)
     fadeOut: 3,               // seconds of fade-out AFTER end   (0 = hard cut)
-    context: 'Mark Korven plays the Apprehension Engine',
-    instruction: '',          // empty = hidden (no in-widget instruction)
-    source: ''                // optional — set to '' to hide
+    title: 'Mark Korven playing the Apprehension Engine',
+    source: 'Indie Film & Music',   // source credit on the card ('' to hide)
+    showLength: true                // show the quote length on the card
   };
   // ══════════════════════════════════════════════════════════════
 
-  // the played window extends 3s either side to hold the fades
+  // the played window extends either side to hold the fades
   const PLAY_START = Math.max(0, QUOTE.start - (QUOTE.fadeIn || 0));
   const PLAY_END   = QUOTE.end + (QUOTE.fadeOut || 0);
-  // hold the curtain over the video this many playback-seconds in,
-  // until YouTube's start-up overlay has faded, then reveal. tune the
-  // 3.5 if the overlay ever sneaks through or the reveal feels late.
-  const REVEAL_AT  = PLAY_START + Math.max(QUOTE.fadeIn || 0, 3.5);
+  // hold the title card over the video this many playback-seconds in,
+  // until YouTube's start-up overlay has faded, then dissolve it.
+  // bump REVEAL_HOLD if the overlay still peeks through.
+  const REVEAL_HOLD = 4.2;
+  const REVEAL_AT   = PLAY_START + Math.max(QUOTE.fadeIn || 0, REVEAL_HOLD);
 
   // ─── DOM ───
-  const $context   = document.getElementById('context');
   const $cover     = document.getElementById('cover');
   const $coverBtn  = document.getElementById('coverBtn');
   const $coverLabel= document.getElementById('coverLabel');
   const $coverTri  = $coverBtn.querySelector('.tri');
   const $coverMsg  = document.getElementById('coverMsg');
+  const $cardTitle = document.getElementById('cardTitle');
+  const $cardMeta  = document.getElementById('cardMeta');
+  const $cardLen   = document.getElementById('cardLen');
   const $stopBtn   = document.getElementById('stopBtn');
   const $progress  = document.getElementById('progressFill');
   const $muteBtn   = document.getElementById('muteBtn');
   const $vol       = document.getElementById('volSlider');
-  const $instr     = document.getElementById('instruction');
-  const $source    = document.getElementById('sourceLine');
 
-  $context.textContent = QUOTE.context;
-  if (QUOTE.instruction) { $instr.textContent = QUOTE.instruction; } else { $instr.style.display = 'none'; }
-  if (QUOTE.source) { $source.textContent = QUOTE.source; } else { $source.style.display = 'none'; }
+  function fmtLen(sec) {
+    const m = Math.floor(sec / 60);
+    const s = Math.round(sec % 60);
+    return m + ':' + String(s).padStart(2, '0');
+  }
+
+  $cardTitle.textContent = QUOTE.title;
+  if (QUOTE.source) { $cardMeta.textContent = QUOTE.source; } else { $cardMeta.style.display = 'none'; }
+  if (QUOTE.showLength) { $cardLen.textContent = fmtLen(QUOTE.end - QUOTE.start); } else { $cardLen.style.display = 'none'; }
 
   // ─── STATE ───
   let player = null;
