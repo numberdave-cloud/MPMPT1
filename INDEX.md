@@ -24,6 +24,8 @@ Categories: Composition · Mixing · Arranging · Miscellaneous
 | Skill Loop Player | `skill-loop-player/` | Miscellaneous | live | YES |
 | EQ Explorer | `eq-explorer/` | Mixing | live (v0.1, single source) | YES |
 | Vertical Remixing | `vertical-remixing/` | Arranging | live | YES |
+| YouTube Quoter [Korven — Apprehension Engine] | `youtube-quoter/` | TBC | live | YES |
+| YouTube Quoter [Mick Gordon — Doom brief] | `quoter-mick-gordon-doom-brief-1/` | TBC | live | YES |
 
 ## Work in progress (not yet in repo)
 
@@ -50,4 +52,5 @@ Categories: Composition · Mixing · Arranging · Miscellaneous
 - Ship-then-tweak: overwrite in place (same folder) for fixes and additions — git history is the undo. Spin a NEW named folder only to protect a version that is live in front of students.
 - New MOTE = assign a category before ship (Composition / Mixing / Arranging / Miscellaneous).
 - Each MOTE carries its own README.md as session handoff.
+- YouTube Quoter instances share one template. Only the config block, the notes prose, and the page `<title>` differ per instance. A fix to the shared machinery must be applied across every `quoter-*` / `youtube-quoter` folder, not just one.
 - `.nojekyll` present at root so Pages serves every folder (incl. any with leading underscores).
