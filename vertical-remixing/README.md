@@ -13,21 +13,21 @@ continuous loop, with game states revealing or hiding layers via musically timed
 ```html
 <iframe src="https://numberdave-cloud.github.io/MPMPT1/vertical-remixing/?v=1"
         width="100%"
-        height="540"
+        height="560"
         style="border: none;"
         allow="autoplay"
         loading="lazy"
         title="Vertical Remixing"></iframe>
 ```
 
-Height 540 rather than the usual 600. The widget is a fixed 660 x 490 box (not fluid), and
-540 is the exact document height with the advanced panel closed. When the panel is opened the
-widget scales itself down to ~0.70 to stay inside the same iframe height, so one number covers
+Height 560 rather than the usual 600. The widget is a fixed 660 x 508 box (not fluid), and
+560 is the exact document height with the advanced panel closed. When the panel is opened the
+widget scales itself down to ~0.71 to stay inside the same iframe height, so one number covers
 both states with no clipping and no dead space.
 
 ## Build state
 
-v1.0, shipped 23 July 2026. Feature complete.
+v1.1, 23 July 2026. Feature complete.
 
 ## What it does
 
@@ -38,8 +38,11 @@ v1.0, shipped 23 July 2026. Feature complete.
   alone. Mute subtracts from the active state's stack. Both snap at 10 ms and ignore the grid.
 - Any state press wipes all manual mute/solo and reasserts, including re-pressing the current
   state.
-- Run Cycle: automated demo that restarts the loop at bar 1 and rotates
-  Explore > Alert > Combat > Alert > (repeat) indefinitely.
+- A 12-block strip under each state panel shows the current bar of the loop. Only the active
+  state's strip is lit, so it reads as "bar 7 of Explore".
+- Run Cycle: automated demo that ping-pongs up and down the state ladder indefinitely. It
+  resumes from wherever the widget currently is rather than restarting, and does not restart
+  the loop.
 
 ## Technical notes
 
@@ -61,11 +64,24 @@ resolve per layer by direction (rising uses fade-in time and curve, falling uses
 it stays correct even for non-nested states.
 
 **Run Cycle timing.** Each transition is armed so its fade *completes* on the loop boundary.
-Trigger offset = `loop end - fade duration - one sixteenth`. The sixteenth of lead-in lets the
+Trigger offset = `loop end - fade duration - one sixteenth`, resolved against the current loop
+position so the cycle can be armed from any point in a pass. The sixteenth of lead-in lets the
 quantiser land the fade start on the intended grid point. With the defaults this puts fade-ins
 on bar 12 beat 1 and fade-outs on bar 9 beat 1, both finishing at the top of the next pass.
-The offset self-adjusts if the fade lengths are changed in the advanced panel. Any state,
-mute or solo press cancels the cycle; pressing Run Cycle again cancels but keeps playing.
+The offset self-adjusts if the fade lengths are changed in the advanced panel.
+
+**Run Cycle direction.** The states are a linear ladder, so the cycle is a ping-pong rather
+than a fixed sequence: it walks up to the top, flips, walks down to the bottom, flips again.
+Resuming is unambiguous at either end (Explore can only ascend, Combat can only descend). For
+a middle state it reads `lastFrom`, the state most recently departed, to decide whether it is
+on the way up or on the way down. Alert reached from Explore continues to Combat; Alert
+reached from Combat continues to Explore. With no history it defaults to ascending.
+
+**Cycle interrupts.** Only pressing a *different* state cancels the cycle. Mute, solo, and
+re-pressing the current state all leave it running, so a student can inspect layers without
+losing the demo. Any manual mute/solo is cleared by the next automatic transition, since a
+state change always reasserts its own stack. Pressing Run Cycle again cancels but keeps
+playing; Stop ends everything.
 
 **Advanced panel.** Hidden by default. Ten clicks on the "VERTICAL REMIXING" title within a
 rolling 3-second window toggles it. Exposes quantise, fade in, fade out, curve in, curve out.
@@ -95,4 +111,7 @@ it cannot interfere with fade scheduling.
 
 ## Last updated
 
-23 July 2026. Initial ship.
+23 July 2026. v1.1: Run Cycle now resumes from the current state using ping-pong direction
+logic instead of restarting at Explore; mute and solo no longer interrupt the cycle; added
+per-state 12-block bar strips; removed the top-right bar counter and the layer-number labels
+from the state panels; embed height 540 to 560.

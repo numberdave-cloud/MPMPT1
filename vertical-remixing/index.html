@@ -69,15 +69,6 @@
     -webkit-user-select: none;
     cursor: default;
   }
-  .readout {
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--dim);
-    letter-spacing: 0.06em;
-    white-space: nowrap;
-  }
-  .readout strong { color: var(--accent); font-weight: 700; }
 
   /* ── TRANSPORT ── */
   .transport {
@@ -240,16 +231,24 @@
     font-weight: 700;
     text-transform: uppercase;
   }
-  .state-layers {
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--faint);
-    letter-spacing: 0.08em;
+  .bars {
+    display: flex;
+    gap: 2px;
+    padding: 0 12px 11px;
+  }
+  .bar-cell {
+    flex: 1;
+    height: 8px;
+    border: 1px solid rgba(234,224,208,0.16);
+    transition: background 0.06s, border-color 0.06s;
+  }
+  .state.active .bar-cell { border-color: var(--border); }
+  .state.active .bar-cell.on {
+    background: var(--accent);
+    border-color: var(--accent);
   }
   .state.active { border-color: var(--accent); }
   .state.active .state-label { background: var(--accent); color: var(--bg); }
-  .state.active .state-layers { color: rgba(30,26,23,0.65); }
 
   /* ── LAYERS ── */
   .layers { margin-bottom: 20px; }
@@ -363,7 +362,6 @@
 
   <div class="head">
     <div class="title">VERTICAL REMIXING</div>
-    <div class="readout" id="readout">BAR <strong>--</strong>.<strong>-</strong></div>
   </div>
 
   <div class="transport">
@@ -484,8 +482,10 @@
   let advOpen = false;
   let titleClicks = [];
 
-  const CYCLE = [0, 1, 2, 1];   // Explore, Alert, Combat, Alert, repeat
-  let cycleOn = false, cycleStep = 0, cycleTrigger = 0;
+  // The states are a ladder, so the cycle is a ping-pong rather than a fixed list.
+  // lastFrom records the state we previously came from, which is what tells a
+  // middle state whether it is on the way up or on the way down.
+  let cycleOn = false, cycleTrigger = 0, cycleDir = 1, cycleCursor = 0, lastFrom = null;
   let muted = [false, false, false];
   let soloIdx = null;
   const START_DB = -10;
@@ -506,7 +506,6 @@
   const $title       = document.querySelector('.title');
   const $playBtn  = document.getElementById('playBtn');
   const $stopBtn  = document.getElementById('stopBtn');
-  const $readout  = document.getElementById('readout');
   const $vol      = document.getElementById('vol');
   const $volFill  = document.getElementById('volFill');
   const $volHandle= document.getElementById('volHandle');
@@ -579,6 +578,7 @@
   // resolving per layer keeps it correct if that ever changes.
   function applyState(idx, when) {
     const from = activeState;
+    if (from !== idx) lastFrom = from;
     muted = [false, false, false];
     soloIdx = null;
     activeState = idx;
@@ -604,7 +604,7 @@
   }
 
   function requestState(idx, fromCycle) {
-    if (!fromCycle) cancelCycle();
+    if (!fromCycle && idx !== activeState) cancelCycle();
     if (!playing) {
       activeState = idx;
       muted = [false, false, false];
@@ -625,13 +625,26 @@
   // Every transition is armed so its fade COMPLETES on the loop boundary.
   // Trigger fires one sixteenth early so the quantiser lands the fade start
   // on the intended grid point rather than wherever the timer happened to tick.
-  function armCycle(step) {
-    const cur  = CYCLE[step % CYCLE.length];
-    const next = CYCLE[(step + 1) % CYCLE.length];
-    const rising = STATES[next].layers.length > STATES[cur].layers.length;
+  function stepFrom(cur, dir) {
+    const top = STATES.length - 1;
+    let d = dir, n = cur + d;
+    if (n > top) { d = -1; n = cur + d; }
+    if (n < 0)   { d =  1; n = cur + d; }
+    return { next: n, dir: d };
+  }
+
+  // Arms the next transition so its fade COMPLETES on a loop boundary. Works from
+  // any point in the loop, so the cycle can be resumed mid-pass.
+  function armCycle() {
+    const r = stepFrom(cycleCursor, cycleDir);
+    const rising = STATES[r.next].layers.length > STATES[cycleCursor].layers.length;
     const dur = rising ? FADES[fadeInIdx].sec : FADES[fadeOutIdx].sec;
-    const passStart = startTime + step * LOOP_LEN;
-    cycleTrigger = passStart + LOOP_LEN - dur - (SEC_PER_BEAT / 4);
+    const offset = LOOP_LEN - dur - (SEC_PER_BEAT / 4);
+    const now = ctx.currentTime;
+    const pass = Math.floor((now - startTime) / LOOP_LEN);
+    let t = startTime + pass * LOOP_LEN + offset;
+    if (t <= now + 0.05) t += LOOP_LEN;
+    cycleTrigger = t;
   }
 
   function cancelCycle() {
@@ -642,14 +655,14 @@
 
   function toggleCycle() {
     if (cycleOn) { cancelCycle(); return; }
-    if (playing) stop();
-    activeState = CYCLE[0];
-    muted = [false, false, false];
-    soloIdx = null;
-    start();
+    if (!playing) start();
+    const top = STATES.length - 1;
+    if (activeState === 0) cycleDir = 1;
+    else if (activeState === top) cycleDir = -1;
+    else cycleDir = (lastFrom !== null && lastFrom > activeState) ? -1 : 1;
+    cycleCursor = activeState;
     cycleOn = true;
-    cycleStep = 0;
-    armCycle(0);
+    armCycle();
     renderTransport();
   }
 
@@ -685,9 +698,11 @@
       nextLoopIdx++;
     }
     if (cycleOn && now >= cycleTrigger) {
-      requestState(CYCLE[(cycleStep + 1) % CYCLE.length], true);
-      cycleStep++;
-      armCycle(cycleStep);
+      const r = stepFrom(cycleCursor, cycleDir);
+      cycleDir = r.dir;
+      cycleCursor = r.next;
+      requestState(r.next, true);
+      armCycle();
     }
 
     if (pending && pending.fireTime <= now + LOOKAHEAD) {
@@ -799,16 +814,23 @@
       const nm = document.createElement('div');
       nm.className = 'state-name';
       nm.textContent = s.name;
-      const ly = document.createElement('div');
-      ly.className = 'state-layers';
-      ly.textContent = s.layers.map(function (n) { return n + 1; }).join('+');
       lab.appendChild(nm);
-      lab.appendChild(ly);
       btn.appendChild(lab);
+
+      const strip = document.createElement('div');
+      strip.className = 'bars';
+      const cells = [];
+      for (let n = 0; n < BAR_COUNT; n++) {
+        const c = document.createElement('div');
+        c.className = 'bar-cell';
+        strip.appendChild(c);
+        cells.push(c);
+      }
+      btn.appendChild(strip);
 
       btn.addEventListener('click', function () { requestState(idx); });
       $states.appendChild(btn);
-      stateEls.push({ root: btn, bar: bar });
+      stateEls.push({ root: btn, bar: bar, cells: cells });
     });
   }
 
@@ -847,8 +869,8 @@
       s.className = 'mini solo';
       s.textContent = 'S';
 
-      m.addEventListener('click', function () { cancelCycle(); muted[i] = !muted[i]; applyManual(); });
-      s.addEventListener('click', function () { cancelCycle(); soloIdx = (soloIdx === i) ? null : i; applyManual(); });
+      m.addEventListener('click', function () { muted[i] = !muted[i]; applyManual(); });
+      s.addEventListener('click', function () { soloIdx = (soloIdx === i) ? null : i; applyManual(); });
 
       btns.appendChild(m); btns.appendChild(s);
       row.appendChild(nm); row.appendChild(meter); row.appendChild(db); row.appendChild(btns);
@@ -888,13 +910,9 @@
     if (!ctx) return;
     const now = ctx.currentTime;
 
+    let curBar = -1;
     if (playing && now >= startTime) {
-      const rel = (now - startTime) % LOOP_LEN;
-      const bar = Math.floor(rel / SEC_PER_BAR) + 1;
-      const beat = Math.floor((rel % SEC_PER_BAR) / SEC_PER_BEAT) + 1;
-      $readout.innerHTML = 'BAR <strong>' + (bar < 10 ? '0' + bar : bar) + '</strong>.<strong>' + beat + '</strong>';
-    } else if (!playing) {
-      $readout.innerHTML = 'BAR <strong>--</strong>.<strong>-</strong>';
+      curBar = Math.floor(((now - startTime) % LOOP_LEN) / SEC_PER_BAR);
     }
 
     for (let i = 0; i < 3; i++) {
@@ -933,7 +951,12 @@
       el.bar.style.background = col;
       el.bar.style.width = w + '%';
       el.root.style.borderColor = (pending && idx === pending.stateIdx) ? '#7BA968' : '';
-      el.root.classList.toggle('active', idx === (transition ? transition.to : activeState));
+      const isActive = idx === (transition ? transition.to : activeState);
+      el.root.classList.toggle('active', isActive);
+      const lit = isActive ? curBar : -1;
+      for (let c = 0; c < el.cells.length; c++) {
+        el.cells[c].classList.toggle('on', c === lit);
+      }
     });
   }
 
