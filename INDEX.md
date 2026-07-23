@@ -23,6 +23,7 @@ Categories: Composition · Mixing · Arranging · Miscellaneous
 | Vintage Sampler | `vintage-sampler/` | Composition | live | YES |
 | Skill Loop Player | `skill-loop-player/` | Miscellaneous | live | YES |
 | EQ Explorer | `eq-explorer/` | Mixing | live (v0.1, single source) | YES |
+| Vertical Remixing | `vertical-remixing/` | Arranging | live | YES |
 
 ## Work in progress (not yet in repo)
 
