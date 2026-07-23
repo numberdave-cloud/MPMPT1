@@ -232,20 +232,18 @@
     text-transform: uppercase;
   }
   .bars {
-    display: flex;
-    gap: 2px;
-    padding: 0 12px 11px;
+    padding: 0;
   }
-  .bar-cell {
-    flex: 1;
-    height: 8px;
-    border: 1px solid rgba(234,224,208,0.16);
-    transition: background 0.06s, border-color 0.06s;
+  .bar-track {
+    height: 20px;
+    position: relative;
+    overflow: hidden;
   }
-  .state.active .bar-cell { border-color: var(--border); }
-  .state.active .bar-cell.on {
+  .bar-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
     background: var(--accent);
-    border-color: var(--accent);
   }
   .state.active { border-color: var(--accent); }
   .state.active .state-label { background: var(--accent); color: var(--bg); }
@@ -819,18 +817,17 @@
 
       const strip = document.createElement('div');
       strip.className = 'bars';
-      const cells = [];
-      for (let n = 0; n < BAR_COUNT; n++) {
-        const c = document.createElement('div');
-        c.className = 'bar-cell';
-        strip.appendChild(c);
-        cells.push(c);
-      }
+      const track = document.createElement('div');
+      track.className = 'bar-track';
+      const fill = document.createElement('div');
+      fill.className = 'bar-fill';
+      track.appendChild(fill);
+      strip.appendChild(track);
       btn.appendChild(strip);
 
       btn.addEventListener('click', function () { requestState(idx); });
       $states.appendChild(btn);
-      stateEls.push({ root: btn, bar: bar, cells: cells });
+      stateEls.push({ root: btn, bar: bar, fill: fill });
     });
   }
 
@@ -953,10 +950,9 @@
       el.root.style.borderColor = (pending && idx === pending.stateIdx) ? '#7BA968' : '';
       const isActive = idx === (transition ? transition.to : activeState);
       el.root.classList.toggle('active', isActive);
-      const lit = isActive ? curBar : -1;
-      for (let c = 0; c < el.cells.length; c++) {
-        el.cells[c].classList.toggle('on', c === lit);
-      }
+      el.fill.style.width = (isActive && curBar >= 0)
+        ? (((curBar + 1) / BAR_COUNT) * 100) + '%'
+        : '0';
     });
   }
 

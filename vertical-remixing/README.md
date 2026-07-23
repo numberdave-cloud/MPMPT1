@@ -27,7 +27,7 @@ both states with no clipping and no dead space.
 
 ## Build state
 
-v1.1, 23 July 2026. Feature complete.
+v1.2, 23 July 2026. Feature complete.
 
 ## What it does
 
@@ -38,8 +38,8 @@ v1.1, 23 July 2026. Feature complete.
   alone. Mute subtracts from the active state's stack. Both snap at 10 ms and ignore the grid.
 - Any state press wipes all manual mute/solo and reasserts, including re-pressing the current
   state.
-- A 12-block strip under each state panel shows the current bar of the loop. Only the active
-  state's strip is lit, so it reads as "bar 7 of Explore".
+- A progress sweep under each state panel shows the current bar of the loop. Only the active
+  state sweeps, so it reads as "bar 7 of Explore".
 - Run Cycle: automated demo that ping-pongs up and down the state ladder indefinitely. It
   resumes from wherever the widget currently is rather than restarting, and does not restart
   the loop.
@@ -86,6 +86,11 @@ playing; Stop ends everything.
 **Advanced panel.** Hidden by default. Ten clicks on the "VERTICAL REMIXING" title within a
 rolling 3-second window toggles it. Exposes quantise, fade in, fade out, curve in, curve out.
 
+**Bar sweep.** The strip under each state label is divided into 12 sections that are never
+drawn. The fill advances one twelfth on each bar line rather than gliding, so the bar change
+stays legible without putting a visible grid on screen. It is flush to the panel's inner
+edges and fills the region's full height. Inactive panels hold at zero width.
+
 **Layout.** Fixed 660 px box, never fluid. On viewports narrower or shorter than it needs, the
 whole box scales as a single unit rather than reflowing, so the ratio always holds.
 
@@ -111,7 +116,11 @@ it cannot interfere with fade scheduling.
 
 ## Last updated
 
-23 July 2026. v1.1: Run Cycle now resumes from the current state using ping-pong direction
-logic instead of restarting at Explore; mute and solo no longer interrupt the cycle; added
-per-state 12-block bar strips; removed the top-right bar counter and the layer-number labels
-from the state panels; embed height 540 to 560.
+23 July 2026. v1.2: replaced the per-state 12-block bar strips with a full-bleed progress
+sweep that fills the region below each state label, stepping one twelfth per bar. Box height
+508 to 509; embed height unchanged at 560.
+
+Earlier the same day, v1.1: Run Cycle resumes from the current state using ping-pong direction
+logic instead of restarting at Explore; mute and solo no longer interrupt the cycle; removed
+the top-right bar counter and the layer-number labels from the state panels; embed height
+540 to 560.
