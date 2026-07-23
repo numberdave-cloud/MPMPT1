@@ -26,6 +26,7 @@ Categories: Composition · Mixing · Arranging · Miscellaneous
 | Vertical Remixing | `vertical-remixing/` | Arranging | live | YES |
 | YouTube Quoter [Korven — Apprehension Engine] | `youtube-quoter/` | Miscellaneous | live | YES |
 | YouTube Quoter [Mick Gordon — Doom brief] | `quoter-mick-gordon-doom-brief-1/` | Miscellaneous | live | YES |
+| YouTube Quoter [NIN — Ruiner instrumental] | `quoter-ruiner-instrumental-solo/` | Miscellaneous | live | YES |
 
 ## Work in progress (not yet in repo)
 

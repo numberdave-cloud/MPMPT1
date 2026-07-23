@@ -12,12 +12,13 @@ Category for all quoters: **Miscellaneous**.
 | --- | --- | --- | --- | --- | --- | --- |
 | `youtube-quoter/` | Mark Korven playing the Apprehension Engine | `lzk-l8Gm0MY` | 32s to 1:04 | 0:32 | 0 dB | live, embedded in Canvas |
 | `quoter-mick-gordon-doom-brief-1/` | Mick Gordon discussing the Doom brief | `U4FNBMZsqrY` | 2:33 to 4:12 | 1:39 | -6 dB | live, untested |
+| `quoter-ruiner-instrumental-solo/` | Nine Inch Nails - Ruiner Instrumental Break | `RkT-aMgZvQI` | 2:44 to 3:51 | 1:07 | 0 dB | live, untested |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
 ## Naming
 
-`youtube-quoter/` was the first and is already embedded in a live Canvas page, so its name stays. Everything after it uses `quoter-<subject>-<n>`. Do not rename `youtube-quoter/` without checking the Canvas embed first.
+`youtube-quoter/` was the first and is already embedded in a live Canvas page, so its name stays. Everything after it uses `quoter-<subject>`, with a trailing index only where one was asked for. Do not rename `youtube-quoter/` without checking the Canvas embed first.
 
 ## Making a new one
 
@@ -62,7 +63,13 @@ Reference: -3 dB is x0.71, -6 dB is x0.50, -9 dB is x0.36, -12 dB is x0.25.
 
 ## Embed
 
-Height 480 covers every instance so far in side-by-side layout, and the current instances when stacked. Heights vary with notes length, so re-measure when the notes get long.
+Height 480 covers every instance so far in side-by-side layout. Stacked (below 660px) heights vary with notes length, so re-measure per instance:
+
+| Folder | 900px | 700px | 480px stacked |
+| --- | --- | --- | --- |
+| `youtube-quoter/` | 389 | 452 | ~600 |
+| `quoter-mick-gordon-doom-brief-1/` | 389 | 326 | 439 |
+| `quoter-ruiner-instrumental-solo/` | 389 | 329 | 537 |
 
 ```html
 <iframe
@@ -75,6 +82,10 @@ Height 480 covers every instance so far in side-by-side layout, and the current 
   loading="lazy">
 </iframe>
 ```
+
+## Source durability
+
+Quoter clips depend on the source video staying up. An unofficial or fan upload of commercial music is more likely to be removed than an official channel or a conference talk. If a source disappears the card shows a "could not be loaded" message rather than breaking, but the quote is gone. Prefer official uploads where one exists, and check any quoter that has been sitting unused for a while.
 
 ## Last updated
 
