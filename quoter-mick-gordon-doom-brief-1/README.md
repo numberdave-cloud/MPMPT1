@@ -36,7 +36,7 @@ Height 480 (below the 600 default). Measured content heights for this instance:
 
 ## Build state
 
-v1, 2026-07-22. Config clone of `youtube-quoter/` v4. Untested live. Notes listening prompt is a DRAFT.
+v2, 2026-07-22. Category: Miscellaneous. Untested live.
 
 ## Current clip
 
@@ -44,30 +44,30 @@ v1, 2026-07-22. Config clone of `youtube-quoter/` v4. Untested live. Notes liste
 - Quote content 2:33 to 4:12 (153s to 252s), displayed length 1:39
 - 3s fade in and 3s fade out, so actual playback runs 150s to 255s
 - Card title "Mick Gordon discussing the Doom brief", credit "GDC Festival of Gaming" linking to the source video
-- Volume starts at 50%
+- Volume starts at 50%, with a -6 dB `levelTrim` applied (STARTING GUESS, tune by ear)
 
 ## Notes copy
 
-Paragraph one is Dave's wording, used as given. The listening prompt beneath it is a draft.
+Approved wording, used as given. A drafted listening prompt was removed: it described something the clip does not cover.
 
-The notes deliberately do not state what the brief actually was. The clip says it, and saying it in the panel first would remove the reason to listen.
+The notes deliberately do not state what the brief actually was. The clip says it.
 
 ## Technical notes
 
 Identical to `youtube-quoter/`. See that README for the full account of the click-shield, the title card and curtain, the manual audio fades, and the YouTube `end` backstop. Points that matter for this instance specifically:
 
-- The source URL carried `&t=1560s` (26:00) when supplied, which does not match the 2:33 quote point. Built to the explicitly stated times. Worth confirming on first play that 2:33 is the intended moment.
+- The source URL carried `&t=1560s` (26:00) when supplied. Confirmed as incidental; 2:33 to 4:12 are the correct times.
 - The talk lives on the official GDC YouTube channel. The card credit reads "GDC Festival of Gaming" as specified. Adjust `source` in the config if a different credit is wanted.
 - `REVEAL_AT` lands at 154.2s, comfortably inside a 99s quote, so the video is visible for the bulk of it.
 
 ## Open TODOs
 
-- Assign a category (Composition / Mixing / Arranging / Miscellaneous). Currently TBC in `INDEX.md`.
-- Confirm the 2:33 start is the intended moment.
-- Approve or rewrite the listening prompt.
-- Confirm the source credit wording.
-- Live-test: overlay flash suppression, fade feel, embed height.
+- Tune `levelTrim` by ear. Currently -6 dB as a starting guess.
+- Confirm the curved fade now reads as a fade rather than a cut.
+- Confirm captions stay off.
+- Confirm the source credit wording ("GDC Festival of Gaming"; the talk sits on the official GDC channel).
+- Live-test overlay flash suppression and embed height.
 
 ## Last updated
 
-2026-07-22. Initial build. Config clone of the v4 quoter template with the Mick Gordon GDC clip, new card text, new notes, and a distinct page title.
+2026-07-22. Removed the incorrect listening prompt. Fades are now curved rather than linear, which fixes them sounding abrupt. Added per-clip `levelTrim`, set to -6 dB here. Captions now force-unloaded, not just policy-flagged. Slider moves mid-fade no longer punch the level back to full. Category set to Miscellaneous.

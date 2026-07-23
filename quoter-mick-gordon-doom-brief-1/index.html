@@ -397,12 +397,11 @@
         </div>
       </div>
 
-      <!-- ═══ NOTES: edit this prose directly. DRAFT, PENDING APPROVAL. ═══ -->
+      <!-- ═══ NOTES: edit this prose directly. ═══ -->
       <aside class="notes">
         <div class="notes-label">Notes</div>
         <div class="notes-body">
           <p>In this video Mick Gordon discusses the brief he received from id Software about composing the score for Doom.</p>
-          <p class="listen">Listen for how much of the brief describes sound and how much describes feeling. Note what id Software left for Gordon to work out himself.</p>
         </div>
       </aside>
       <!-- ═══════════════════════════════════════════════════════════════ -->
@@ -424,7 +423,11 @@
     title: 'Mick Gordon discussing the Doom brief',
     source: 'GDC Festival of Gaming',   // credit on the card ('' to hide)
     sourceUrl: '',            // '' = auto-link to this video on YouTube
-    showLength: true          // show the quote length on the card
+    showLength: true,         // show the quote length on the card
+    levelTrim: -6,            // per-clip dB trim, set by ear. STARTING GUESS. YouTube
+                              // only normalises loud content DOWN, never quiet
+                              // content up, so levels still vary between clips.
+    fadeCurve: 2              // 1 = linear (abrupt), 2 = smooth, 3 = very gradual
   };
   // ══════════════════════════════════════════════════════════════
 
@@ -441,6 +444,34 @@
   // the card fades back in across the audio fade-out, so the end mirrors
   // the start. minimum 0.6s so a hard-cut clip still lands softly.
   const END_FADE = Math.max(QUOTE.fadeOut || 0, 0.6);
+
+  // per-clip level trim, dB -> linear multiplier
+  const TRIM = Math.pow(10, (QUOTE.levelTrim || 0) / 20);
+
+  // Fades must be curved, not linear. Perceived loudness tracks roughly
+  // amplitude^0.6, so a linear amplitude ramp holds near full loudness for
+  // most of its length then collapses at the end, which reads as a cut
+  // rather than a fade. Raising the ramp to a power spreads the change
+  // evenly across the fade.
+  function fadeGain(x) {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    return Math.pow(x, QUOTE.fadeCurve || 2);
+  }
+
+  // single place that talks to the player's volume: slider x envelope x trim
+  function pushVolume(envGain) {
+    const v = (+$vol.value || 0) * envGain * TRIM;
+    safe(() => player.setVolume(Math.max(0, Math.min(100, Math.round(v)))));
+  }
+
+  // YouTube can load captions regardless of cc_load_policy (account
+  // preference, or the video defaulting them on), so unload the module
+  // outright. 'captions' is the HTML5 name, 'cc' the legacy one.
+  function killCaptions() {
+    safe(() => player.unloadModule('captions'));
+    safe(() => player.unloadModule('cc'));
+  }
 
   // ─── DOM ───
   const $cover     = document.getElementById('cover');
@@ -491,6 +522,7 @@
   let endFadeStarted = false;
   let poll = null;
   let lastVol = 50;
+  let envGain = 1;          // current fade-envelope gain, 0..1
 
   // ─── YOUTUBE API BOOTSTRAP ───
   (function () {
@@ -528,7 +560,11 @@
 
   function onReady() {
     ready = true;
-    player.setVolume(+$vol.value);
+    pushVolume(1);
+    killCaptions();
+    // captions can attach late, so sweep again shortly after
+    setTimeout(killCaptions, 800);
+    setTimeout(killCaptions, 2500);
     safe(() => player.cueVideoById({
       videoId: QUOTE.videoId,
       startSeconds: PLAY_START,
@@ -546,7 +582,7 @@
   }
 
   function onStateChange(e) {
-    if (e.data === YT.PlayerState.PLAYING) startPoll();
+    if (e.data === YT.PlayerState.PLAYING) { killCaptions(); startPoll(); }
     else if (e.data === YT.PlayerState.ENDED) finishClip();
   }
 
@@ -605,8 +641,10 @@
     curtainDropped = false;
     endFadeStarted = false;
     enterCurtain();
+    envGain = 0;
     $stopBtn.disabled = false;
     safe(() => { player.setVolume(0); player.seekTo(PLAY_START, true); player.playVideo(); });
+    killCaptions();
   }
 
   function stopClip() {
@@ -614,6 +652,7 @@
     safe(() => { player.pauseVideo(); player.seekTo(PLAY_START, true); });
     $progress.style.width = '0%';
     $stopBtn.disabled = true;
+    envGain = 1;
     showCoverInstant();
   }
 
@@ -644,7 +683,8 @@
       }
       factor = Math.max(0, Math.min(1, factor));
       if (factor < 0.02) factor = 0;      // land on true silence, not a stub
-      safe(() => player.setVolume(Math.round((+$vol.value || 0) * factor)));
+      envGain = fadeGain(factor);
+      pushVolume(envGain);
 
       // progress spans the played window, fade tails included
       const frac = (t - PLAY_START) / (PLAY_END - PLAY_START);
@@ -669,7 +709,9 @@
 
   // ─── VOLUME ───
   function applyVolume(v) {
-    safe(() => player.setVolume(v));
+    // respect the fade envelope, so moving the slider mid-fade does not
+    // punch the level back up to full
+    pushVolume(envGain);
     if (v === 0) {
       safe(() => player.mute());
       $muteBtn.classList.add('muted');

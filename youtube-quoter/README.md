@@ -34,7 +34,9 @@ Height 480 (below the 600 default). Measured content heights:
 
 ## Build state
 
-v4, 2026-07-22. Functional. Notes copy is a DRAFT pending approval.
+v5, 2026-07-22. Category: Miscellaneous. Live and embedded in Canvas. Notes copy is a DRAFT pending approval.
+
+This folder is the origin template for all quoters. See `QUOTERS.md` at repo root for the full registry. Its name stays as-is because it is already embedded in a live Canvas page.
 
 ## Current clip
 
@@ -53,6 +55,9 @@ v4, 2026-07-22. Functional. Notes copy is a DRAFT pending approval.
 - YouTube fires its start-up overlay (title, channel, centre button, "More videos" strip, logo) on the play event itself, not on hover, so the click-shield cannot stop it. The card is held over the video for `REVEAL_HOLD` seconds (currently 4.2) to cover it, then dissolves over `REVEAL_DISSOLVE` (0.8s).
 - The PLAY / REPLAY button hides via `opacity`, never `display`, so removing it does not reflow the card and shunt the text downward.
 - Audio fades are manual: the API has no native fade, so volume is ramped via `setVolume` in a 50ms `setInterval`. The ramp scales off the volume slider, so it fades toward the student's chosen level rather than a fixed 100.
+- Fades are curved, not linear (`fadeCurve`, default 2). Perceived loudness tracks roughly amplitude^0.6, so a linear amplitude ramp sits near full loudness for most of the fade then collapses at the end, which reads as a cut. Two seconds into a 3s linear fade you are still at ~52% perceived loudness; curved, ~27%.
+- `levelTrim` is a per-clip dB trim set by ear. Automatic loudness matching is impossible: the IFrame API exposes no loudness data and the audio cannot be measured from outside a cross-origin iframe. YouTube's own normalisation only turns loud content down toward roughly -14 LUFS and never lifts quiet content, so clips still vary.
+- Captions are suppressed with `cc_load_policy: 0` and `unloadModule('captions')` / `unloadModule('cc')`, called on ready, twice more on a timer, and again on play. The policy flag alone is not enough: an account preference or the video's own default can switch them back on.
 - The card fades back in across the audio fade-out (`END_FADE`, matching `fadeOut`, floor of 0.6s), so the end mirrors the start.
 - The progress bar is a non-interactive read-out spanning the played window, fade tails included.
 - Transparent page background with a rounded dark frame, so the widget floats on the Canvas white rather than filling the iframe edge to edge. No drop shadow (causes haze on white Canvas pages).
@@ -80,6 +85,12 @@ v4, 2026-07-22. Functional. Notes copy is a DRAFT pending approval.
 - Curves are linear. Equal-power available if the middle of the fade sounds like it dips.
 - Reusable template. Future quotes reuse this build with a fresh config and fresh notes.
 
+## Registry
+
+All quoter instances are catalogued in `QUOTERS.md` at repo root. Shared machinery fixes must be applied to every folder listed there.
+
 ## Last updated
 
-2026-07-22. Fixed the fade-out truncating at ~2% instead of silence, and stopped YouTube's imprecise segment-end from clipping the tail. End now fades to the title card mirroring the open. Title text no longer jumps when the play button hides. Lightened the transport and volume controls. Added the rounded floating frame and the notes panel. Volume now starts at 50%. Source credit is a hover-highlighted link to the source video.
+2026-07-22 (v5). Fades are now curved rather than linear, fixing them sounding abrupt. Added per-clip `levelTrim` in dB. Captions now force-unloaded, not just policy-flagged. Slider moves mid-fade no longer punch the level back to full. Category set to Miscellaneous. Added `QUOTERS.md` registry at repo root.
+
+2026-07-22 (v4). Fixed the fade-out truncating at ~2% instead of silence, and stopped YouTube's imprecise segment-end from clipping the tail. End now fades to the title card mirroring the open. Title text no longer jumps when the play button hides. Lightened the transport and volume controls. Added the rounded floating frame and the notes panel. Volume now starts at 50%. Source credit is a hover-highlighted link to the source video.
