@@ -27,6 +27,7 @@ Categories: Composition · Mixing · Arranging · Miscellaneous
 | YouTube Quoter [Korven — Apprehension Engine] | `youtube-quoter/` | Miscellaneous | live | YES |
 | YouTube Quoter [Mick Gordon — Doom brief] | `quoter-mick-gordon-doom-brief-1/` | Miscellaneous | live | YES |
 | YouTube Quoter [NIN — Ruiner instrumental] | `quoter-ruiner-instrumental-solo/` | Miscellaneous | live | YES |
+| YouTube Quoter [Drive — opening credits] | `quoter-drive-opening-credits/` | Miscellaneous | live | YES |
 
 ## Work in progress (not yet in repo)
 
