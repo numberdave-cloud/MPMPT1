@@ -185,12 +185,27 @@
       'playfulness','menace','longing','euphoria','isolation','warmth','paranoia','melancholy',
       'defiance','tenderness','serenity','bittersweet','righteous anger','creeping horror'
     ],
-    style: [
-      'Hans Zimmer','John Williams','Ennio Morricone','John Carpenter','Bernard Herrmann','Vangelis',
-      'Trent Reznor and Atticus Ross','Jóhann Jóhannsson','Max Richter','Ludwig Göransson','Danny Elfman',
-      'Thomas Newman','Clint Mansell','Cliff Martinez','Angelo Badalamenti','Nino Rota',
-      'Hildur Guðnadóttir','Mica Levi','Ryuichi Sakamoto','Wendy Carlos','Tangerine Dream','Goblin',
-      'Howard Shore'
+    temp: [
+      'Mountains by Hans Zimmer',
+      'Lonesome Town by Ricky Nelson',
+      'The House That Harga Built by Bobby Krlic',
+      "One Summer's Day by Joe Hisaishi",
+      'Main Title (Taxi Driver) by Bernard Herrmann',
+      'The Candlelight Vigil by Jóhann Jóhannsson',
+      'Cries and Whispers by Cho Young-wuk',
+      'The Ecstasy of Gold by Ennio Morricone',
+      'Tears in Rain by Vangelis',
+      'Fight to Survive by Paul Hertzog',
+      "Jack's Smirking Revenge by The Dust Brothers",
+      'Fire Music by Danny Elfman',
+      'Grand Cycle by Jerskin Fendrix',
+      'Girls by Death in Vegas',
+      'Sing by Blur',
+      'In Motion by Trent Reznor and Atticus Ross',
+      'Nightcall by Kavinsky',
+      'Lux Aeterna by Clint Mansell',
+      'The Wings by Gustavo Santaolalla',
+      'The Revenant Main Theme by Ryuichi Sakamoto'
     ],
     catch: [
       'no melody allowed','epic but intimate','the director keeps saying "make it more red"',
@@ -260,7 +275,7 @@
     { key: 'genre',   label: 'Genre' },
     { key: 'scene',   label: 'The scene' },
     { key: 'feel',    label: 'Audience feels' },
-    { key: 'style',   label: 'In the style of' },
+    { key: 'temp',   label: 'Current temp track' },
     { key: 'include', label: 'Must include' },
     { key: 'avoid',   label: 'Off-limits', extraClass: 'avoid' },
     { key: 'catch',   label: 'The catch', extraClass: 'catch' }
@@ -303,7 +318,7 @@
       genre: pickStr('genre', prev ? prev.genre : null),
       scene: pickStr('scene', prev ? prev.scene : null),
       feel:  pickStr('feel',  prev ? prev.feel  : null),
-      style: pickStr('style', prev ? prev.style : null),
+      temp: pickStr('temp', prev ? prev.temp : null),
       include: inc.t, avoid: avo.t,
       catch: pickStr('catch', prev ? prev.catch : null)
     };
