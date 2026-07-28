@@ -149,42 +149,51 @@ function SwipeRow({ onDelete, onStaple, children }){
   );
 }
 
-/* Long-press to lift, then drag up or down to reorder. Touch friendly: it waits ~280ms of a
-   near-stationary press before lifting, so a normal vertical scroll is never hijacked. While
-   lifted it reports the id currently hovered so the parent can reorder live. */
+/* Long-press the grip handle to lift, then drag up or down to reorder. Touch friendly. The lift
+   is started from the handle only (the handle carries touchAction:none so the press never scrolls);
+   the row under the finger is found by comparing the finger Y against each row's bounding box,
+   which is reliable on mobile where elementFromPoint + pointer capture are not. */
 function DragReorderRow({ id, onLiftChange, onHoverId, onDrop, dragging, children }){
   const pressTimer=useRef(null), lifted=useRef(false), pid=useRef(null);
-  const sx=useRef(0), sy=useRef(0);
+  const sy=useRef(0);
+  const rootRef=useRef(null);
   const clearPress=()=>{ if(pressTimer.current){ clearTimeout(pressTimer.current); pressTimer.current=null; } };
-  const elemUnder=(x,y)=>{ const el=document.elementFromPoint(x,y); if(!el) return null; const row=el.closest("[data-uu-row]"); return row?row.getAttribute("data-uu-row"):null; };
-  const down=e=>{
-    pid.current=e.pointerId; sx.current=e.clientX; sy.current=e.clientY; lifted.current=false;
+  const rowIdAtY=(y)=>{
+    const rows=document.querySelectorAll("[data-uu-row]");
+    for(const r of rows){ const b=r.getBoundingClientRect(); if(y>=b.top && y<=b.bottom) return r.getAttribute("data-uu-row"); }
+    return null;
+  };
+  const lift=(clientY)=>{
+    lifted.current=true; sy.current=clientY;
+    try{ rootRef.current && pid.current!=null && rootRef.current.setPointerCapture(pid.current); }catch(_){}
+    onLiftChange&&onLiftChange(id);
+    if(navigator.vibrate) try{ navigator.vibrate(12); }catch(_){}
+  };
+  // Handle: press and hold to lift.
+  const handleDown=e=>{
+    e.stopPropagation();
+    pid.current=e.pointerId; sy.current=e.clientY; lifted.current=false;
     clearPress();
-    pressTimer.current=setTimeout(()=>{
-      lifted.current=true;
-      onLiftChange&&onLiftChange(id);
-      try{ e.target.setPointerCapture&&e.target.setPointerCapture(pid.current); }catch(_){}
-      if(navigator.vibrate) try{ navigator.vibrate(12); }catch(_){}
-    },280);
+    pressTimer.current=setTimeout(()=>lift(e.clientY),260);
   };
   const move=e=>{
     if(pid.current==null) return;
-    const ddx=e.clientX-sx.current, ddy=e.clientY-sy.current;
-    if(!lifted.current){ if(Math.abs(ddx)>8||Math.abs(ddy)>8) clearPress(); return; } // moved before lift: it's a scroll, cancel
+    if(!lifted.current){ if(Math.abs(e.clientY-sy.current)>10) clearPress(); return; } // moved before lift: let it scroll
     if(e.cancelable) e.preventDefault();
-    const over=elemUnder(e.clientX,e.clientY);
+    const over=rowIdAtY(e.clientY);
     if(over) onHoverId&&onHoverId(over);
   };
   const up=()=>{ clearPress(); if(lifted.current){ onDrop&&onDrop(); } lifted.current=false; pid.current=null; };
   return (
-    <div data-uu-row={id}
-         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
-         style={{ touchAction: dragging?"none":"pan-y", opacity: dragging?0.85:1,
+    <div ref={rootRef} data-uu-row={id}
+         onPointerMove={move} onPointerUp={up} onPointerCancel={up}
+         style={{ opacity: dragging?0.9:1,
                   transform: dragging?"scale(1.02)":"none",
                   boxShadow: dragging?"0 12px 30px rgba(0,0,0,0.5)":"none",
                   transition: dragging?"none":"transform 140ms ease, box-shadow 140ms ease",
-                  position:"relative", zIndex: dragging?5:1 }}>
-      {children}
+                  position:"relative", zIndex: dragging?5:1,
+                  touchAction: dragging?"none":"auto" }}>
+      {typeof children==="function" ? children({ handleDown }) : children}
     </div>
   );
 }
@@ -1510,10 +1519,11 @@ export default function KitchenApp() {
                     onLiftChange={id=>{ setUuDragId(id); uuHoverId.current=id; }}
                     onHoverId={id=>{ if(id && id!==uuHoverId.current){ uuHoverId.current=id; reorderUseUp(item.id, id); } }}
                     onDrop={()=>{ setUuDragId(null); uuHoverId.current=null; }}>
+                  {({ handleDown })=>(
                   <div style={{ background:res?C.cardEmpty:C.card, border:`1px solid ${res?C.line:rgba(SRC[item.src],0.35)}`, borderRadius:13, padding: collapsed?"11px 13px":"13px 15px" }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                      {collapsed && <span style={{ color:C.faint, display:"inline-flex", flexShrink:0, cursor:"grab", touchAction:"none" }} aria-hidden="true"><GripVertical size={17}/></span>}
-                      <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.title}</span>
+                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                      {collapsed && <span onPointerDown={handleDown} style={{ color:C.faint, display:"inline-flex", alignItems:"center", flexShrink:0, cursor:"grab", touchAction:"none", padding:"6px 4px", margin:"-6px 0", userSelect:"none" }} aria-label="Drag to reorder"><GripVertical size={18}/></span>}
+                      <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginLeft: collapsed?0:4 }}>{item.title}</span>
                       {item.meta && item.meta!=="Flagged to use up" && <span style={{ fontFamily:MONO, fontSize:10.5, color:C.muted, marginLeft:"auto", flexShrink:0 }}>{item.meta.replace(/^Use by /,"")}</span>}
                     </div>
                     {res?(
@@ -1584,6 +1594,7 @@ export default function KitchenApp() {
                       </div>
                     ):null}
                   </div>
+                  )}
                   </DragReorderRow>
                 );
               })}

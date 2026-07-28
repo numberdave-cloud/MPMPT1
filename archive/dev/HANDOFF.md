@@ -1,5 +1,24 @@
 # Dinner Engine — handoff
 
+## Session note - 28 Jul 2026 (use-up drag fix)
+
+The first pass at long-press drag reorder lifted but would not move. Two causes: (1) the gesture
+started with `touchAction:"pan-y"` so the browser committed to scrolling and later `preventDefault`
+could not reclaim it; (2) `elementFromPoint` under pointer capture kept returning the captured node,
+so the hovered row was never detected. Rewrote `DragReorderRow`:
+- Lift is now started from the grip handle only. The handle carries `touchAction:"none"` so a press
+  on it never scrolls. The rest of the card scrolls normally. `DragReorderRow` takes a render-prop
+  child `({handleDown}) => (...)`; the grip `<span>` gets `onPointerDown={handleDown}` and a bigger
+  touch target (padding, negative margin).
+- On lift, the pointer is captured to the row's root div, so every subsequent pointermove routes to
+  that row's handler even when the finger is over a different card.
+- The row under the finger is found by geometry (`getBoundingClientRect` top/bottom vs finger Y)
+  across all `[data-uu-row]` nodes, not `elementFromPoint`. Reliable on mobile.
+- Hold time 260ms. Everything else (ord persistence, useUpDisplayOrder, By use-by reset, remove +
+  5s undo, thin Cook/Preserve/Remove row) unchanged from the 28 Jul rework below.
+- Catalogue untouched (271, r001-r271). recipes.json unchanged. index.html rebuilt from this jsx,
+  all 271 names verified present.
+
 ## Session note - 28 Jul 2026 (use-up cards: reorder, thin actions, remove)
 
 Reworked the "USE THESE FIRST" cards on the Meal Plan page (they render from the shared `useUp`
