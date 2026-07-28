@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Wand2, RefreshCw, Pencil, X, Check, AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, Lock, ShoppingCart, Star, Trash2, Undo2, List, ArrowUpDown, Download, Upload, GripVertical } from "lucide-react";
+import { Plus, Wand2, RefreshCw, Pencil, X, Check, AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, Lock, ShoppingCart, Star, Trash2, Undo2, List, ArrowUpDown, Download, Upload } from "lucide-react";
 
 /* ---------- palette: Mercado Dark ---------- */
 const C = {
@@ -149,52 +149,6 @@ function SwipeRow({ onDelete, onStaple, children }){
   );
 }
 
-/* Long-press the grip handle to lift, then drag up or down to reorder. Touch friendly. The lift
-   is started from the handle only (the handle carries touchAction:none so the press never scrolls);
-   the row under the finger is found by comparing the finger Y against each row's bounding box,
-/* Long-press the grip handle to lift, then drag up or down to reorder. Touch friendly. The lift is
-   started from the handle only (the handle carries touchAction:none so the press never scrolls).
-   While lifted, the raw pointer Y is reported to the parent, which decides the target index from how
-   far the finger has travelled. Reordering by finger displacement (not by which row is under the
-   finger) is stable: the dragged card follows the finger without the target sliding away. */
-function DragReorderRow({ id, onLift, onMoveY, onDrop, dragging, children }){
-  const pressTimer=useRef(null), lifted=useRef(false), pid=useRef(null);
-  const sy=useRef(0);
-  const rootRef=useRef(null);
-  const clearPress=()=>{ if(pressTimer.current){ clearTimeout(pressTimer.current); pressTimer.current=null; } };
-  const lift=(clientY)=>{
-    lifted.current=true; sy.current=clientY;
-    try{ rootRef.current && pid.current!=null && rootRef.current.setPointerCapture(pid.current); }catch(_){}
-    onLift&&onLift(id, clientY);
-    if(navigator.vibrate) try{ navigator.vibrate(12); }catch(_){}
-  };
-  const handleDown=e=>{
-    e.stopPropagation();
-    pid.current=e.pointerId; sy.current=e.clientY; lifted.current=false;
-    clearPress();
-    pressTimer.current=setTimeout(()=>lift(e.clientY),240);
-  };
-  const move=e=>{
-    if(pid.current==null) return;
-    if(!lifted.current){ if(Math.abs(e.clientY-sy.current)>10) clearPress(); return; } // moved before lift: let it scroll
-    if(e.cancelable) e.preventDefault();
-    onMoveY&&onMoveY(e.clientY);
-  };
-  const up=()=>{ clearPress(); if(lifted.current){ onDrop&&onDrop(); } lifted.current=false; pid.current=null; };
-  return (
-    <div ref={rootRef} data-uu-row={id}
-         onPointerMove={move} onPointerUp={up} onPointerCancel={up}
-         style={{ opacity: dragging?0.9:1,
-                  transform: dragging?"scale(1.02)":"none",
-                  boxShadow: dragging?"0 12px 30px rgba(0,0,0,0.5)":"none",
-                  transition: dragging?"none":"transform 140ms ease, box-shadow 140ms ease",
-                  position:"relative", zIndex: dragging?5:1,
-                  touchAction: dragging?"none":"auto" }}>
-      {typeof children==="function" ? children({ handleDown }) : children}
-    </div>
-  );
-}
-
 /* ---------- to-do feed ---------- */
 const SRC = { plan: "#EE6347", shop: "#E6B048", garden: "#6BBE74", freezer: "#5C93C8", kitchen: "#A99A8C", maint: "#C9A37A", pantry: "#D98E4A" };
 const COND_TASKS = [];
@@ -237,15 +191,6 @@ function ingMatchesUseUp(x, litWords, catMembers){ if(!x.i) return false; if(cat
 function dishUsesUseUp(dish, useUpName){ const words=cookContentWords(useUpName); if(!words.length) return false; const cm=useUpCatMembers(words); const lit=cookLiteralWords(words); return dish.ings.some(x=>ingMatchesUseUp(x,lit,cm)); }
 function useUpUrgencyWeight(useBy, today0){ if(!useBy) return 1; const d=startOfDay(new Date(useBy)); if(isNaN(d)) return 1; const days=Math.round((d-today0)/86400000); if(days<=0) return 3; if(days<=7) return 2; return 1; }
 function useUpScoreFor(dish, useUp, today0){ let sc=0; for(const u of (useUp||[])){ if(dishUsesUseUp(dish,u.name)) sc+=useUpUrgencyWeight(u.useBy,today0); } return sc; }
-// Display order for the use-up list. If the user has manually dragged (any item has an ord),
-// honour that saved order; otherwise fall back to soonest use-by first.
-function useUpDisplayOrder(list){
-  const manual = list.some(u=>typeof u.ord==="number");
-  const arr=[...list];
-  if(manual) arr.sort((a,b)=>(a.ord??Infinity)-(b.ord??Infinity));
-  else arr.sort((a,b)=>(a.useBy?a.useBy.getTime():Infinity)-(b.useBy?b.useBy.getTime():Infinity));
-  return arr;
-}
 function dishSeasonalScore(dish, inSeasonProduce){ const seen=new Set(); for(const x of dish.ings){ if(x.sea&&x.p&&inSeasonProduce.has(x.p)) seen.add(x.p); } return seen.size; }
 // Weighted random pick: use-up urgency dominates, seasonal nudges on seasonal days; falls back to plain random when no signal.
 function chooseBiased(pool, exclude, biasSeasonal, useUp, today0, inSeasonProduce){
@@ -454,8 +399,6 @@ export default function KitchenApp() {
   const shopUndoTimer = useRef(null);
   const [useUpRemoveUndo, setUseUpRemoveUndo] = useState(null); // { item, index } after removing a use-up item from the planner card, 5s undo
   const useUpRemoveTimer = useRef(null);
-  const [uuDragId, setUuDragId] = useState(null);   // id of the use-up item currently being long-press dragged
-  const uuDrag = useRef(null);                       // { id, order:[ids], startIndex, startY, curIndex } during a drag
   const suggestMemory = useRef({});                 // per-day recently suggested dish names, for variety on re-roll
   const [newItemName, setNewItemName] = useState("");
   const [addingItem, setAddingItem]   = useState(false);
@@ -493,8 +436,8 @@ export default function KitchenApp() {
   const nextPlanned  = weeks[1].filter(d=>d.dish).length;
   const shopUnlocked = nextPlanned > 0;
   // Use-up items joined into the planner's "use first" list, soonest use-by first.
-  const useUpManual = useUp.some(u=>typeof u.ord==="number");
-  const useUpUrgent = useUpDisplayOrder(useUp)
+  const useUpUrgent = [...useUp]
+    .sort((a,b)=>(a.useBy?a.useBy.getTime():Infinity)-(b.useBy?b.useBy.getTime():Infinity))
     .map(u=>({ id:u.id, kind:"ingredient", src:"kitchen", title:u.name, meta: u.useBy?`Use by ${fmtDate(u.useBy)}`:"Flagged to use up" }));
   const planUrgent = [...URGENT, ...useUpUrgent];
   // Seasonal picks: rank catalogue dishes by how many of their seasonal ingredients are in season this month.
@@ -1038,39 +981,6 @@ export default function KitchenApp() {
     setUseUpRemoveUndo(null);
     if(useUpRemoveTimer.current) clearTimeout(useUpRemoveTimer.current);
   };
-  // Manual drag reorder by finger displacement. On lift we snapshot the current display order and
-  // measure the row pitch (centre-to-centre) from the live DOM. As the finger moves we compute how
-  // many whole slots it has crossed and place the dragged item at startIndex+offset, recomputing
-  // from the snapshot each time so the target never drifts. On drop we stamp sequential ord so the
-  // order persists and overrides the use-by sort.
-  const beginUuDrag = (dragId, startY) => {
-    const order = useUpDisplayOrder(useUp).map(u=>u.id);
-    const startIndex = order.indexOf(dragId);
-    // measure pitch from two adjacent rendered rows; fall back to a typical collapsed-card height
-    let pitch = 84;
-    const rows = document.querySelectorAll("[data-uu-row]");
-    if(rows.length>=2){ const a=rows[0].getBoundingClientRect(), b=rows[1].getBoundingClientRect(); const p=Math.abs(b.top-a.top); if(p>20) pitch=p; }
-    uuDrag.current = { id:dragId, order, curIndex:startIndex, anchorY:startY, pitch };
-    setUuDragId(dragId);
-  };
-  const moveUuDrag = (clientY) => {
-    const d = uuDrag.current; if(!d) return;
-    const offset = Math.round((clientY - d.anchorY) / d.pitch);
-    if(offset === 0) return;                         // finger hasn't crossed a slot boundary from the anchor
-    let target = d.curIndex + offset;
-    target = Math.max(0, Math.min(d.order.length-1, target));
-    if(target === d.curIndex) return;                // clamped, no change
-    // rebuild order from the live snapshot: pull dragged id, reinsert at target
-    const arr = d.order.filter(x=>x!==d.id);
-    arr.splice(target, 0, d.id);
-    d.order = arr;                                   // snapshot now reflects the new order
-    d.curIndex = target;
-    d.anchorY = clientY;                             // re-anchor so the next move is measured from here (both directions)
-    const ordMap={}; arr.forEach((x,i)=>{ ordMap[x]=i; });
-    setUseUp(list=>list.map(u=>({ ...u, ord:ordMap[u.id] })));
-  };
-  const endUuDrag = () => { uuDrag.current=null; setUuDragId(null); };
-  const resetUseUpOrder = () => setUseUp(list=>list.map(u=>{ const { ord, ...rest }=u; return rest; }));
   const freezerAge = frozen => {
     const days = Math.max(0, Math.round((today0 - startOfDay(frozen)) / 86400000));
     if (days < 14)  return { label: days <= 1 ? "just in" : `${days} days in`, days };
@@ -1515,29 +1425,17 @@ export default function KitchenApp() {
                   {lbl}{n>0 && (n===7 ? <Check size={12} color={SRC.plan}/> : <span style={{ fontFamily:MONO, fontSize:11, color:C.muted }}>{n}/7</span>)}
                 </button> ); })}
             </div>
-            <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", gap:10, marginTop:22, marginBottom:4 }}>
-              <div style={sectionHead}>USE THESE FIRST</div>
-              {useUpManual && planUrgent.length>1 && (
-                <button className="de-btn" onClick={resetUseUpOrder} style={{ display:"inline-flex", alignItems:"center", gap:5, background:"transparent", border:`1px solid ${C.line}`, color:C.muted, borderRadius:8, padding:"4px 9px", fontSize:11.5, fontFamily:MONO, flexShrink:0 }}><ArrowUpDown size={12}/> By use-by</button>
-              )}
-            </div>
-            <div style={{ fontSize:13, color:C.muted, marginBottom:12 }}>{useUpManual ? "Your order. Long-press and drag to rearrange." : "Soonest to go off first. Long-press and drag to reorder."}</div>
+            <div style={{ ...sectionHead, marginTop:22, marginBottom:4 }}>USE THESE FIRST</div>
+            <div style={{ fontSize:13, color:C.muted, marginBottom:12 }}>Soonest to go off first. Deal with these, then fill the rest of the week.</div>
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {planUrgent.map(item=>{
                 const res=itemResult[item.id];
                 const ui=itemUI[item.id]||{step:"collapsed"};
                 const collapsed = !res && (ui.step==="collapsed"||ui.step==="actions");
-                const isDragging = uuDragId===item.id;
                 return (
-                  <DragReorderRow key={item.id} id={item.id} dragging={isDragging}
-                    onLift={(id,y)=>beginUuDrag(id,y)}
-                    onMoveY={y=>moveUuDrag(y)}
-                    onDrop={()=>endUuDrag()}>
-                  {({ handleDown })=>(
-                  <div style={{ background:res?C.cardEmpty:C.card, border:`1px solid ${res?C.line:rgba(SRC[item.src],0.35)}`, borderRadius:13, padding: collapsed?"11px 13px":"13px 15px" }}>
+                  <div key={item.id} style={{ background:res?C.cardEmpty:C.card, border:`1px solid ${res?C.line:rgba(SRC[item.src],0.35)}`, borderRadius:13, padding: collapsed?"11px 13px":"13px 15px" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                      {collapsed && <span onPointerDown={handleDown} style={{ color:C.faint, display:"inline-flex", alignItems:"center", flexShrink:0, cursor:"grab", touchAction:"none", padding:"6px 4px", margin:"-6px 0", userSelect:"none" }} aria-label="Drag to reorder"><GripVertical size={18}/></span>}
-                      <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginLeft: collapsed?0:4 }}>{item.title}</span>
+                      <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.title}</span>
                       {item.meta && item.meta!=="Flagged to use up" && <span style={{ fontFamily:MONO, fontSize:10.5, color:C.muted, marginLeft:"auto", flexShrink:0 }}>{item.meta.replace(/^Use by /,"")}</span>}
                     </div>
                     {res?(
@@ -1608,8 +1506,6 @@ export default function KitchenApp() {
                       </div>
                     ):null}
                   </div>
-                  )}
-                  </DragReorderRow>
                 );
               })}
             </div>
@@ -2008,7 +1904,7 @@ export default function KitchenApp() {
                   {useUp.length===0 && (
                     <div style={{ fontSize:14, color:C.faint, padding:"4px 0" }}>Nothing flagged. Add something you want to use before it goes off.</div>
                   )}
-                  {useUpDisplayOrder(useUp).map(u=>{
+                  {[...useUp].sort((a,b)=>(a.useBy?a.useBy.getTime():Infinity)-(b.useBy?b.useBy.getTime():Infinity)).map(u=>{
                     const soon = u.useBy && startOfDay(u.useBy) <= addDays(today0,3);
                     return (
                       <div key={u.id} style={{ display:"flex", alignItems:"center", gap:12, background:C.card, border:`1px solid ${u.useBy?rgba(SRC.kitchen,0.5):C.line}`, borderRadius:12, padding:"11px 14px" }}>

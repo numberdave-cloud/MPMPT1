@@ -1,5 +1,21 @@
 # Dinner Engine — handoff
 
+## Session note - 28 Jul 2026 (use-up drag REMOVED)
+
+Reorder dragged badly on the Galaxy across three attempts (hover-target, displacement, re-anchor);
+last symptom was one-directional stick. Dave called it: pulled the feature entirely. Removed
+`DragReorderRow`, the drag state (`uuDragId`, `uuDrag`), handlers (`beginUuDrag`/`moveUuDrag`/
+`endUuDrag`/`resetUseUpOrder`), the `useUpDisplayOrder` helper and the `useUpManual` flag, the grip
+handle, the "By use-by" reset chip, and the unused `GripVertical` import. The use-up list on both the
+Meal Plan "USE THESE FIRST" section and Stored > Use up now sorts plainly by soonest use-by, as it
+did before. The `ord` field is no longer written or read; any `ord` left in localStorage from testing
+is inert and ignored (harmless). Everything else from the 28 Jul rework stays: thin
+Cook/Preserve/Remove row (Preserve still a stub), remove with 5s undo hitting both pages, no more
+INGREDIENT pill or "Flagged to use up" line, Later gone.
+
+- Bundle shrank 517k -> 511k (esm check), confirming the drag code is out. Catalogue untouched
+  (271, r001-r271). recipes.json unchanged. index.html rebuilt, 271 names verified.
+
 ## Session note - 28 Jul 2026 (use-up drag: direction reversal)
 
 Third drag fix. Displacement model dragged one way only: after moving down a slot you could not
