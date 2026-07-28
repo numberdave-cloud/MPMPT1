@@ -1,5 +1,20 @@
 # Dinner Engine — handoff
 
+## Session note - 28 Jul 2026 (use-up drag: direction reversal)
+
+Third drag fix. Displacement model dragged one way only: after moving down a slot you could not
+drag back up (or vice versa) without releasing and re-lifting. Cause: offset was measured from a
+fixed startY/startIndex captured at lift, but after a reorder the dragged card physically moves to
+its new slot, so the finger's frame of reference went stale and clientY-startY stayed positive.
+Fix: re-anchor after every slot change. `uuDrag` now holds `anchorY` + `curIndex` (no startY/
+startIndex); each committed move resets `anchorY=clientY`, updates `curIndex`, and mutates the
+snapshot `d.order` in place, so the next offset is measured from the card's current position in
+either direction. One card-height of travel = one slot, from wherever it currently sits. Hold 240ms,
+pitch measured from live rects (fallback 84px). Everything else unchanged.
+
+- Catalogue untouched (271, r001-r271). recipes.json unchanged. index.html rebuilt, 271 names
+  verified. Still the make-or-break test for whether the reorder feature stays.
+
 ## Session note - 28 Jul 2026 (use-up drag: displacement model)
 
 Second drag fix. The hover-target model was finicky: it reordered based on which row sat under the

@@ -1050,19 +1050,22 @@ export default function KitchenApp() {
     let pitch = 84;
     const rows = document.querySelectorAll("[data-uu-row]");
     if(rows.length>=2){ const a=rows[0].getBoundingClientRect(), b=rows[1].getBoundingClientRect(); const p=Math.abs(b.top-a.top); if(p>20) pitch=p; }
-    uuDrag.current = { id:dragId, order, startIndex, startY, curIndex:startIndex, pitch };
+    uuDrag.current = { id:dragId, order, curIndex:startIndex, anchorY:startY, pitch };
     setUuDragId(dragId);
   };
   const moveUuDrag = (clientY) => {
     const d = uuDrag.current; if(!d) return;
-    const offset = Math.round((clientY - d.startY) / d.pitch);
-    let target = d.startIndex + offset;
+    const offset = Math.round((clientY - d.anchorY) / d.pitch);
+    if(offset === 0) return;                         // finger hasn't crossed a slot boundary from the anchor
+    let target = d.curIndex + offset;
     target = Math.max(0, Math.min(d.order.length-1, target));
-    if(target === d.curIndex) return;      // still in the same slot, nothing to do
-    d.curIndex = target;
-    // rebuild the order from the snapshot: pull the dragged id out, reinsert at target
+    if(target === d.curIndex) return;                // clamped, no change
+    // rebuild order from the live snapshot: pull dragged id, reinsert at target
     const arr = d.order.filter(x=>x!==d.id);
     arr.splice(target, 0, d.id);
+    d.order = arr;                                   // snapshot now reflects the new order
+    d.curIndex = target;
+    d.anchorY = clientY;                             // re-anchor so the next move is measured from here (both directions)
     const ordMap={}; arr.forEach((x,i)=>{ ordMap[x]=i; });
     setUseUp(list=>list.map(u=>({ ...u, ord:ordMap[u.id] })));
   };
