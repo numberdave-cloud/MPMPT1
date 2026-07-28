@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Wand2, RefreshCw, Pencil, X, Check, AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, Lock, ShoppingCart, Star, Trash2, Undo2, List, ArrowUpDown, Download, Upload } from "lucide-react";
+import { Plus, Wand2, RefreshCw, Pencil, X, Check, AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, Lock, ShoppingCart, Star, Trash2, Undo2, List, ArrowUpDown, Download, Upload, GripVertical } from "lucide-react";
 
 /* ---------- palette: Mercado Dark ---------- */
 const C = {
@@ -149,6 +149,46 @@ function SwipeRow({ onDelete, onStaple, children }){
   );
 }
 
+/* Long-press to lift, then drag up or down to reorder. Touch friendly: it waits ~280ms of a
+   near-stationary press before lifting, so a normal vertical scroll is never hijacked. While
+   lifted it reports the id currently hovered so the parent can reorder live. */
+function DragReorderRow({ id, onLiftChange, onHoverId, onDrop, dragging, children }){
+  const pressTimer=useRef(null), lifted=useRef(false), pid=useRef(null);
+  const sx=useRef(0), sy=useRef(0);
+  const clearPress=()=>{ if(pressTimer.current){ clearTimeout(pressTimer.current); pressTimer.current=null; } };
+  const elemUnder=(x,y)=>{ const el=document.elementFromPoint(x,y); if(!el) return null; const row=el.closest("[data-uu-row]"); return row?row.getAttribute("data-uu-row"):null; };
+  const down=e=>{
+    pid.current=e.pointerId; sx.current=e.clientX; sy.current=e.clientY; lifted.current=false;
+    clearPress();
+    pressTimer.current=setTimeout(()=>{
+      lifted.current=true;
+      onLiftChange&&onLiftChange(id);
+      try{ e.target.setPointerCapture&&e.target.setPointerCapture(pid.current); }catch(_){}
+      if(navigator.vibrate) try{ navigator.vibrate(12); }catch(_){}
+    },280);
+  };
+  const move=e=>{
+    if(pid.current==null) return;
+    const ddx=e.clientX-sx.current, ddy=e.clientY-sy.current;
+    if(!lifted.current){ if(Math.abs(ddx)>8||Math.abs(ddy)>8) clearPress(); return; } // moved before lift: it's a scroll, cancel
+    if(e.cancelable) e.preventDefault();
+    const over=elemUnder(e.clientX,e.clientY);
+    if(over) onHoverId&&onHoverId(over);
+  };
+  const up=()=>{ clearPress(); if(lifted.current){ onDrop&&onDrop(); } lifted.current=false; pid.current=null; };
+  return (
+    <div data-uu-row={id}
+         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
+         style={{ touchAction: dragging?"none":"pan-y", opacity: dragging?0.85:1,
+                  transform: dragging?"scale(1.02)":"none",
+                  boxShadow: dragging?"0 12px 30px rgba(0,0,0,0.5)":"none",
+                  transition: dragging?"none":"transform 140ms ease, box-shadow 140ms ease",
+                  position:"relative", zIndex: dragging?5:1 }}>
+      {children}
+    </div>
+  );
+}
+
 /* ---------- to-do feed ---------- */
 const SRC = { plan: "#EE6347", shop: "#E6B048", garden: "#6BBE74", freezer: "#5C93C8", kitchen: "#A99A8C", maint: "#C9A37A", pantry: "#D98E4A" };
 const COND_TASKS = [];
@@ -191,6 +231,15 @@ function ingMatchesUseUp(x, litWords, catMembers){ if(!x.i) return false; if(cat
 function dishUsesUseUp(dish, useUpName){ const words=cookContentWords(useUpName); if(!words.length) return false; const cm=useUpCatMembers(words); const lit=cookLiteralWords(words); return dish.ings.some(x=>ingMatchesUseUp(x,lit,cm)); }
 function useUpUrgencyWeight(useBy, today0){ if(!useBy) return 1; const d=startOfDay(new Date(useBy)); if(isNaN(d)) return 1; const days=Math.round((d-today0)/86400000); if(days<=0) return 3; if(days<=7) return 2; return 1; }
 function useUpScoreFor(dish, useUp, today0){ let sc=0; for(const u of (useUp||[])){ if(dishUsesUseUp(dish,u.name)) sc+=useUpUrgencyWeight(u.useBy,today0); } return sc; }
+// Display order for the use-up list. If the user has manually dragged (any item has an ord),
+// honour that saved order; otherwise fall back to soonest use-by first.
+function useUpDisplayOrder(list){
+  const manual = list.some(u=>typeof u.ord==="number");
+  const arr=[...list];
+  if(manual) arr.sort((a,b)=>(a.ord??Infinity)-(b.ord??Infinity));
+  else arr.sort((a,b)=>(a.useBy?a.useBy.getTime():Infinity)-(b.useBy?b.useBy.getTime():Infinity));
+  return arr;
+}
 function dishSeasonalScore(dish, inSeasonProduce){ const seen=new Set(); for(const x of dish.ings){ if(x.sea&&x.p&&inSeasonProduce.has(x.p)) seen.add(x.p); } return seen.size; }
 // Weighted random pick: use-up urgency dominates, seasonal nudges on seasonal days; falls back to plain random when no signal.
 function chooseBiased(pool, exclude, biasSeasonal, useUp, today0, inSeasonProduce){
@@ -397,6 +446,10 @@ export default function KitchenApp() {
   const taskUndoTimer = useRef(null);
   const [shopUndo, setShopUndo] = useState(null);   // { day, prev } for the inline add-to-shop undo icon
   const shopUndoTimer = useRef(null);
+  const [useUpRemoveUndo, setUseUpRemoveUndo] = useState(null); // { item, index } after removing a use-up item from the planner card, 5s undo
+  const useUpRemoveTimer = useRef(null);
+  const [uuDragId, setUuDragId] = useState(null);   // id of the use-up item currently being long-press dragged
+  const uuHoverId = useRef(null);                   // id currently hovered while dragging, applied live
   const suggestMemory = useRef({});                 // per-day recently suggested dish names, for variety on re-roll
   const [newItemName, setNewItemName] = useState("");
   const [addingItem, setAddingItem]   = useState(false);
@@ -434,8 +487,8 @@ export default function KitchenApp() {
   const nextPlanned  = weeks[1].filter(d=>d.dish).length;
   const shopUnlocked = nextPlanned > 0;
   // Use-up items joined into the planner's "use first" list, soonest use-by first.
-  const useUpUrgent = [...useUp]
-    .sort((a,b)=>(a.useBy?a.useBy.getTime():Infinity)-(b.useBy?b.useBy.getTime():Infinity))
+  const useUpManual = useUp.some(u=>typeof u.ord==="number");
+  const useUpUrgent = useUpDisplayOrder(useUp)
     .map(u=>({ id:u.id, kind:"ingredient", src:"kitchen", title:u.name, meta: u.useBy?`Use by ${fmtDate(u.useBy)}`:"Flagged to use up" }));
   const planUrgent = [...URGENT, ...useUpUrgent];
   // Seasonal picks: rank catalogue dishes by how many of their seasonal ingredients are in season this month.
@@ -962,6 +1015,39 @@ export default function KitchenApp() {
     setUuDraft({ name:"", useBy:"" }); setAddingUseUp(false);
   };
   const removeUseUp = id => setUseUp(list=>list.filter(u=>u.id!==id));
+  // Remove a use-up item from the planner "use these first" card. Deletes from the shared
+  // useUp state (so it also leaves the Stored > Use up page) with a 5 second hovering undo.
+  const removeUseUpWithUndo = item => {
+    const index = useUp.findIndex(u=>u.id===item.id);
+    const stored = useUp[index];
+    if(!stored) return;
+    setUseUp(list=>list.filter(u=>u.id!==item.id));
+    setUseUpRemoveUndo({ item:stored, index });
+    if(useUpRemoveTimer.current) clearTimeout(useUpRemoveTimer.current);
+    useUpRemoveTimer.current = setTimeout(()=>setUseUpRemoveUndo(null), 5000);
+  };
+  const restoreUseUp = () => {
+    if(!useUpRemoveUndo) return;
+    setUseUp(list=>{ const n=[...list]; n.splice(Math.min(useUpRemoveUndo.index,n.length),0,useUpRemoveUndo.item); return n; });
+    setUseUpRemoveUndo(null);
+    if(useUpRemoveTimer.current) clearTimeout(useUpRemoveTimer.current);
+  };
+  // Manual drag reorder. Moves the dragged id to sit before the target id in the display order,
+  // then stamps every item with a sequential ord so the manual order persists and overrides the
+  // use-by sort. resetUseUpOrder clears ord back to soonest-first.
+  const reorderUseUp = (dragId, targetId) => {
+    if(dragId===targetId) return;
+    setUseUp(list=>{
+      const ordered = useUpDisplayOrder(list);
+      const from = ordered.findIndex(u=>u.id===dragId);
+      const to   = ordered.findIndex(u=>u.id===targetId);
+      if(from<0||to<0) return list;
+      const arr=[...ordered]; const [moved]=arr.splice(from,1); arr.splice(to,0,moved);
+      const ordMap={}; arr.forEach((u,i)=>{ ordMap[u.id]=i; });
+      return list.map(u=>({ ...u, ord:ordMap[u.id] }));
+    });
+  };
+  const resetUseUpOrder = () => setUseUp(list=>list.map(u=>{ const { ord, ...rest }=u; return rest; }));
   const freezerAge = frozen => {
     const days = Math.max(0, Math.round((today0 - startOfDay(frozen)) / 86400000));
     if (days < 14)  return { label: days <= 1 ? "just in" : `${days} days in`, days };
@@ -1406,32 +1492,47 @@ export default function KitchenApp() {
                   {lbl}{n>0 && (n===7 ? <Check size={12} color={SRC.plan}/> : <span style={{ fontFamily:MONO, fontSize:11, color:C.muted }}>{n}/7</span>)}
                 </button> ); })}
             </div>
-            <div style={{ ...sectionHead, marginTop:22, marginBottom:4 }}>USE THESE FIRST</div>
-            <div style={{ fontSize:13, color:C.muted, marginBottom:12 }}>Sorted by what'll go off soonest. Deal with these, then fill the rest of the week.</div>
+            <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", gap:10, marginTop:22, marginBottom:4 }}>
+              <div style={sectionHead}>USE THESE FIRST</div>
+              {useUpManual && planUrgent.length>1 && (
+                <button className="de-btn" onClick={resetUseUpOrder} style={{ display:"inline-flex", alignItems:"center", gap:5, background:"transparent", border:`1px solid ${C.line}`, color:C.muted, borderRadius:8, padding:"4px 9px", fontSize:11.5, fontFamily:MONO, flexShrink:0 }}><ArrowUpDown size={12}/> By use-by</button>
+              )}
+            </div>
+            <div style={{ fontSize:13, color:C.muted, marginBottom:12 }}>{useUpManual ? "Your order. Long-press and drag to rearrange." : "Soonest to go off first. Long-press and drag to reorder."}</div>
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {planUrgent.map(item=>{
                 const res=itemResult[item.id];
                 const ui=itemUI[item.id]||{step:"collapsed"};
+                const collapsed = !res && (ui.step==="collapsed"||ui.step==="actions");
+                const isDragging = uuDragId===item.id;
                 return (
-                  <div key={item.id} style={{ background:res?C.cardEmpty:C.card, border:`1px solid ${res?C.line:rgba(SRC[item.src],0.35)}`, borderRadius:13, padding:"13px 15px", opacity:res&&res.type==="snoozed"?0.55:1 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:9, flexWrap:"wrap" }}>
-                      <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16, color:C.cream }}>{item.title}</span>
-                      <span style={{ fontFamily:MONO, fontSize:10, letterSpacing:"0.5px", color:C.muted, border:`1px solid ${C.line}`, padding:"1px 6px", borderRadius:99 }}>{item.kind==="meal"?"MEAL":"INGREDIENT"}</span>
+                  <DragReorderRow key={item.id} id={item.id} dragging={isDragging}
+                    onLiftChange={id=>{ setUuDragId(id); uuHoverId.current=id; }}
+                    onHoverId={id=>{ if(id && id!==uuHoverId.current){ uuHoverId.current=id; reorderUseUp(item.id, id); } }}
+                    onDrop={()=>{ setUuDragId(null); uuHoverId.current=null; }}>
+                  <div style={{ background:res?C.cardEmpty:C.card, border:`1px solid ${res?C.line:rgba(SRC[item.src],0.35)}`, borderRadius:13, padding: collapsed?"11px 13px":"13px 15px" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      {collapsed && <span style={{ color:C.faint, display:"inline-flex", flexShrink:0, cursor:"grab", touchAction:"none" }} aria-hidden="true"><GripVertical size={17}/></span>}
+                      <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:16, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.title}</span>
+                      {item.meta && item.meta!=="Flagged to use up" && <span style={{ fontFamily:MONO, fontSize:10.5, color:C.muted, marginLeft:"auto", flexShrink:0 }}>{item.meta.replace(/^Use by /,"")}</span>}
                     </div>
-                    <div style={{ fontSize:12.5, color:C.muted, marginTop:3 }}>{item.meta}</div>
                     {res?(
                       <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:10, flexWrap:"wrap" }}>
                         {res.type==="placed"&&<span style={{ fontSize:13.5, color:SRC.plan, display:"inline-flex", alignItems:"center", gap:5 }}><Check size={13}/> {res.dish&&res.dish.name} → {FULL_WEEKDAY[res.day]}</span>}
                         {res.type==="task"&&<span style={{ fontSize:13.5, color:SRC.shop, display:"inline-flex", alignItems:"center", gap:5 }}><Check size={13}/> Task added: {res.detail}</span>}
                         {res.type==="todo"&&<span style={{ fontSize:13.5, color:SRC.kitchen, display:"inline-flex", alignItems:"center", gap:5 }}><Check size={13}/> Added to your to-do: {res.detail}</span>}
-                        {res.type==="snoozed"&&<span style={{ fontSize:13.5, color:C.muted }}>Snoozed to next plan</span>}
                         <button className="de-btn" onClick={()=>undoItem(item.id)} style={{ ...ghost, marginLeft:"auto", padding:"5px 9px" }}>Undo</button>
                       </div>
-                    ):ui.step==="actions"?(
-                      <div style={{ display:"flex", gap:7, marginTop:11, flexWrap:"wrap" }}>
-                        {(item.src==="garden"?["store","preserve","cook","later"]:["cook","later"]).map(a=>(
-                          <button key={a} className="de-btn" onClick={()=>chooseAction(item,a)} style={a==="cook"?primary:ghost}>{ACTIONS[a]}</button>
-                        ))}
+                    ):collapsed?(
+                      <div style={{ display:"flex", gap:7, marginTop:10, alignItems:"center" }}>
+                        <button className="de-btn" onClick={()=>chooseAction(item,"cook")} style={{ ...primary, padding:"6px 12px", fontSize:13 }}>Cook</button>
+                        <button className="de-btn" onClick={()=>setUI(item.id,"preserve")} style={{ ...ghost, padding:"6px 11px", fontSize:12.5 }}>Preserve</button>
+                        <button className="de-btn" onClick={()=>removeUseUpWithUndo(item)} style={{ background:"transparent", border:"none", color:C.faint, padding:"6px 8px", marginLeft:"auto", display:"inline-flex", alignItems:"center", gap:5, fontSize:12.5, fontFamily:SANS }}><Trash2 size={14}/> Remove</button>
+                      </div>
+                    ):ui.step==="preserve"?(
+                      <div style={{ marginTop:11, background:C.cardEmpty, border:`1px solid ${C.line}`, borderRadius:10, padding:"11px 13px" }}>
+                        <div style={{ fontSize:12.5, color:C.muted }}>Preserving is still being built. Soon this will suggest jams, chutneys, pickles and ferments for {item.title.toLowerCase()}.</div>
+                        <button className="de-btn" onClick={()=>setUI(item.id,"collapsed")} style={{ ...ghost, marginTop:9, padding:"6px 11px", fontSize:12.5 }}>Back</button>
                       </div>
                     ):ui.step==="cook"?(() => {
                       const cooks = cookSuggestionsFor(item.title);
@@ -1481,13 +1582,9 @@ export default function KitchenApp() {
                         </div>
                         <button className="de-btn" onClick={()=>setUI(item.id,"collapsed")} style={{ ...ghost, marginTop:9 }}>Cancel</button>
                       </div>
-                    ):(
-                      <div style={{ display:"flex", gap:7, marginTop:11, flexWrap:"wrap" }}>
-                        <button className="de-btn" onClick={()=>startItem(item)} style={primary}>{item.kind==="meal"?"Add to a day":"Sort it"}</button>
-                        <button className="de-btn" onClick={()=>chooseAction(item,"later")} style={ghost}>Later</button>
-                      </div>
-                    )}
+                    ):null}
                   </div>
+                  </DragReorderRow>
                 );
               })}
             </div>
@@ -1886,7 +1983,7 @@ export default function KitchenApp() {
                   {useUp.length===0 && (
                     <div style={{ fontSize:14, color:C.faint, padding:"4px 0" }}>Nothing flagged. Add something you want to use before it goes off.</div>
                   )}
-                  {[...useUp].sort((a,b)=>(a.useBy?a.useBy.getTime():Infinity)-(b.useBy?b.useBy.getTime():Infinity)).map(u=>{
+                  {useUpDisplayOrder(useUp).map(u=>{
                     const soon = u.useBy && startOfDay(u.useBy) <= addDays(today0,3);
                     return (
                       <div key={u.id} style={{ display:"flex", alignItems:"center", gap:12, background:C.card, border:`1px solid ${u.useBy?rgba(SRC.kitchen,0.5):C.line}`, borderRadius:12, padding:"11px 14px" }}>
@@ -2064,6 +2161,15 @@ export default function KitchenApp() {
           <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:14, background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:"10px 12px 10px 16px", boxShadow:"0 14px 34px rgba(0,0,0,0.55)", maxWidth:"min(420px, calc(100vw - 28px))" }}>
             <span style={{ fontSize:13.5, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Removed {undoRemove.item.name}</span>
             <button className="de-btn" onClick={restoreItem} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"transparent", border:`1px solid ${rgba(C.ember,0.45)}`, color:C.ember, borderRadius:99, padding:"5px 12px", fontFamily:SANS, fontWeight:600, fontSize:13, flexShrink:0 }}><Undo2 size={15}/> Undo</button>
+          </div>
+        </div>
+      )}
+
+      {useUpRemoveUndo && (
+        <div style={{ position:"fixed", left:0, right:0, bottom:24, display:"flex", justifyContent:"center", zIndex:60, pointerEvents:"none", padding:"0 14px" }}>
+          <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:14, background:C.panel, border:`1px solid ${C.line}`, borderRadius:99, padding:"10px 12px 10px 16px", boxShadow:"0 14px 34px rgba(0,0,0,0.55)", maxWidth:"min(420px, calc(100vw - 28px))" }}>
+            <span style={{ fontSize:13.5, color:C.cream, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Removed {useUpRemoveUndo.item.name}</span>
+            <button className="de-btn" onClick={restoreUseUp} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"transparent", border:`1px solid ${rgba(C.ember,0.45)}`, color:C.ember, borderRadius:99, padding:"5px 12px", fontFamily:SANS, fontWeight:600, fontSize:13, flexShrink:0 }}><Undo2 size={15}/> Undo</button>
           </div>
         </div>
       )}

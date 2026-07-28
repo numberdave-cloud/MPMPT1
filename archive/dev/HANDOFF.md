@@ -1,5 +1,37 @@
 # Dinner Engine — handoff
 
+## Session note - 28 Jul 2026 (use-up cards: reorder, thin actions, remove)
+
+Reworked the "USE THESE FIRST" cards on the Meal Plan page (they render from the shared `useUp`
+state, so every item there is a use-up ingredient; `URGENT` is empty).
+
+- THIN ACTION ROW. Dropped the fat card body. The collapsed card is now a grip handle + name +
+  use-by date (right-aligned, mono) and a single row of actions: Cook / Preserve / Remove. Removed
+  the pointless "INGREDIENT" pill and the "Flagged to use up" meta (every item was identical). Cook
+  keeps the existing recipe-suggestion flow unchanged. Preserve is a stub for now: a new `ui.step`
+  "preserve" shows a "coming soon" note + Back, no side effects (the real preserves catalogue is
+  still to be built). The old "Later" action is GONE (Dave chose to drop it; it never did anything
+  real because there is no explicit "next plan" event to snooze against, weeks roll by date). The
+  `chooseAction` "later"/"store" branches and `ACTIONS`/`startItem` are now unreferenced but left in
+  place, harmless.
+- REMOVE + 5s UNDO. Remove deletes the item from the shared `useUp` state, so it also leaves the
+  Stored > Use up page (both render from `useUp`). New state `useUpRemoveUndo` + `useUpRemoveTimer`,
+  handlers `removeUseUpWithUndo`/`restoreUseUp`, and a hovering undo snackbar (5000ms) matching the
+  existing snackbar pattern (fixed bottom pill, min(420px, ...) width).
+- LONG-PRESS DRAG REORDER. New module component `DragReorderRow`: ~280ms stationary press to lift
+  (short vibrate if supported), then finger-drag over other rows to reorder live via
+  `document.elementFromPoint` + a `data-uu-row` attribute. A near-stationary press is required so a
+  normal vertical scroll is never hijacked (`touchAction:"pan-y"` until lifted, `"none"` while
+  dragging). Manual order is persisted by stamping each `useUp` item with an `ord` index; new helper
+  `useUpDisplayOrder` sorts by `ord` when any item has one, else by use-by (soonest first). The
+  Stored > Use up page uses the same helper so both lists agree. A "By use-by" reset chip appears in
+  the section header when a manual order is active (`resetUseUpOrder` strips `ord`).
+- `useUp` schema gained an optional `ord:int`. Existing items without it fall back to use-by sort.
+- TEST ON THE GALAXY: the long-press-to-lift timing and the drag-vs-scroll decision are the things
+  to feel out on the phone. Also check the drop lands where expected on a fast drag.
+- Catalogue untouched (271, r001-r271). recipes.json unchanged. jsx CATALOGUE deep-equal to
+  recipes.json (271). index.html rebuilt from this jsx, all 271 names verified present.
+
 ## Session note - 18 Jul 2026 (night-off suggestions)
 
 - Night Off ("off" type) Suggest was excluding the global `history` (recently confirmed dishes across
