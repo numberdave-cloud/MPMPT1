@@ -152,36 +152,33 @@ function SwipeRow({ onDelete, onStaple, children }){
 /* Long-press the grip handle to lift, then drag up or down to reorder. Touch friendly. The lift
    is started from the handle only (the handle carries touchAction:none so the press never scrolls);
    the row under the finger is found by comparing the finger Y against each row's bounding box,
-   which is reliable on mobile where elementFromPoint + pointer capture are not. */
-function DragReorderRow({ id, onLiftChange, onHoverId, onDrop, dragging, children }){
+/* Long-press the grip handle to lift, then drag up or down to reorder. Touch friendly. The lift is
+   started from the handle only (the handle carries touchAction:none so the press never scrolls).
+   While lifted, the raw pointer Y is reported to the parent, which decides the target index from how
+   far the finger has travelled. Reordering by finger displacement (not by which row is under the
+   finger) is stable: the dragged card follows the finger without the target sliding away. */
+function DragReorderRow({ id, onLift, onMoveY, onDrop, dragging, children }){
   const pressTimer=useRef(null), lifted=useRef(false), pid=useRef(null);
   const sy=useRef(0);
   const rootRef=useRef(null);
   const clearPress=()=>{ if(pressTimer.current){ clearTimeout(pressTimer.current); pressTimer.current=null; } };
-  const rowIdAtY=(y)=>{
-    const rows=document.querySelectorAll("[data-uu-row]");
-    for(const r of rows){ const b=r.getBoundingClientRect(); if(y>=b.top && y<=b.bottom) return r.getAttribute("data-uu-row"); }
-    return null;
-  };
   const lift=(clientY)=>{
     lifted.current=true; sy.current=clientY;
     try{ rootRef.current && pid.current!=null && rootRef.current.setPointerCapture(pid.current); }catch(_){}
-    onLiftChange&&onLiftChange(id);
+    onLift&&onLift(id, clientY);
     if(navigator.vibrate) try{ navigator.vibrate(12); }catch(_){}
   };
-  // Handle: press and hold to lift.
   const handleDown=e=>{
     e.stopPropagation();
     pid.current=e.pointerId; sy.current=e.clientY; lifted.current=false;
     clearPress();
-    pressTimer.current=setTimeout(()=>lift(e.clientY),260);
+    pressTimer.current=setTimeout(()=>lift(e.clientY),240);
   };
   const move=e=>{
     if(pid.current==null) return;
     if(!lifted.current){ if(Math.abs(e.clientY-sy.current)>10) clearPress(); return; } // moved before lift: let it scroll
     if(e.cancelable) e.preventDefault();
-    const over=rowIdAtY(e.clientY);
-    if(over) onHoverId&&onHoverId(over);
+    onMoveY&&onMoveY(e.clientY);
   };
   const up=()=>{ clearPress(); if(lifted.current){ onDrop&&onDrop(); } lifted.current=false; pid.current=null; };
   return (
@@ -458,7 +455,7 @@ export default function KitchenApp() {
   const [useUpRemoveUndo, setUseUpRemoveUndo] = useState(null); // { item, index } after removing a use-up item from the planner card, 5s undo
   const useUpRemoveTimer = useRef(null);
   const [uuDragId, setUuDragId] = useState(null);   // id of the use-up item currently being long-press dragged
-  const uuHoverId = useRef(null);                   // id currently hovered while dragging, applied live
+  const uuDrag = useRef(null);                       // { id, order:[ids], startIndex, startY, curIndex } during a drag
   const suggestMemory = useRef({});                 // per-day recently suggested dish names, for variety on re-roll
   const [newItemName, setNewItemName] = useState("");
   const [addingItem, setAddingItem]   = useState(false);
@@ -1041,21 +1038,35 @@ export default function KitchenApp() {
     setUseUpRemoveUndo(null);
     if(useUpRemoveTimer.current) clearTimeout(useUpRemoveTimer.current);
   };
-  // Manual drag reorder. Moves the dragged id to sit before the target id in the display order,
-  // then stamps every item with a sequential ord so the manual order persists and overrides the
-  // use-by sort. resetUseUpOrder clears ord back to soonest-first.
-  const reorderUseUp = (dragId, targetId) => {
-    if(dragId===targetId) return;
-    setUseUp(list=>{
-      const ordered = useUpDisplayOrder(list);
-      const from = ordered.findIndex(u=>u.id===dragId);
-      const to   = ordered.findIndex(u=>u.id===targetId);
-      if(from<0||to<0) return list;
-      const arr=[...ordered]; const [moved]=arr.splice(from,1); arr.splice(to,0,moved);
-      const ordMap={}; arr.forEach((u,i)=>{ ordMap[u.id]=i; });
-      return list.map(u=>({ ...u, ord:ordMap[u.id] }));
-    });
+  // Manual drag reorder by finger displacement. On lift we snapshot the current display order and
+  // measure the row pitch (centre-to-centre) from the live DOM. As the finger moves we compute how
+  // many whole slots it has crossed and place the dragged item at startIndex+offset, recomputing
+  // from the snapshot each time so the target never drifts. On drop we stamp sequential ord so the
+  // order persists and overrides the use-by sort.
+  const beginUuDrag = (dragId, startY) => {
+    const order = useUpDisplayOrder(useUp).map(u=>u.id);
+    const startIndex = order.indexOf(dragId);
+    // measure pitch from two adjacent rendered rows; fall back to a typical collapsed-card height
+    let pitch = 84;
+    const rows = document.querySelectorAll("[data-uu-row]");
+    if(rows.length>=2){ const a=rows[0].getBoundingClientRect(), b=rows[1].getBoundingClientRect(); const p=Math.abs(b.top-a.top); if(p>20) pitch=p; }
+    uuDrag.current = { id:dragId, order, startIndex, startY, curIndex:startIndex, pitch };
+    setUuDragId(dragId);
   };
+  const moveUuDrag = (clientY) => {
+    const d = uuDrag.current; if(!d) return;
+    const offset = Math.round((clientY - d.startY) / d.pitch);
+    let target = d.startIndex + offset;
+    target = Math.max(0, Math.min(d.order.length-1, target));
+    if(target === d.curIndex) return;      // still in the same slot, nothing to do
+    d.curIndex = target;
+    // rebuild the order from the snapshot: pull the dragged id out, reinsert at target
+    const arr = d.order.filter(x=>x!==d.id);
+    arr.splice(target, 0, d.id);
+    const ordMap={}; arr.forEach((x,i)=>{ ordMap[x]=i; });
+    setUseUp(list=>list.map(u=>({ ...u, ord:ordMap[u.id] })));
+  };
+  const endUuDrag = () => { uuDrag.current=null; setUuDragId(null); };
   const resetUseUpOrder = () => setUseUp(list=>list.map(u=>{ const { ord, ...rest }=u; return rest; }));
   const freezerAge = frozen => {
     const days = Math.max(0, Math.round((today0 - startOfDay(frozen)) / 86400000));
@@ -1516,9 +1527,9 @@ export default function KitchenApp() {
                 const isDragging = uuDragId===item.id;
                 return (
                   <DragReorderRow key={item.id} id={item.id} dragging={isDragging}
-                    onLiftChange={id=>{ setUuDragId(id); uuHoverId.current=id; }}
-                    onHoverId={id=>{ if(id && id!==uuHoverId.current){ uuHoverId.current=id; reorderUseUp(item.id, id); } }}
-                    onDrop={()=>{ setUuDragId(null); uuHoverId.current=null; }}>
+                    onLift={(id,y)=>beginUuDrag(id,y)}
+                    onMoveY={y=>moveUuDrag(y)}
+                    onDrop={()=>endUuDrag()}>
                   {({ handleDown })=>(
                   <div style={{ background:res?C.cardEmpty:C.card, border:`1px solid ${res?C.line:rgba(SRC[item.src],0.35)}`, borderRadius:13, padding: collapsed?"11px 13px":"13px 15px" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:6 }}>

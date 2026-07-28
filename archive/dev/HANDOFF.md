@@ -1,5 +1,26 @@
 # Dinner Engine — handoff
 
+## Session note - 28 Jul 2026 (use-up drag: displacement model)
+
+Second drag fix. The hover-target model was finicky: it reordered based on which row sat under the
+finger, but once a card moved one slot it sat under the finger itself, so `dragId===targetId`
+early-returned and further moves did nothing until the finger crossed fully into another row (which
+kept sliding away). Symptom Dave saw: moves one slot then freezes.
+
+Rewrote to a displacement model. `DragReorderRow` now reports raw pointer Y via `onMoveY` (plus
+`onLift(id, y)` / `onDrop`), no DOM hit-testing. Parent handlers `beginUuDrag` / `moveUuDrag` /
+`endUuDrag`: on lift, snapshot the current display order (`uuDrag` ref) and measure row pitch
+centre-to-centre from two live `[data-uu-row]` rects (fallback 84px). On move, target index =
+startIndex + round((Y - startY)/pitch), clamped; rebuild order from the snapshot each time (pull
+dragged id, reinsert at target), so the target never drifts. Only writes state when the target slot
+changes. Drop stamps sequential `ord`. The dragged card is not translated to follow the finger; it
+scale(1.02)+shadows in place and the list reflows around it, which is the stable pattern. Hold time
+240ms. ord persistence, useUpDisplayOrder, By use-by reset, remove+undo, thin action row all
+unchanged.
+
+- Catalogue untouched (271, r001-r271). recipes.json unchanged. index.html rebuilt from this jsx,
+  271 names verified. If this still feels wrong on the Galaxy, Dave may axe the reorder feature.
+
 ## Session note - 28 Jul 2026 (use-up drag fix)
 
 The first pass at long-press drag reorder lifted but would not move. Two causes: (1) the gesture
