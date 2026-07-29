@@ -9,7 +9,7 @@ https://numberdave-cloud.github.io/MPMPT1/groove-maker/
 ## Canvas iframe embed
 
 ```html
-<iframe src="https://numberdave-cloud.github.io/MPMPT1/groove-maker/?v=2"
+<iframe src="https://numberdave-cloud.github.io/MPMPT1/groove-maker/?v=3"
         width="100%" height="340"
         title="Groove Maker"
         style="border: none;"
@@ -91,6 +91,6 @@ Single self-contained `index.html` (~758 KB). All CSS, JS, four WAV samples, and
 
 ## Last updated
 
-2026-07-29. v0.2: rounded dark bumper with tight internal padding (was too much dead space in v0.1), Volume slider (−36 to 0 dB, init −6 dB) added between Tempo and Groove, initial state cleaned so all steps load at swing 50 rather than the design pass's baked-in demo groove.
+2026-07-30. v0.3: brightened borders and grid lines to read better against Canvas white. Border alpha bumped from .14 to .30 across all deck controls, grid outer border thickened from 1 px to 2 px, grid subdivision lines thickened from 1 px to 1.5 px and their opacities bumped so the 16th / 8th / beat hierarchy still reads, lane separators promoted to the brighter borderB colour.
 
-Prior: v0.1 initial ship with real drum samples and .agr export.
+Prior: v0.2 added Volume slider, rounded bumper, clean init state. v0.1 first ship with real drum samples and .agr export.
