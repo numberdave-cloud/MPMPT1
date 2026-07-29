@@ -29,6 +29,7 @@ Categories: Composition · Mixing · Arranging · Miscellaneous
 | YouTube Quoter [NIN — Ruiner instrumental] | `quoter-ruiner-instrumental-solo/` | Miscellaneous | live | YES |
 | YouTube Quoter [Drive — opening credits] | `quoter-drive-opening-credits/` | Miscellaneous | live | YES |
 | Groove Maker | `groove-maker/` | Composition | live (v0.1, audibly unverified) | YES |
+| Orchestra Stems | `orchestra-stems/` | Miscellaneous | live | YES |
 
 ## Work in progress (not yet in repo)
 
