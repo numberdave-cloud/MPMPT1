@@ -9,15 +9,15 @@ https://numberdave-cloud.github.io/MPMPT1/groove-maker/
 ## Canvas iframe embed
 
 ```html
-<iframe src="https://numberdave-cloud.github.io/MPMPT1/groove-maker/?v=1"
-        width="100%" height="440"
+<iframe src="https://numberdave-cloud.github.io/MPMPT1/groove-maker/?v=2"
+        width="100%" height="340"
         title="Groove Maker"
         style="border: none;"
         allow="autoplay"
         loading="lazy"></iframe>
 ```
 
-`440` height leaves a little breathing room above and below the widget because the design pass vertically centers content in the viewport. Bump lower (down to about 380) if you want it snugger; bump higher for more headroom.
+340 fits the widget snugly at wide Canvas widths. At narrower widths (below ~900 px iframe) the deck may wrap onto a second row; bump the iframe height to ~400 in that case.
 
 ## What it teaches
 
@@ -25,7 +25,7 @@ Groove and humanisation. Students have learned to program beats already; this MO
 
 ## Build state
 
-v0.1, first ship. Design pass by Claude Design, audio + export engine wired in this chat. All controls functional, sample playback verified locally, `.agr` structurally verified.
+v0.2. Design pass build with real drum samples, `.agr` export, and post-first-review tweaks: rounded bumper with tight padding, Volume slider added, clean initial state (no demo groove). All controls functional, sample playback verified locally, `.agr` structurally verified.
 
 Currently unconfirmed: the audible round-trip into Live. A generated `.agr` needs to be dropped into Live's User Library / Grooves and applied to a target clip to confirm it swings the notes the same way the MOTE previewed. Once that passes, mark this build audibly verified.
 
@@ -81,9 +81,9 @@ Step 0 with a negative offset (swing below 50) wraps in the exported `.agr` to `
 
 - **Audible round-trip verification.** Highest priority. Drop the generated `.agr` into Live, apply to a clip, confirm the offsets play as previewed.
 - **Real samples for Snare / Cowbell.** Currently the samples from the Quantise MOTE. If Dave intended different samples for this MOTE, they can be swapped in (base64 replace).
-- **Optional postMessage auto-resize.** Would let the iframe snap to content height instead of the fixed 440.
-- **Volume control.** Original brief specified a −36 to 0 dB fader init −6. Design pass dropped it. Not in v0.1.
-- **Zoom controls.** Original brief specified 1× / 2× / 4× zoom. Design pass dropped it in favour of a single fixed-width matrix. Not in v0.1.
+- **Deck wrapping at narrow widths.** With Volume added, the deck fits on one row at ~900 px iframe width and up. Below that, it wraps to a second row. Bump the iframe height or trim controls if this matters.
+- **Optional postMessage auto-resize.** Would let the iframe snap to content height instead of a fixed value.
+- **Zoom controls.** Original brief specified 1× / 2× / 4× zoom. Design pass dropped it in favour of a single fixed-width matrix. Not in v0.2.
 
 ## Files
 
@@ -91,4 +91,6 @@ Single self-contained `index.html` (~758 KB). All CSS, JS, four WAV samples, and
 
 ## Last updated
 
-2026-07-29. Initial ship: design pass build with real drum samples and `.agr` export wired.
+2026-07-29. v0.2: rounded dark bumper with tight internal padding (was too much dead space in v0.1), Volume slider (−36 to 0 dB, init −6 dB) added between Tempo and Groove, initial state cleaned so all steps load at swing 50 rather than the design pass's baked-in demo groove.
+
+Prior: v0.1 initial ship with real drum samples and .agr export.
