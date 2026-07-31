@@ -19,6 +19,7 @@ Categories: Composition · Mixing · Arranging · Miscellaneous
 | Mix Balance [Reggae] | `mix-balance-reggae/` | Mixing | live | YES |
 | Song Structure Analyser | `song-structure-v2/` | Composition | live | YES |
 | Song Structure Analyser — Live Set Export | `song-structure-v3-als-export/` | Composition | live | YES |
+| Song Structure Analyser [Live Set Export + Detailed] | `song-structure-v4-als-export/` | Composition | live | YES |
 | Song Structure Navigator | `song-nav-nowhere/` | Composition | live | YES |
 | Vintage Sampler | `vintage-sampler/` | Composition | live | YES |
 | Skill Loop Player | `skill-loop-player/` | Miscellaneous | live | YES |
