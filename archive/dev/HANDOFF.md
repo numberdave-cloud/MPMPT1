@@ -1,5 +1,66 @@
 # Dinner Engine — handoff
 
+## Session note - 2 Aug 2026 (Preserves feature — BUILT and deployed)
+
+The brief in the entry below is now implemented end to end. Main catalogue untouched at 271
+recipes (r001-r271); `preserves.json` unchanged at 1 entry (p001).
+
+### What shipped
+
+- **`PRESERVES` constant** added to `dev/dinner-engine.jsx` directly after `CATALOGUE`, mirrored
+  minified into `index.html`. The three-copy sync rule now covers preserves as well:
+  `preserves.json` <-> `PRESERVES` in the jsx <-> minified array in `index.html`.
+  `synccheck.mjs` checks both arrays deep-equal their json mirrors before any commit.
+- **Hero matching.** `preservesFor(name)` normalises a glut name with the existing
+  `cookContentWords` and keeps any preserve whose `hero` keys are all present. So "cherry
+  tomatoes", "tomatoes" and "a punnet of cherry tomatoes" all find p001.
+  A `PRESERVE_BLOCK` word list (paste, sauce, passata, canned, tin, jar, juice, powder,
+  pickled, chutney, jam, relish, preserved) blocks already-processed products, so "tomato paste"
+  and "canned tomatoes" return nothing rather than offering a fresh-tomato ferment.
+- **Preserve stub wired.** Tapping Preserve on a use-up card now lists matched recipes with
+  name, book ref and "Makes", and a type tag on the right. Type chips (jam / chutney / pickle /
+  ferment) appear above the list only when the matched set holds more than one type; they are a
+  single-select toggle, tap again to clear. Empty state is the plain line
+  "No preserves with <item> yet."
+- **Queued as a task.** Choosing a preserve writes to `queuedPreserves` in local storage
+  (`de1:queuedPreserves`), each entry `{id, pid, from}`. The use-up card shows
+  "Preserve queued: <name>" with the existing Undo, which also removes the queued task.
+- **Preserves tab is now the to-do list.** The "Not built yet" placeholder is gone. Each queued
+  task shows a tick box, the preserve name, its type and the glut it came from, and expands to
+  the book ref, "Makes" and the full ingredient list (staples greyed and marked).
+- **Shopping button per task.** "Add to shop" pushes that preserve's ingredients on demand,
+  nothing auto-added. Locked six and Dave's own staples suppressed, everything else added and
+  merged into existing rows the same way a dish does. For p001 that is cherry tomatoes, chilli,
+  garlic and fennel seeds; salt and water are suppressed. A line under the button says how many
+  were added and merged, with a reminder to untick whatever is already in hand.
+- **Front-page To-do** gains queued preserves under THIS WEEK, beside upkeep and shopping, in the
+  pantry colour, with an Open button that jumps to Stored > Preserves with that task expanded.
+- **Done clears both.** Ticking off in either place removes the task everywhere, through the
+  normal 5-second task undo.
+
+### Not done, deliberately
+
+- The "date it went up / how long it keeps" line was dropped per the brief; Dave tracks
+  readiness externally.
+- Preserves still never touch the meal plan.
+
+### Next
+
+- Transcribe more preserve recipes into `preserves.json` (Dave photographs them), then re-fold
+  into `PRESERVES` and rebuild. The type chips only show once a glut matches more than one type,
+  so that path stays untested until the catalogue grows.
+- Still outstanding from earlier: the 11 HelloFresh recipes (would be r272-r282) were drafted in
+  a previous session but never committed, and that draft is gone. They need re-transcribing from
+  the photos.
+
+### Build notes
+
+- Galaxy PWA must be fully closed and reopened after this deploy (service worker cache).
+- `dev/dinner-engine.jsx`, `meal-planner/index.html` and `dev/HANDOFF.md` committed together.
+- One gotcha worth recording: the preserve branch of the use-up card ternary needed
+  `?((() => { ... })()` because the existing chain closes that branch's paren on the following
+  `):ui.step==="cook"` line, unlike the cook branch which closes its own.
+
 ## Session note - 2 Aug 2026 (Preserves feature — spec finalised, ready to build)
 
 Design workshopped and locked with Dave. A preserve is a TASK, not a meal: it never touches the
