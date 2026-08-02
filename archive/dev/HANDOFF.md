@@ -1,5 +1,22 @@
 # Dinner Engine — handoff
 
+## Session note - 2 Aug 2026 (upkeep snooze)
+
+The Done button on a due upkeep card in To-do became a Snooze button. The tick box already marked
+it done, so the button was doing the same job twice. Tapping Snooze opens a small panel under the
+card: a row of 1 to 7, a Days / Weeks toggle (defaults 1 and Days), then a confirm button that
+spells out the date it will land on, plus Cancel. Confirming pushes `due` out from today, not from
+the old due date, so an overdue task snoozed by 1 day really does come back tomorrow. Frequency is
+untouched: ticking it done later still rolls the next due date on with `rollDue` from wherever it
+sits. Snoozing fires the existing task undo snackbar ("Snoozed to Wed, 5 Aug") which restores the
+previous due date.
+
+- New state: `snoozeFor` (open task id), `snoozeN`, `snoozeUnit`. New handler `snoozeMaint`.
+- The To-do card's tick box is now the only way to mark an upkeep task done from that page. The
+  Upkeep tab still has its own Done button per due task, unchanged, and no snooze control there yet.
+- Catalogue untouched (271, r001-r271). recipes.json unchanged. index.html rebuilt, 271 names
+  verified. Needs a full close and reopen of the PWA on the Galaxy to clear the service worker.
+
 ## Session note - 28 Jul 2026 (use-up drag REMOVED)
 
 Reorder dragged badly on the Galaxy across three attempts (hover-target, displacement, re-anchor);

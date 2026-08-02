@@ -412,6 +412,9 @@ export default function KitchenApp() {
   );
   const [addingMaint, setAddingMaint] = useState(false);
   const [mDraft, setMDraft]   = useState({ title:"", freq:"monthly", dow:6 });
+  const [snoozeFor, setSnoozeFor]   = useState(null);    // maintenance task id whose snooze picker is open
+  const [snoozeN, setSnoozeN]       = useState(1);       // 1 to 7
+  const [snoozeUnit, setSnoozeUnit] = useState("days");  // "days" or "weeks"
 
   /* ---- freezer state ---- */
   const [freezer, setFreezer] = usePersistentState("freezer",
@@ -727,6 +730,15 @@ export default function KitchenApp() {
     const t=maint.find(x=>x.id===id);
     completeMaint(id);
     if(t) offerTaskUndo(`Done: ${t.title}`, ()=>setMaint(ts=>ts.map(x=>x.id===id?{...x,due:t.due}:x)));
+  };
+  // Snooze pushes this occurrence out from today. The frequency is untouched: ticking it done
+  // still rolls the next due date on from wherever it lands.
+  const snoozeMaint = (id, n, unit) => {
+    const t=maint.find(x=>x.id===id);
+    const target=addDays(today0, unit==="weeks" ? n*7 : n);
+    setMaint(ts=>ts.map(x=>x.id===id?{...x, due:target}:x));
+    setSnoozeFor(null);
+    if(t) offerTaskUndo(`Snoozed to ${fmtDate(target)}`, ()=>setMaint(ts=>ts.map(x=>x.id===id?{...x,due:t.due}:x)));
   };
   const dismissUserTaskUndo = (id) => {
     const t=userTasks.find(x=>x.id===id);
@@ -1384,13 +1396,38 @@ export default function KitchenApp() {
                 <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
                   {maintDue.map(t=>{
                     const overdue = startOfDay(t.due) < today0;
-                    return taskShell(t.id,{
-                      left:checkbox(false,()=>completeMaintUndo(t.id)),
-                      dotColor:SRC.maint, title:t.title,
-                      meta:`${FREQS[t.freq].label} · ${overdue?`due since ${fmtDate(t.due)}`:`due ${fmtDate(t.due)}`}`,
-                      sub:t.note,
-                      right:<button className="de-btn" onClick={()=>completeMaintUndo(t.id)} style={ghost}>Done</button>,
-                    });
+                    const picking = snoozeFor===t.id;
+                    const target  = addDays(today0, snoozeUnit==="weeks" ? snoozeN*7 : snoozeN);
+                    return (
+                      <div key={t.id} style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                        {taskShell(t.id,{
+                          left:checkbox(false,()=>completeMaintUndo(t.id)),
+                          dotColor:SRC.maint, title:t.title,
+                          meta:`${FREQS[t.freq].label} · ${overdue?`due since ${fmtDate(t.due)}`:`due ${fmtDate(t.due)}`}`,
+                          sub:t.note,
+                          right:<button className="de-btn" onClick={()=>{ if(picking){ setSnoozeFor(null); } else { setSnoozeFor(t.id); setSnoozeN(1); setSnoozeUnit("days"); } }} style={{ ...ghost, ...(picking?{ borderColor:rgba(C.ember,0.55), color:C.ember }:null) }}>Snooze</button>,
+                        })}
+                        {picking && (
+                          <div style={{ background:C.cardEmpty, border:`1px solid ${C.line}`, borderRadius:12, padding:"12px 13px", display:"flex", flexDirection:"column", gap:10 }}>
+                            <div style={{ fontSize:12, color:C.muted }}>Push it back by</div>
+                            <div style={{ display:"flex", gap:6 }}>
+                              {[1,2,3,4,5,6,7].map(n=>(
+                                <button key={n} className="de-btn" onClick={()=>setSnoozeN(n)} style={{ flex:"1 1 34px", minWidth:34, background:snoozeN===n?rgba(C.ember,0.16):"transparent", border:`1px solid ${snoozeN===n?rgba(C.ember,0.55):C.line}`, color:snoozeN===n?C.ember:C.muted, borderRadius:8, padding:"9px 0", fontSize:13.5, fontFamily:SANS, justifyContent:"center" }}>{n}</button>
+                              ))}
+                            </div>
+                            <div style={{ display:"flex", gap:6 }}>
+                              {[["days","Days"],["weeks","Weeks"]].map(([u,label])=>(
+                                <button key={u} className="de-btn" onClick={()=>setSnoozeUnit(u)} style={{ background:snoozeUnit===u?rgba(C.ember,0.16):"transparent", border:`1px solid ${snoozeUnit===u?rgba(C.ember,0.55):C.line}`, color:snoozeUnit===u?C.ember:C.muted, borderRadius:99, padding:"8px 16px", fontSize:13, fontFamily:SANS }}>{label}</button>
+                              ))}
+                            </div>
+                            <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                              <button className="de-btn" onClick={()=>snoozeMaint(t.id, snoozeN, snoozeUnit)} style={primary}>Snooze to {fmtDate(target)}</button>
+                              <button className="de-btn" onClick={()=>setSnoozeFor(null)} style={ghost}>Cancel</button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
                   })}
                 </div>
               </>
