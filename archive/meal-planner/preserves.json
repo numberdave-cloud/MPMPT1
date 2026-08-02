@@ -1,0 +1,62 @@
+[
+  {
+    "id": "p001",
+    "name": "Cherry tomato bombs",
+    "ref": "River Cottage Fermentation, p.63",
+    "makes": "a 500g jar",
+    "type": "ferment",
+    "hero": [
+      "tomato"
+    ],
+    "ings": [
+      {
+        "q": "300",
+        "u": "g",
+        "i": "cherry tomatoes",
+        "s": false,
+        "sea": true,
+        "p": "tomato"
+      },
+      {
+        "q": "1",
+        "u": "",
+        "i": "chilli",
+        "s": false,
+        "sea": true,
+        "p": "chilli"
+      },
+      {
+        "q": "2",
+        "u": "clove",
+        "i": "garlic",
+        "s": false,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "250",
+        "u": "ml",
+        "i": "water",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "10",
+        "u": "g",
+        "i": "salt",
+        "s": true,
+        "sea": false,
+        "p": ""
+      },
+      {
+        "q": "0.5",
+        "u": "tsp",
+        "i": "fennel seeds",
+        "s": false,
+        "sea": false,
+        "p": ""
+      }
+    ]
+  }
+]
