@@ -1,5 +1,73 @@
 # Dinner Engine — handoff
 
+## Session note - 2 Aug 2026 (Preserves feature — spec finalised, ready to build)
+
+Design workshopped and locked with Dave. A preserve is a TASK, not a meal: it never touches the
+meal plan. This entry is the full brief to build from. Nothing app-side is built yet beyond the
+existing Preserve stub button in the use-up Cook/Preserve/Remove row.
+
+### Preserve catalogue (data — already committed)
+
+- New file `archive/meal-planner/preserves.json` is live on main, seeded with one recipe:
+  **p001 "Cherry tomato bombs"** (River Cottage Fermentation, p.63; type ferment; hero tomato).
+  Committed 2 Aug.
+- Own ID series **p001+**, never collides with rNNN. Derive the next p-id from live
+  preserves.json, never hardcode.
+- Shape: `{id, name, ref, makes, type, hero:[...], ings:[{q,u,i,s,sea,p}]}`.
+  - No `cookMin`, no ready-in field. Type alone signals the wait.
+  - `type` is one of jam, chutney, pickle, ferment (room to grow: curds, cordials, sauces later).
+  - `hero` is one or two produce keys, spelled to the app's produce vocabulary (the same keys a
+    use-up flag carries), so a glut flag matches. p001 hero is `["tomato"]`.
+  - `ings` uses the identical schema and rules to the main catalogue: locked-six staples only,
+    seasonal tag against the produce keys, sea salt folds to the salt staple.
+- More preserve recipes will be transcribed later (Dave photographs them). Building against a
+  one-entry catalogue is fine; test the tomato -> ferment path.
+
+### The flow (locked)
+
+Flag a glut in Stored > Use up -> tap Preserve -> pick a hero-matched recipe -> it lands in the
+Preserves tab as a to-do with the recipe attached -> that task also shows on the front-page To-do
+beside upkeep and shopping -> tick it done and it clears from both.
+
+### Build (type-B app change), in order
+
+1. **Sync check first.** Compare recipes.json count/IDs against the jsx CATALOGUE; re-fold
+   recipes.json into the jsx if it is behind, per the invariant. Do not build from a stale jsx.
+2. **Embed the preserve catalogue.** Add a `PRESERVES` constant to `dev/dinner-engine.jsx` from
+   preserves.json, and mirror it minified into index.html the same way the main catalogue is
+   embedded. preserves.json stays the readable recovery copy. The three-copy sync rule now covers
+   preserves too: preserves.json <-> `PRESERVES` in jsx <-> minified array in index.html.
+3. **Wire the existing Preserve stub** in the use-up Cook/Preserve/Remove row. Tapping Preserve on
+   a flagged glut filters PRESERVES to entries whose `hero` includes that ingredient's produce key.
+4. **Type chips** (jam / chutney / pickle / ferment) above the results, built only from the types
+   present in the matched set. Single-select toggle; tap again to clear. Empty state is a plain
+   "no preserves with <item> yet" line, not a blank screen.
+5. **Queue as a task.** Choosing a preserve adds it to a new queued-preserves list, stored locally
+   like faves and use-up flags, each task pointing at a p-id. Local storage only: it cannot write
+   back to the GitHub catalogue.
+6. **Preserves tab becomes the to-do list.** It is currently the "Not built yet" placeholder.
+   Replace that with the queued-preserve tasks. Drop the "date it went up / how long it keeps"
+   line: Dave tracks readiness externally. Tapping a task opens the attached recipe (ingredients
+   and book ref).
+7. **Shopping button per task.** Pushes that task's ingredients to the shop list on demand, nothing
+   auto-added. Follows the normal shop rules: locked staples suppressed, everything else added.
+   Send the full ingredient list including the hero; Dave unticks what he already has (the glut).
+   For p001 that puts cherry tomatoes, chilli, garlic and fennel seeds on the list; salt and water
+   are suppressed.
+8. **Front-page To-do** gains queued preserves as another source, beside upkeep and shopping, with
+   the same tick-to-complete behaviour.
+9. **Done clears both.** Ticking a preserve task off removes it from the Preserves tab and the
+   front To-do.
+
+### Notes and constraints
+
+- Main catalogue is 271 recipes (r001-r271), unchanged by any of this. preserves.json holds 1 (p001).
+- Galaxy PWA must be fully closed and reopened after deploy (service worker cache).
+- Commit `dev/dinner-engine.jsx`, `meal-planner/index.html` and `dev/HANDOFF.md` together; add
+  `meal-planner/preserves.json` only if the preserve catalogue data changes. Verify post-commit via
+  the Contents API at the new SHA, matching on recipe/preserve NAMES, not id patterns.
+- Australian English, no em dashes.
+
 ## Session note - 2 Aug 2026 (upkeep snooze)
 
 The Done button on a due upkeep card in To-do became a Snooze button. The tick box already marked
