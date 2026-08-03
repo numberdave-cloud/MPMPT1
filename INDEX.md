@@ -3,7 +3,7 @@
 Single source of truth for the MOTE estate. Read this first in any new chat.
 Base URL: https://numberdave-cloud.github.io/MPMPT1/<folder>/
 
-Categories: Composition · Mixing · Arranging · Miscellaneous
+Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 
 ## Live MOTEs
 
@@ -32,6 +32,8 @@ Categories: Composition · Mixing · Arranging · Miscellaneous
 | Groove Maker | `groove-maker/` | Composition | live (v0.1, audibly unverified) | YES |
 | Orchestra Stems | `orchestra-stems/` | Miscellaneous | live | YES |
 | Compression | `compression-explorer/` | Mixing | live | YES |
+| Interval Trainer | `interval-trainer/` | Trainers | live (v0.9) | YES |
+| Tuning Practice | `tuning-practice/` | Trainers | live (v1.0) | YES |
 
 ## Work in progress (not yet in repo)
 
@@ -54,7 +56,8 @@ Categories: Composition · Mixing · Arranging · Miscellaneous
 ## Conventions
 - Nothing exists until it is in GitHub. WIP (incl. source audio) gets committed, not left in a chat.
 - Ship-then-tweak: overwrite in place (same folder) for fixes and additions — git history is the undo. Spin a NEW named folder only to protect a version that is live in front of students.
-- New MOTE = assign a category before ship (Composition / Mixing / Arranging / Miscellaneous).
+- New MOTE = assign a category before ship (Composition / Mixing / Arranging / Trainers / Miscellaneous).
 - Each MOTE carries its own README.md as session handoff.
 - YouTube Quoter instances share one template and are catalogued in `QUOTERS.md` at repo root. Read that before touching any quoter. A fix to the shared machinery must be applied across every folder listed there, not just one.
+- `arcade-high-scores/` is a shared leaderboard service, not a MOTE. Not listed in the table above; it backs Interval Trainer.
 - `.nojekyll` present at root so Pages serves every folder (incl. any with leading underscores).
