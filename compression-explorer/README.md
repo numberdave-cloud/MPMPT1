@@ -11,7 +11,7 @@ https://numberdave-cloud.github.io/MPMPT1/compression-explorer/
 ## Canvas iframe embed
 
 ```html
-<iframe src="https://numberdave-cloud.github.io/MPMPT1/compression-explorer/?v=1"
+<iframe src="https://numberdave-cloud.github.io/MPMPT1/compression-explorer/?v=2"
         width="100%" height="620"
         title="Compression"
         style="border: none;"
@@ -27,7 +27,7 @@ The sound of dynamic range compression, one parameter at a time, on real materia
 
 ## Build state
 
-v1.0, first push. Custom DSP engine, four switchable sources, reversed threshold knob, grouped source selector, enlarged meter, small output volume fader. All controls functional, level matching and no-clip behaviour verified in headless Chromium. Classroom testing not yet done.
+v1.1. Custom DSP engine, four switchable sources, reversed threshold knob, grouped source selector, enlarged meter, small output volume fader. Page background is transparent (floats on the Canvas white) and the device now sits in a near-black rounded bezel frame with a 2px screen border, matching the Tuning Practice treatment. All controls functional, level matching and no-clip behaviour verified in headless Chromium. Classroom testing not yet done.
 
 ## The engine
 
@@ -70,4 +70,4 @@ Four OGG loops: drums, bass, guitars, vox. About 8.8s each, stereo 44.1k, peaks 
 
 ## Last updated
 
-2026-07-31. First push. Full build: custom no-look-ahead DSP engine, four sources, reversed threshold, ratio-dependent knee, grouped source selector, enlarged centred meter, small output volume fader, framed and proportionally scaling device.
+2026-08-04. v1.1: transparent page background so it presents on Canvas white, and a near-black rounded bezel frame around the screen (copied from Tuning Practice). Embed bumped to ?v=2.
