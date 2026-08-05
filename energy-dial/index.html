@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Energy Dial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* Transparent surround. Canvas wraps embeds in its own rounded grey
+     container; a transparent page inherits that colour exactly, so the
+     card sits directly on whatever Canvas paints. Do not set a colour
+     here: any fixed value shows as a mismatched slab inside the
+     wrapper (learned the hard way on scene-scorer-drive v1.6.2). */
+  html, body {
+    background: transparent;
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    padding: 4px;
+    max-width: 740px;
+    margin: 0 auto;
+  }
+
+  /* Rack-hardware card: 24px radius, outer dark frame, inner 1px light
+     stroke inset from the edge. The whole MOTE lives inside it. */
+  .rack {
+    position: relative;
+    background: var(--bg);
+    border: 2px solid #0B0907;
+    border-radius: 24px;
+    padding: 20px 24px 28px;
+  }
+  .rack::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(234, 224, 208, 0.3);
+    border-radius: 18px;
+    pointer-events: none;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .title {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+
+  /* Plain 16:9 frame. This upload's aspect is unverified from the build
+     environment; if it turns out to be letterboxed and YouTube paints
+     chrome in the baked bars, port the asymmetric crop from
+     scene-scorer-drive (v1.6.1) and re-measure the embed height. */
+  .video-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .video-wrap > div#scenePlayer,
+  .video-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  /* Transparent shield: intercepts every mouse event so YouTube never
+     receives them. No click-through at all: pausing is the transport
+     button's job. Also stops hover from waking YouTube's chrome. */
+  .click-shield {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    cursor: default;
+    background: transparent;
+  }
+
+  /* Opaque cover shown whenever the scene is not rolling. Hides the
+     thumbnail/title chrome before start and the paused-state overlay
+     (title, channel, More Videos) while paused or ended. */
+  .video-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: opacity 0.25s;
+  }
+  .video-cover.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Transport demoted: small quiet row under the selector. */
+  .transport {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+
+  .transport-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: border-color 0.08s;
+  }
+  .transport-btn:hover:not(:disabled) { border-color: var(--border-bright); }
+  .transport-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* ─── VOLUME KNOB ─── */
+  .vol-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 6px;
+  }
+  .knob {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border-bright);
+    border-radius: 50%;
+    position: relative;
+    cursor: ns-resize;
+    background: transparent;
+    flex: none;
+    touch-action: none;
+    outline: none;
+  }
+  .knob:hover { border-color: var(--accent); }
+  .knob:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(192,120,56,0.35); }
+  .knob-indicator {
+    position: absolute;
+    left: calc(50% - 1px);
+    top: 5px;
+    width: 2px;
+    height: 15px;
+    background: var(--accent);
+    border-radius: 1px;
+    transform-origin: 50% 15px;
+    transform: rotate(135deg);
+  }
+  .knob-label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* Segment-style volume readout: mono digits in accent with soft glow,
+     ghost segments behind at very low opacity. */
+  .vol-readout {
+    position: relative;
+    font-family: 'Courier New', 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    min-width: 3ch;
+    text-align: right;
+  }
+  .vol-readout .live {
+    position: relative;
+    z-index: 1;
+    color: var(--accent);
+    text-shadow: 0 0 7px rgba(216, 144, 74, 0.55);
+  }
+  .vol-readout .ghost {
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: var(--text);
+    opacity: 0.06;
+  }
+
+  .selector-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .selector-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* Selector is the feature: big primary buttons. */
+  .selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .sel-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    padding: 16px 26px;
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 600;
+    flex: 1 1 auto;
+    transition: background 0.08s, border-color 0.08s, transform 0.05s;
+  }
+  .sel-btn:hover:not(:disabled) { border-color: var(--accent); }
+  .sel-btn:active:not(:disabled) { transform: translateY(1px); }
+  .sel-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .sel-btn.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  /* ─── SWITCH MODE TOGGLE ─── */
+  .mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mode-toggle-label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .mode-group {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .mode-btn {
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    padding: 7px 12px;
+    font-family: inherit;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: background 0.08s, color 0.08s;
+  }
+  .mode-btn.active {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 600;
+  }
+
+  /* Off-screen audio-only music players. Kept in-viewport with near-zero
+     opacity rather than display:none so the browser doesn't throttle playback. */
+  .hidden-players {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 200px;
+    height: 120px;
+    opacity: 0.01;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+  }
+  .hidden-players div { width: 200px; height: 120px; }
+
+  @media (max-width: 600px) {
+    body { padding: 16px; }
+    .transport-btn { padding: 11px 16px; }
+  }
+</style>
+</head>
+<body>
+  <div class="rack">
+  <div class="header">
+    <div class="title">ENERGY DIAL</div>
+  </div>
+
+  <div class="video-wrap">
+    <div id="scenePlayer"></div>
+    <div class="click-shield" id="clickShield"></div>
+    <div class="video-cover" id="videoCover"><span id="coverLabel">LOADING</span></div>
+  </div>
+
+  <div class="selector-row">
+    <div class="selector-label">Energy</div>
+    <div class="mode-toggle">
+      <div class="mode-toggle-label">Switching</div>
+      <div class="mode-group" role="group" aria-label="Switch mode">
+        <button class="mode-btn active" id="modeFromTop">From Top</button>
+        <button class="mode-btn" id="modeSeamless">Seamless</button>
+      </div>
+    </div>
+  </div>
+  <div class="selector" id="selector"></div>
+
+  <div class="transport">
+    <button class="transport-btn" id="playBtn" disabled>LOADING</button>
+    <button class="transport-btn" id="restartBtn" disabled>RESTART</button>
+    <div class="vol-control">
+      <div class="knob" id="volKnob" role="slider" aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" tabindex="0">
+        <div class="knob-indicator" id="volIndicator"></div>
+      </div>
+      <div class="knob-label">Vol</div>
+      <div class="vol-readout" aria-hidden="true"><span class="ghost">888</span><span class="live" id="volReadout">100</span></div>
+    </div>
+  </div>
+
+  <div class="hidden-players" id="hiddenPlayers" aria-hidden="true"></div>
+  </div><!-- /rack -->
+
+<script>
+  // ─── CONFIG ──────────────────────────────────────────────────────
+  // This is the only block you edit per scene.
+  //
+  // ENERGY DIAL VARIANT. One running scene, three music beds spanning
+  // energy levels. The scene's own audio is permanently muted: the beds
+  // are the only sound. No temp-track button, no lockout.
+  //
+  //   scene.start    — seconds into the scene upload to begin
+  //   tracks[].id    — YouTube video id for each music bed
+  //   tracks[].volume— per-bed level, 0..100  (trim by ear)
+  //   tracks[].label — button text students see
+  //   tracks[].start — seconds into the bed to begin
+  //   tracks[].sceneStart — optional: seconds into the SCENE when this
+  //                     bed is chosen from the top (defaults to scene.start)
+  //   startWith      — 0..n, bed selected on load
+  //   fadeInMs       — every bed entrance fades in over this long
+  //   fadeOutMs      — outgoing bed drops over this long on a switch
+  //   fadeExp        — power curve exponent; 2 keeps the fade sounding
+  //                     even instead of hanging near full level
+  // The Vol knob on screen is a MASTER control that scales everything
+  // together, so the balance you set above is preserved.
+  const CONFIG = {
+    scene:  { id: '6z9qws7M8q8', start: 72 },
+    tracks: [
+      { label: 'ENERGY 1', id: 'AIRX176j2CA', volume: 100, start: 24 },
+      { label: 'ENERGY 2', id: 'oRSijEW_cDM', volume: 100, start: 0 },
+      { label: 'ENERGY 3', id: '6kN4zRfnHm8', volume: 100, start: 9 }
+    ],
+    startWith: 0,
+    fadeInMs: 1000,
+    fadeOutMs: 150,
+    fadeExp: 2
+  };
+
+  // ─── STATE ───────────────────────────────────────────────────────
+  let scenePlayer = null;
+  const musicPlayers = [];
+  let readyCount = 0;
+  const totalPlayers = 1 + CONFIG.tracks.length;
+  let allReady = false;
+  let isPlaying = false;
+  let activeTrack = CONFIG.startWith;
+  let masterVol = 100;
+  let ccKilledOnce = false;
+  let restartOnSwitch = true;           // FROM TOP mode by default
+
+  // ─── DOM REFS ────────────────────────────────────────────────────
+  const $playBtn = document.getElementById('playBtn');
+  const $restartBtn = document.getElementById('restartBtn');
+  const $selector = document.getElementById('selector');
+  const $hidden = document.getElementById('hiddenPlayers');
+  const $shield = document.getElementById('clickShield');
+  const $knob = document.getElementById('volKnob');
+  const $indicator = document.getElementById('volIndicator');
+  const $cover = document.getElementById('videoCover');
+  const $coverLabel = document.getElementById('coverLabel');
+
+  // ─── VIDEO COVER ─────────────────────────────────────────────────
+  function showCover(label) {
+    $coverLabel.textContent = label;
+    $cover.classList.remove('hidden');
+  }
+  function hideCover() {
+    $cover.classList.add('hidden');
+  }
+
+  // ─── VOLUME HELPERS ──────────────────────────────────────────────
+  function effVol(base) {
+    return Math.max(0, Math.min(100, Math.round(base * masterVol / 100)));
+  }
+
+  // ─── FADE ENGINE ─────────────────────────────────────────────────
+  // Each bed carries a fade fraction 0..1. Applied volume is
+  // effVol(bed volume) * frac^fadeExp, so the master knob keeps working
+  // mid-fade. A single 30ms interval walks every frac toward its target
+  // and stops itself when everything has arrived. Linear YouTube volume
+  // holds near full perceived loudness until the last moment, hence the
+  // power curve (same fix as the Quoter fades).
+  const fades = CONFIG.tracks.map(() => ({ frac: 0, target: 0, msTotal: 1 }));
+  let fadeTimer = null;
+  let fadeLastT = 0;
+
+  function bedVol(i) {
+    return Math.round(effVol(CONFIG.tracks[i].volume) * Math.pow(fades[i].frac, CONFIG.fadeExp));
+  }
+
+  function applyBedVol(i) {
+    const p = musicPlayers[i];
+    if (!p) return;
+    try {
+      p.setVolume(bedVol(i));
+      if (fades[i].frac > 0) p.unMute(); else p.mute();
+    } catch (e) {}
+  }
+
+  function fadeTick() {
+    const now = performance.now();
+    const dt = now - fadeLastT;
+    fadeLastT = now;
+    let busy = false;
+    fades.forEach((f, i) => {
+      if (f.frac === f.target) return;
+      const step = dt / f.msTotal;
+      f.frac = f.frac < f.target
+        ? Math.min(f.target, f.frac + step)
+        : Math.max(f.target, f.frac - step);
+      applyBedVol(i);
+      if (f.frac !== f.target) busy = true;
+    });
+    if (!busy) { clearInterval(fadeTimer); fadeTimer = null; }
+  }
+
+  function startFade(i, target, ms) {
+    const f = fades[i];
+    f.target = target;
+    if (ms <= 0) {
+      f.frac = target;
+      applyBedVol(i);
+      return;
+    }
+    f.msTotal = ms;
+    if (!fadeTimer) {
+      fadeLastT = performance.now();
+      fadeTimer = setInterval(fadeTick, 30);
+    }
+  }
+
+  function applyMasterVol() {
+    musicPlayers.forEach((p, i) => applyBedVol(i));
+  }
+  function setKnobVisual() {
+    const angle = -135 + (masterVol / 100) * 270;
+    $indicator.style.transform = 'rotate(' + angle + 'deg)';
+    $knob.setAttribute('aria-valuenow', String(masterVol));
+    document.getElementById('volReadout').textContent = String(masterVol);
+  }
+  function nudgeVol(delta) {
+    masterVol = Math.max(0, Math.min(100, masterVol + delta));
+    setKnobVisual();
+    applyMasterVol();
+  }
+
+  // ─── AUDIO GATING ────────────────────────────────────────────────
+  // One place decides who is audible. The scene is always muted; the
+  // active bed fades in over fadeInMs, everything else drops fast.
+  // fromSilence forces the incoming bed to enter from zero (fresh play,
+  // restart, FROM TOP switch) rather than resuming a part-way fade.
+  function applyAudioGate(fromSilence) {
+    if (!scenePlayer) return;
+    try { scenePlayer.mute(); } catch (e) {}
+    musicPlayers.forEach((p, i) => {
+      if (i === activeTrack) {
+        if (fromSilence) { fades[i].frac = 0; applyBedVol(i); }
+        startFade(i, 1, CONFIG.fadeInMs);
+      } else {
+        startFade(i, 0, CONFIG.fadeOutMs);
+      }
+    });
+  }
+
+  // ─── BUILD DOM FROM CONFIG ───────────────────────────────────────
+  function buildDom() {
+    CONFIG.tracks.forEach((t, i) => {
+      const d = document.createElement('div');
+      d.id = 'musicPlayer' + i;
+      $hidden.appendChild(d);
+    });
+
+    CONFIG.tracks.forEach((t, i) => {
+      const b = document.createElement('button');
+      b.className = 'sel-btn';
+      b.textContent = t.label;
+      b.dataset.idx = String(i);
+      b.disabled = true;
+      $selector.appendChild(b);
+    });
+
+    $selector.addEventListener('click', (e) => {
+      const btn = e.target.closest('.sel-btn');
+      if (!btn) return;
+      selectTrack(parseInt(btn.dataset.idx, 10));
+    });
+  }
+
+  // ─── YT PLAYERS ──────────────────────────────────────────────────
+  function onYouTubeIframeAPIReady() {
+    const vars = { controls: 0, disablekb: 1, modestbranding: 1, rel: 0, playsinline: 1, fs: 0, iv_load_policy: 3, cc_load_policy: 0 };
+
+    scenePlayer = new YT.Player('scenePlayer', {
+      videoId: CONFIG.scene.id,
+      playerVars: vars,
+      events: { onReady: onSceneReady, onStateChange: onSceneStateChange }
+    });
+
+    CONFIG.tracks.forEach((t, i) => {
+      musicPlayers[i] = new YT.Player('musicPlayer' + i, {
+        videoId: t.id,
+        playerVars: vars,
+        events: { onReady: () => onMusicReady(i) }
+      });
+    });
+  }
+
+  function onSceneReady() {
+    try { scenePlayer.mute(); } catch (e) {}
+    if (CONFIG.scene.start) { try { scenePlayer.seekTo(CONFIG.scene.start, true); } catch (e) {} }
+    markReady();
+  }
+
+  function onMusicReady(i) {
+    const p = musicPlayers[i], t = CONFIG.tracks[i];
+    try { p.setVolume(0); p.mute(); } catch (e) {}
+    if (t.start) { try { p.seekTo(t.start, true); } catch (e) {} }
+    markReady();
+  }
+
+  function markReady() {
+    readyCount++;
+    if (readyCount >= totalPlayers && !allReady) {
+      allReady = true;
+      $playBtn.textContent = 'PLAY';
+      $playBtn.disabled = false;
+      $restartBtn.disabled = false;
+      $selector.querySelectorAll('.sel-btn').forEach(b => { b.disabled = false; });
+      showCover('READY');
+      setActiveTrackUI();
+    }
+  }
+
+  // ─── CAPTIONS ────────────────────────────────────────────────────
+  function killCaptions() {
+    try { scenePlayer.unloadModule('captions'); } catch (e) {}
+    try { scenePlayer.unloadModule('cc'); } catch (e) {}
+  }
+
+  // ─── TRANSPORT ───────────────────────────────────────────────────
+  function play() {
+    if (!allReady) return;
+    scenePlayer.playVideo();
+    musicPlayers.forEach(p => p.playVideo());
+    applyAudioGate(true);
+    isPlaying = true;
+    hideCover();
+    updateTransportUI();
+  }
+
+  function pause() {
+    if (scenePlayer) scenePlayer.pauseVideo();
+    musicPlayers.forEach(p => { try { p.pauseVideo(); } catch (e) {} });
+    isPlaying = false;
+    showCover('PAUSED');
+    updateTransportUI();
+  }
+
+  function togglePlay() {
+    isPlaying ? pause() : play();
+  }
+
+  // Scene start point depends on the active source: a bed can carry its
+  // own sceneStart offset (unused in this config, kept for parity).
+  function sceneStartFor(idx) {
+    if (idx >= 0 && CONFIG.tracks[idx].sceneStart != null) return CONFIG.tracks[idx].sceneStart;
+    return CONFIG.scene.start || 0;
+  }
+
+  function restart() {
+    if (!allReady) return;
+    scenePlayer.seekTo(sceneStartFor(activeTrack), true);
+    musicPlayers.forEach((p, i) => p.seekTo(CONFIG.tracks[i].start || 0, true));
+    play();
+  }
+
+  // ─── MUSIC SWITCHING ─────────────────────────────────────────────
+  // FROM TOP (default): selecting any bed resets scene and beds to
+  // their start points and plays. SEAMLESS: hot-switch in place, video
+  // keeps rolling; starts playback if stopped. Either way the incoming
+  // bed fades in over fadeInMs.
+  function selectTrack(idx) {
+    if (!allReady) return;
+    activeTrack = idx;
+    setActiveTrackUI();
+    if (restartOnSwitch) {
+      scenePlayer.seekTo(sceneStartFor(idx), true);
+      musicPlayers.forEach((p, i) => p.seekTo(CONFIG.tracks[i].start || 0, true));
+      play();
+    } else {
+      applyAudioGate(false);
+      if (!isPlaying) play();
+    }
+  }
+
+  // ─── SWITCH MODE TOGGLE ──────────────────────────────────────────
+  const $modeFromTop = document.getElementById('modeFromTop');
+  const $modeSeamless = document.getElementById('modeSeamless');
+  function setMode(fromTop) {
+    restartOnSwitch = fromTop;
+    $modeFromTop.classList.toggle('active', fromTop);
+    $modeSeamless.classList.toggle('active', !fromTop);
+  }
+  $modeFromTop.addEventListener('click', () => setMode(true));
+  $modeSeamless.addEventListener('click', () => setMode(false));
+
+  // ─── UI ──────────────────────────────────────────────────────────
+  function setActiveTrackUI() {
+    $selector.querySelectorAll('.sel-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.idx, 10) === activeTrack);
+    });
+  }
+
+  function updateTransportUI() {
+    $playBtn.textContent = isPlaying ? 'PAUSE' : 'PLAY';
+  }
+
+  function onSceneStateChange(e) {
+    if (e.data === YT.PlayerState.PLAYING) {
+      killCaptions();
+      if (!ccKilledOnce) { setTimeout(killCaptions, 800); ccKilledOnce = true; }
+    }
+    if (e.data === YT.PlayerState.ENDED) {
+      musicPlayers.forEach(p => { try { p.pauseVideo(); } catch (err) {} });
+      isPlaying = false;
+      showCover('END');
+      updateTransportUI();
+    }
+  }
+
+  // ─── VOLUME KNOB INTERACTION ─────────────────────────────────────
+  let knobDragging = false, knobStartY = 0, knobStartVal = 100;
+  $knob.addEventListener('pointerdown', (e) => {
+    knobDragging = true;
+    knobStartY = e.clientY;
+    knobStartVal = masterVol;
+    try { $knob.setPointerCapture(e.pointerId); } catch (_) {}
+    e.preventDefault();
+  });
+  $knob.addEventListener('pointermove', (e) => {
+    if (!knobDragging) return;
+    const dy = knobStartY - e.clientY;   // drag up = louder
+    masterVol = Math.max(0, Math.min(100, Math.round(knobStartVal + dy)));
+    setKnobVisual();
+    applyMasterVol();
+  });
+  function endKnobDrag(e) {
+    knobDragging = false;
+    if (e && e.pointerId != null) { try { $knob.releasePointerCapture(e.pointerId); } catch (_) {} }
+  }
+  $knob.addEventListener('pointerup', endKnobDrag);
+  $knob.addEventListener('pointercancel', endKnobDrag);
+  $knob.addEventListener('wheel', (e) => { e.preventDefault(); nudgeVol(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+  $knob.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { nudgeVol(2); e.preventDefault(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { nudgeVol(-2); e.preventDefault(); }
+  });
+
+  // ─── WIRE UP ─────────────────────────────────────────────────────
+  $playBtn.addEventListener('click', togglePlay);
+  $restartBtn.addEventListener('click', restart);
+  // Shield is fully inert: video clicks do nothing. Pausing lives in the
+  // transport only, so YouTube never sees a click and never shows chrome.
+  $shield.addEventListener('click', (e) => e.preventDefault());
+  setKnobVisual();
+  buildDom();
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
