@@ -76,7 +76,7 @@
      and the 16:9 player is oversized and centred behind it, so those
      strips are clipped off. Adjust --frame-aspect to tune the crop. */
   .video-wrap {
-    --frame-aspect: 2.35;
+    --frame-aspect: 2.6;
     position: relative;
     width: 100%;
     aspect-ratio: var(--frame-aspect) / 1;
@@ -86,12 +86,18 @@
     overflow: hidden;
     margin-bottom: 16px;
   }
+  /* Asymmetric crop maths (all fractions of player width):
+     16:9 player height 0.5625, ~2.35:1 picture height 0.4255,
+     baked bars 0.0685 each. Frame at 2.6:1 = 0.3846 high. The whole
+     extra crop is taken from the TOP (bar + ~0.041 of picture) to bury
+     YouTube's title/channel text, which hangs below the top bar. The
+     bottom crop stays exactly one bar (0.0685) so the logo stays hidden
+     with no black sliver. top = -(0.5625-0.3846-0.0685)/0.3846 = -28.4%. */
   .video-wrap > div#scenePlayer,
   .video-wrap iframe {
     position: absolute;
     left: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    top: -28.4%;
     width: 100%;
     aspect-ratio: 16 / 9;
     height: auto;

@@ -77,8 +77,8 @@ Brought in line with the Interval Trainer reference spec: rack-hardware card (24
 
 ## Letterbox crop (v1.6)
 
-The film is ~2.35:1 inside the 16:9 upload, so YouTube's chrome (title card, share/watch-later icons, logo) paints in the baked black bars. The video window is cut to the picture: `.video-wrap` has `--frame-aspect: 2.35` and the 16:9 player is oversized and vertically centred behind it, clipping the bars. Tune `--frame-aspect` if chrome still peeks in on live (2.5 crops deeper at some picture cost). To verify live: chrome intrusion at play start, and the embed height drop (680 → 600).
+The film is ~2.35:1 inside the 16:9 upload, so YouTube's chrome (title card, share/watch-later icons, logo) paints in the baked black bars. The video window is cut to the picture and the 16:9 player oversized behind it. v1.6.1: the crop is asymmetric because YouTube's title/channel text hangs below the top bar. Frame is 2.6:1 with the player at `top: -28.4%`: the top crop is one bar plus ~4% of picture (buries the text), the bottom crop stays exactly one bar (logo hidden, no black sliver). Maths in the CSS comment. To verify live: no chrome at play start; embed height 600.
 
 ## Last updated
 
-2026-08-05. v1.6: letterbox crop clips YouTube chrome; embed height 680 → 600. Earlier same day: v1.5 design-system pass; v1.4 MUSIC 3 first-trigger 15s lockout; v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.
+2026-08-05. v1.6.1: asymmetric letterbox crop (2.6:1 frame, top-biased) after channel text peeked in at the top on live. v1.6: letterbox crop clips YouTube chrome; embed height 680 → 600. Earlier same day: v1.5 design-system pass; v1.4 MUSIC 3 first-trigger 15s lockout; v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.
