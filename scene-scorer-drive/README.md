@@ -35,7 +35,7 @@ v1.1, 2026-08-05. Category: Miscellaneous. Shipped for live testing at Dave's re
 - Scene: `BHVbbcHWX4k` (Drive opening credits, 2:46, same upload as `quoter-drive-opening-credits/` — shared takedown risk, see that README)
 - MUSIC 1: `DqiVp0Nx5I4`, starts at 0:06 (mathcore)
 - MUSIC 2: `EsvfptdFXf4` (Star Wars cantina swing)
-- MUSIC 3: `dQw4w9WgXcQ`, starts at 0:01 (1987 pop)
+- MUSIC 3: `dQw4w9WgXcQ`, bed starts at 0:00 but carries `sceneStart: 1` so the scene begins 1s in when chosen from the top (1987 pop)
 - Default selection: TEMP TRACK. Bed labels deliberately blind so students judge by ear.
 - All volumes 100, untrimmed.
 
@@ -53,7 +53,7 @@ PLAY/PAUSE and RESTART remain for pausing mid-scene and for FROM TOP-equivalent 
 - Shared Scene Scorer machinery: four synced YT players, click-shield, caption kill, master volume knob scaling per-source volumes.
 - `applyAudioGate()` is the one place audibility is decided; play/select/restart all route through it.
 - Beds keep rolling muted while another source is audible, so seamless switching is instant and stays in sync.
-- In FROM TOP mode `selectTrack()` seeks all five players before calling `play()`.
+- In FROM TOP mode `selectTrack()` seeks all four players before calling `play()`. The scene's seek target comes from `sceneStartFor(idx)`: a bed may define `sceneStart` to offset the scene against itself (MUSIC 3 uses 1s). RESTART honours the active bed's offset too. In SEAMLESS mode per-bed scene offsets cannot apply (the video keeps rolling), so MUSIC 3 rides 1s off its intended alignment there.
 - Selector buttons are disabled until all players report ready.
 - Scene ENDED pauses all beds.
 
@@ -67,4 +67,4 @@ PLAY/PAUSE and RESTART remain for pausing mid-scene and for FROM TOP-equivalent 
 
 ## Last updated
 
-2026-08-05. v1.1: selector promoted to primary control, transport demoted, FROM TOP / SEAMLESS switch-mode toggle added, MUSIC 3 start moved to 0:01.
+2026-08-05. v1.2: offset direction corrected for MUSIC 3 — bed starts at 0:00, scene starts 1s in via new per-track `sceneStart` field. (v1.1 earlier same day: selector promoted, transport demoted, switch-mode toggle added.)

@@ -297,6 +297,8 @@
   //   tracks[].volume— per-bed level, 0..100  (trim by ear against the temp track)
   //   tracks[].label — button text students see
   //   tracks[].start — seconds into the bed to begin
+  //   tracks[].sceneStart — optional: seconds into the SCENE when this bed
+  //                     is chosen from the top (defaults to scene.start)
   //   startWith      — -1 for the temp track, or 0..n for a bed
   // The Vol knob on screen is a MASTER control that scales everything
   // together, so the balance you set above is preserved.
@@ -306,7 +308,7 @@
     tracks: [
       { label: 'MUSIC 1', id: 'DqiVp0Nx5I4', volume: 100, start: 6 },
       { label: 'MUSIC 2', id: 'EsvfptdFXf4', volume: 100, start: 0 },
-      { label: 'MUSIC 3', id: 'dQw4w9WgXcQ', volume: 100, start: 1 }
+      { label: 'MUSIC 3', id: 'dQw4w9WgXcQ', volume: 100, start: 0, sceneStart: 1 }
     ],
     startWith: -1
   };
@@ -472,9 +474,16 @@
 
   function togglePlay() { isPlaying ? pause() : play(); }
 
+  // Scene start point depends on the active source: a bed can carry its
+  // own sceneStart offset (e.g. MUSIC 3 starts the scene 1s in).
+  function sceneStartFor(idx) {
+    if (idx >= 0 && CONFIG.tracks[idx].sceneStart != null) return CONFIG.tracks[idx].sceneStart;
+    return CONFIG.scene.start || 0;
+  }
+
   function restart() {
     if (!allReady) return;
-    scenePlayer.seekTo(CONFIG.scene.start || 0, true);
+    scenePlayer.seekTo(sceneStartFor(activeTrack), true);
     musicPlayers.forEach((p, i) => p.seekTo(CONFIG.tracks[i].start || 0, true));
     play();
   }
@@ -488,7 +497,7 @@
     activeTrack = idx;
     setActiveTrackUI();
     if (restartOnSwitch) {
-      scenePlayer.seekTo(CONFIG.scene.start || 0, true);
+      scenePlayer.seekTo(sceneStartFor(idx), true);
       musicPlayers.forEach((p, i) => p.seekTo(CONFIG.tracks[i].start || 0, true));
       play();
     } else {
