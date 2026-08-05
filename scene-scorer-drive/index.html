@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Scene Scorer — Drive [Temp Track]</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    padding: 20px 24px 28px;
+    max-width: 740px;
+    margin: 0 auto;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .title {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+
+  .video-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .video-wrap > div#scenePlayer,
+  .video-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  /* Transparent shield: intercepts clicks so YouTube never receives them.
+     Stops the centre play button and click-to-pause from desyncing the beds. */
+  .click-shield {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    cursor: pointer;
+    background: transparent;
+  }
+
+  .transport {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .transport-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 12px 22px;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: border-color 0.08s, background 0.08s;
+  }
+  .transport-btn:hover:not(:disabled) { border-color: var(--border-bright); }
+  .transport-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .transport-btn.primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 600;
+    min-width: 116px;
+  }
+  .transport-btn.primary:hover:not(:disabled) {
+    background: var(--accent-glow);
+    border-color: var(--accent-glow);
+  }
+
+  /* ─── VOLUME KNOB ─── */
+  .vol-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 6px;
+  }
+  .knob {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border-bright);
+    border-radius: 50%;
+    position: relative;
+    cursor: ns-resize;
+    background: transparent;
+    flex: none;
+    touch-action: none;
+    outline: none;
+  }
+  .knob:hover { border-color: var(--accent); }
+  .knob:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(192,120,56,0.35); }
+  .knob-indicator {
+    position: absolute;
+    left: calc(50% - 1px);
+    top: 5px;
+    width: 2px;
+    height: 15px;
+    background: var(--accent);
+    border-radius: 1px;
+    transform-origin: 50% 15px;
+    transform: rotate(135deg);
+  }
+  .knob-label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .selector-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .sel-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 11px 18px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: background 0.08s, border-color 0.08s, transform 0.05s;
+  }
+  .sel-btn:hover { border-color: var(--border-bright); }
+  .sel-btn:active { transform: translateY(1px); }
+  .sel-btn.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  /* Off-screen audio-only music players. Kept in-viewport with near-zero
+     opacity rather than display:none so the browser doesn't throttle playback. */
+  .hidden-players {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 200px;
+    height: 120px;
+    opacity: 0.01;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+  }
+  .hidden-players div { width: 200px; height: 120px; }
+
+  @media (max-width: 600px) {
+    body { padding: 16px; }
+    .transport-btn { padding: 11px 16px; }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">SCENE SCORER</div>
+  </div>
+
+  <div class="video-wrap">
+    <div id="scenePlayer"></div>
+    <div class="click-shield" id="clickShield"></div>
+  </div>
+
+  <div class="transport">
+    <button class="transport-btn primary" id="playBtn" disabled>LOADING</button>
+    <button class="transport-btn" id="restartBtn" disabled>RESTART</button>
+    <div class="vol-control">
+      <div class="knob" id="volKnob" role="slider" aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" tabindex="0">
+        <div class="knob-indicator" id="volIndicator"></div>
+      </div>
+      <div class="knob-label">Vol</div>
+    </div>
+  </div>
+
+  <div class="selector-label">Music Bed</div>
+  <div class="selector" id="selector"></div>
+
+  <div class="hidden-players" id="hiddenPlayers" aria-hidden="true"></div>
+
+<script>
+  // ─── CONFIG ──────────────────────────────────────────────────────
+  // This is the only block you edit per scene.
+  //
+  // TEMP-TRACK VARIANT. The scene upload carries its own music (the temp
+  // track everyone is in love with). Index -1 is the TEMP TRACK button:
+  // scene audio unmuted, all beds muted. Selecting any bed mutes the
+  // scene audio entirely and unmutes that bed.
+  //
+  //   scene.volume   — scene/temp-track level, 0..100
+  //   tempLabel      — button text for the scene's own audio
+  //   tracks[].id    — YouTube video id for each music bed
+  //   tracks[].volume— per-bed level, 0..100  (trim by ear against the temp track)
+  //   tracks[].label — button text students see
+  //   tracks[].start — seconds into the bed to begin
+  //   startWith      — -1 for the temp track, or 0..n for a bed
+  // The Vol knob on screen is a MASTER control that scales everything
+  // together, so the balance you set above is preserved.
+  const CONFIG = {
+    scene:  { id: 'BHVbbcHWX4k', volume: 100, start: 0 },
+    tempLabel: 'TEMP TRACK',
+    tracks: [
+      { label: 'MUSIC 1', id: 'DqiVp0Nx5I4', volume: 100, start: 6 },
+      { label: 'MUSIC 2', id: 'EsvfptdFXf4', volume: 100, start: 0 },
+      { label: 'MUSIC 3', id: 'dQw4w9WgXcQ', volume: 100, start: 0 }
+    ],
+    startWith: -1
+  };
+
+  // ─── STATE ───────────────────────────────────────────────────────
+  let scenePlayer = null;
+  const musicPlayers = [];
+  let readyCount = 0;
+  const totalPlayers = 1 + CONFIG.tracks.length;
+  let allReady = false;
+  let isPlaying = false;
+  let activeTrack = CONFIG.startWith;   // -1 = temp track (scene audio)
+  let masterVol = 100;
+  let ccKilledOnce = false;
+
+  // ─── DOM REFS ────────────────────────────────────────────────────
+  const $playBtn = document.getElementById('playBtn');
+  const $restartBtn = document.getElementById('restartBtn');
+  const $selector = document.getElementById('selector');
+  const $hidden = document.getElementById('hiddenPlayers');
+  const $shield = document.getElementById('clickShield');
+  const $knob = document.getElementById('volKnob');
+  const $indicator = document.getElementById('volIndicator');
+
+  // ─── VOLUME HELPERS ──────────────────────────────────────────────
+  function effVol(base) {
+    return Math.max(0, Math.min(100, Math.round(base * masterVol / 100)));
+  }
+  function applyMasterVol() {
+    if (scenePlayer && activeTrack === -1) {
+      try { scenePlayer.setVolume(effVol(CONFIG.scene.volume)); } catch (e) {}
+    }
+    if (activeTrack >= 0 && musicPlayers[activeTrack]) {
+      try { musicPlayers[activeTrack].setVolume(effVol(CONFIG.tracks[activeTrack].volume)); } catch (e) {}
+    }
+  }
+  function setKnobVisual() {
+    const angle = -135 + (masterVol / 100) * 270;
+    $indicator.style.transform = 'rotate(' + angle + 'deg)';
+    $knob.setAttribute('aria-valuenow', String(masterVol));
+  }
+  function nudgeVol(delta) {
+    masterVol = Math.max(0, Math.min(100, masterVol + delta));
+    setKnobVisual();
+    applyMasterVol();
+  }
+
+  // ─── AUDIO GATING ────────────────────────────────────────────────
+  // One place decides who is audible: temp track (-1) or one bed.
+  function applyAudioGate() {
+    if (!scenePlayer) return;
+    if (activeTrack === -1) {
+      try { scenePlayer.setVolume(effVol(CONFIG.scene.volume)); scenePlayer.unMute(); } catch (e) {}
+    } else {
+      try { scenePlayer.mute(); } catch (e) {}
+    }
+    musicPlayers.forEach((p, i) => {
+      try {
+        if (i === activeTrack) { p.setVolume(effVol(CONFIG.tracks[i].volume)); p.unMute(); }
+        else { p.mute(); }
+      } catch (e) {}
+    });
+  }
+
+  // ─── BUILD DOM FROM CONFIG ───────────────────────────────────────
+  function buildDom() {
+    CONFIG.tracks.forEach((t, i) => {
+      const d = document.createElement('div');
+      d.id = 'musicPlayer' + i;
+      $hidden.appendChild(d);
+    });
+
+    const tempBtn = document.createElement('button');
+    tempBtn.className = 'sel-btn';
+    tempBtn.textContent = CONFIG.tempLabel;
+    tempBtn.dataset.idx = '-1';
+    $selector.appendChild(tempBtn);
+
+    CONFIG.tracks.forEach((t, i) => {
+      const b = document.createElement('button');
+      b.className = 'sel-btn';
+      b.textContent = t.label;
+      b.dataset.idx = String(i);
+      $selector.appendChild(b);
+    });
+
+    $selector.addEventListener('click', (e) => {
+      const btn = e.target.closest('.sel-btn');
+      if (!btn) return;
+      selectTrack(parseInt(btn.dataset.idx, 10));
+    });
+  }
+
+  // ─── YT PLAYERS ──────────────────────────────────────────────────
+  function onYouTubeIframeAPIReady() {
+    const vars = { controls: 0, disablekb: 1, modestbranding: 1, rel: 0, playsinline: 1, fs: 0, iv_load_policy: 3, cc_load_policy: 0 };
+
+    scenePlayer = new YT.Player('scenePlayer', {
+      videoId: CONFIG.scene.id,
+      playerVars: vars,
+      events: { onReady: onSceneReady, onStateChange: onSceneStateChange }
+    });
+
+    CONFIG.tracks.forEach((t, i) => {
+      musicPlayers[i] = new YT.Player('musicPlayer' + i, {
+        videoId: t.id,
+        playerVars: vars,
+        events: { onReady: () => onMusicReady(i) }
+      });
+    });
+  }
+
+  function onSceneReady() {
+    try { scenePlayer.setVolume(effVol(CONFIG.scene.volume)); } catch (e) {}
+    if (CONFIG.scene.start) { try { scenePlayer.seekTo(CONFIG.scene.start, true); } catch (e) {} }
+    markReady();
+  }
+
+  function onMusicReady(i) {
+    const p = musicPlayers[i], t = CONFIG.tracks[i];
+    try { p.setVolume(effVol(t.volume)); p.mute(); } catch (e) {}
+    if (t.start) { try { p.seekTo(t.start, true); } catch (e) {} }
+    markReady();
+  }
+
+  function markReady() {
+    readyCount++;
+    if (readyCount >= totalPlayers && !allReady) {
+      allReady = true;
+      $playBtn.textContent = 'PLAY';
+      $playBtn.disabled = false;
+      $restartBtn.disabled = false;
+      setActiveTrackUI();
+    }
+  }
+
+  // ─── CAPTIONS ────────────────────────────────────────────────────
+  function killCaptions() {
+    try { scenePlayer.unloadModule('captions'); } catch (e) {}
+    try { scenePlayer.unloadModule('cc'); } catch (e) {}
+  }
+
+  // ─── TRANSPORT ───────────────────────────────────────────────────
+  function play() {
+    if (!allReady) return;
+    scenePlayer.playVideo();
+    musicPlayers.forEach(p => p.playVideo());
+    applyAudioGate();
+    isPlaying = true;
+    updateTransportUI();
+  }
+
+  function pause() {
+    if (scenePlayer) scenePlayer.pauseVideo();
+    musicPlayers.forEach(p => { try { p.pauseVideo(); } catch (e) {} });
+    isPlaying = false;
+    updateTransportUI();
+  }
+
+  function togglePlay() { isPlaying ? pause() : play(); }
+
+  function restart() {
+    if (!allReady) return;
+    scenePlayer.seekTo(CONFIG.scene.start || 0, true);
+    musicPlayers.forEach((p, i) => p.seekTo(CONFIG.tracks[i].start || 0, true));
+    play();
+  }
+
+  // ─── MUSIC SWITCHING ─────────────────────────────────────────────
+  function selectTrack(idx) {
+    activeTrack = idx;
+    applyAudioGate();
+    setActiveTrackUI();
+  }
+
+  // ─── UI ──────────────────────────────────────────────────────────
+  function setActiveTrackUI() {
+    $selector.querySelectorAll('.sel-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.idx, 10) === activeTrack);
+    });
+  }
+
+  function updateTransportUI() {
+    $playBtn.textContent = isPlaying ? 'PAUSE' : 'PLAY';
+  }
+
+  function onSceneStateChange(e) {
+    if (e.data === YT.PlayerState.PLAYING) {
+      killCaptions();
+      if (!ccKilledOnce) { setTimeout(killCaptions, 800); ccKilledOnce = true; }
+    }
+    if (e.data === YT.PlayerState.ENDED) {
+      musicPlayers.forEach(p => { try { p.pauseVideo(); } catch (err) {} });
+      isPlaying = false;
+      updateTransportUI();
+    }
+  }
+
+  // ─── VOLUME KNOB INTERACTION ─────────────────────────────────────
+  let knobDragging = false, knobStartY = 0, knobStartVal = 100;
+  $knob.addEventListener('pointerdown', (e) => {
+    knobDragging = true;
+    knobStartY = e.clientY;
+    knobStartVal = masterVol;
+    try { $knob.setPointerCapture(e.pointerId); } catch (_) {}
+    e.preventDefault();
+  });
+  $knob.addEventListener('pointermove', (e) => {
+    if (!knobDragging) return;
+    const dy = knobStartY - e.clientY;   // drag up = louder
+    masterVol = Math.max(0, Math.min(100, Math.round(knobStartVal + dy)));
+    setKnobVisual();
+    applyMasterVol();
+  });
+  function endKnobDrag(e) {
+    knobDragging = false;
+    if (e && e.pointerId != null) { try { $knob.releasePointerCapture(e.pointerId); } catch (_) {} }
+  }
+  $knob.addEventListener('pointerup', endKnobDrag);
+  $knob.addEventListener('pointercancel', endKnobDrag);
+  $knob.addEventListener('wheel', (e) => { e.preventDefault(); nudgeVol(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+  $knob.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { nudgeVol(2); e.preventDefault(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { nudgeVol(-2); e.preventDefault(); }
+  });
+
+  // ─── WIRE UP ─────────────────────────────────────────────────────
+  $playBtn.addEventListener('click', togglePlay);
+  $restartBtn.addEventListener('click', restart);
+  $shield.addEventListener('click', togglePlay);   // video click runs OUR transport, never YouTube's
+  setKnobVisual();
+  buildDom();
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>

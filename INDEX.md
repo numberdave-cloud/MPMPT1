@@ -34,6 +34,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Compression | `compression-explorer/` | Mixing | live | YES |
 | Interval Trainer | `interval-trainer/` | Trainers | live (v0.9) | YES |
 | Tuning Practice | `tuning-practice/` | Trainers | live (v1.0) | YES |
+| Scene Scorer — Drive [Temp Track] | `scene-scorer-drive/` | Miscellaneous | live (levels untested) | YES |
 
 ## Work in progress (not yet in repo)
 
