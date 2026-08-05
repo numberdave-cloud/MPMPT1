@@ -81,4 +81,4 @@ The film is ~2.35:1 inside the 16:9 upload, so YouTube's chrome (title card, sha
 
 ## Last updated
 
-2026-08-05. v1.6.1: asymmetric letterbox crop (2.6:1 frame, top-biased) after channel text peeked in at the top on live. v1.6: letterbox crop clips YouTube chrome; embed height 680 → 600. Earlier same day: v1.5 design-system pass; v1.4 MUSIC 3 first-trigger 15s lockout; v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.
+2026-08-05. v1.6.2: page background painted white after the transparent background rendered grey in Canvas (cross-origin iframes don't reliably composite transparency). v1.6.1: asymmetric letterbox crop (2.6:1 frame, top-biased) after channel text peeked in at the top on live. v1.6: letterbox crop clips YouTube chrome; embed height 680 → 600. Earlier same day: v1.5 design-system pass; v1.4 MUSIC 3 first-trigger 15s lockout; v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.

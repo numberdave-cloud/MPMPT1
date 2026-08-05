@@ -22,8 +22,11 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* Cross-origin iframes don't reliably composite a transparent page
+     background in Canvas, so paint the surround white to match the
+     Canvas page rather than relying on transparency. */
   html, body {
-    background: transparent;
+    background: #FFFFFF;
     color: var(--text);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
