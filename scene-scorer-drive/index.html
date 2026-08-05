@@ -70,14 +70,38 @@
     border: none;
   }
 
-  /* Transparent shield: intercepts clicks so YouTube never receives them.
-     Stops the centre play button and click-to-pause from desyncing the beds. */
+  /* Transparent shield: intercepts every mouse event so YouTube never
+     receives them. No click-through at all: pausing is the transport
+     button's job. Also stops hover from waking YouTube's chrome. */
   .click-shield {
     position: absolute;
     inset: 0;
     z-index: 2;
-    cursor: pointer;
+    cursor: default;
     background: transparent;
+  }
+
+  /* Opaque cover shown whenever the scene is not rolling. Hides the
+     thumbnail/title chrome before start and the paused-state overlay
+     (title, channel, More Videos) while paused or ended. */
+  .video-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: opacity 0.25s;
+  }
+  .video-cover.hidden {
+    opacity: 0;
+    pointer-events: none;
   }
 
   /* Transport demoted: small quiet row under the selector. */
@@ -255,6 +279,7 @@
   <div class="video-wrap">
     <div id="scenePlayer"></div>
     <div class="click-shield" id="clickShield"></div>
+    <div class="video-cover" id="videoCover"><span id="coverLabel">LOADING</span></div>
   </div>
 
   <div class="selector-row">
@@ -333,6 +358,17 @@
   const $shield = document.getElementById('clickShield');
   const $knob = document.getElementById('volKnob');
   const $indicator = document.getElementById('volIndicator');
+  const $cover = document.getElementById('videoCover');
+  const $coverLabel = document.getElementById('coverLabel');
+
+  // ─── VIDEO COVER ─────────────────────────────────────────────────
+  function showCover(label) {
+    $coverLabel.textContent = label;
+    $cover.classList.remove('hidden');
+  }
+  function hideCover() {
+    $cover.classList.add('hidden');
+  }
 
   // ─── VOLUME HELPERS ──────────────────────────────────────────────
   function effVol(base) {
@@ -445,6 +481,7 @@
       $playBtn.disabled = false;
       $restartBtn.disabled = false;
       $selector.querySelectorAll('.sel-btn').forEach(b => { b.disabled = false; });
+      showCover('READY');
       setActiveTrackUI();
     }
   }
@@ -462,6 +499,7 @@
     musicPlayers.forEach(p => p.playVideo());
     applyAudioGate();
     isPlaying = true;
+    hideCover();
     updateTransportUI();
   }
 
@@ -469,6 +507,7 @@
     if (scenePlayer) scenePlayer.pauseVideo();
     musicPlayers.forEach(p => { try { p.pauseVideo(); } catch (e) {} });
     isPlaying = false;
+    showCover('PAUSED');
     updateTransportUI();
   }
 
@@ -536,6 +575,7 @@
     if (e.data === YT.PlayerState.ENDED) {
       musicPlayers.forEach(p => { try { p.pauseVideo(); } catch (err) {} });
       isPlaying = false;
+      showCover('END');
       updateTransportUI();
     }
   }
@@ -571,7 +611,9 @@
   // ─── WIRE UP ─────────────────────────────────────────────────────
   $playBtn.addEventListener('click', togglePlay);
   $restartBtn.addEventListener('click', restart);
-  $shield.addEventListener('click', togglePlay);   // video click runs OUR transport, never YouTube's
+  // Shield is fully inert: video clicks do nothing. Pausing lives in the
+  // transport only, so YouTube never sees a click and never shows chrome.
+  $shield.addEventListener('click', (e) => e.preventDefault());
   setKnobVisual();
   buildDom();
 </script>

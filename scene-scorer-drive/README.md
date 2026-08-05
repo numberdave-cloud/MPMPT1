@@ -51,6 +51,8 @@ PLAY/PAUSE and RESTART remain for pausing mid-scene and for FROM TOP-equivalent 
 ## Technical notes
 
 - Shared Scene Scorer machinery: four synced YT players, click-shield, caption kill, master volume knob scaling per-source volumes.
+- The click-shield is fully inert here (no click-to-pause). Pausing lives in the transport button only.
+- An opaque black cover (`#videoCover`) sits above the shield whenever the scene is not rolling, hiding YouTube's thumbnail/title chrome pre-start and the paused-state overlay. Status labels: LOADING → READY → (hidden while playing) → PAUSED / END. `play()` hides it, `pause()` and scene ENDED show it, so it never depends on YT state events for hiding (no flicker on FROM TOP re-seeks).
 - `applyAudioGate()` is the one place audibility is decided; play/select/restart all route through it.
 - Beds keep rolling muted while another source is audible, so seamless switching is instant and stays in sync.
 - In FROM TOP mode `selectTrack()` seeks all four players before calling `play()`. The scene's seek target comes from `sceneStartFor(idx)`: a bed may define `sceneStart` to offset the scene against itself (MUSIC 3 uses 1s). RESTART honours the active bed's offset too. In SEAMLESS mode per-bed scene offsets cannot apply (the video keeps rolling), so MUSIC 3 rides 1s off its intended alignment there.
@@ -67,4 +69,4 @@ PLAY/PAUSE and RESTART remain for pausing mid-scene and for FROM TOP-equivalent 
 
 ## Last updated
 
-2026-08-05. v1.2: offset direction corrected for MUSIC 3 — bed starts at 0:00, scene starts 1s in via new per-track `sceneStart` field. (v1.1 earlier same day: selector promoted, transport demoted, switch-mode toggle added.)
+2026-08-05. v1.3: click-shield made inert (no click-to-pause) and opaque video cover added to hide YouTube chrome when not playing (LOADING/READY/PAUSED/END states). Earlier same day: v1.2 per-track `sceneStart` (MUSIC 3 bed 0:00, scene 1s); v1.1 selector promoted, transport demoted, switch-mode toggle.
