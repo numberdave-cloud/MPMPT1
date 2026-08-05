@@ -28,22 +28,33 @@ Height 680, not the default 600: the card stacks a 16:9 video, transport row, an
 
 ## Build state
 
-v1, 2026-08-05. Category: Miscellaneous. Shipped for live testing at Dave's request (local file:// testing doesn't work for this one); levels and bed lengths unverified.
+v1.1, 2026-08-05. Category: Miscellaneous. Shipped for live testing at Dave's request (local file:// testing doesn't work for this one); levels and bed lengths unverified.
 
 ## Config
 
 - Scene: `BHVbbcHWX4k` (Drive opening credits, 2:46, same upload as `quoter-drive-opening-credits/` — shared takedown risk, see that README)
 - MUSIC 1: `DqiVp0Nx5I4`, starts at 0:06 (mathcore)
 - MUSIC 2: `EsvfptdFXf4` (Star Wars cantina swing)
-- MUSIC 3: `dQw4w9WgXcQ` (1987 pop)
+- MUSIC 3: `dQw4w9WgXcQ`, starts at 0:01 (1987 pop)
 - Default selection: TEMP TRACK. Bed labels deliberately blind so students judge by ear.
 - All volumes 100, untrimmed.
+
+## Interaction model (v1.1)
+
+The selector is the primary control; the transport is demoted to a small quiet row beneath it. Two switching modes, toggled top-right of the selector:
+
+- **FROM TOP** (default): pressing any source button resets the scene and every bed to their start points and plays. Pressing the active button again also restarts.
+- **SEAMLESS**: the original Scene Scorer behaviour. Hot-switch between sources while the video keeps rolling; starts playback if stopped.
+
+PLAY/PAUSE and RESTART remain for pausing mid-scene and for FROM TOP-equivalent restarts.
 
 ## Technical notes
 
 - Shared Scene Scorer machinery: four synced YT players, click-shield, caption kill, master volume knob scaling per-source volumes.
 - `applyAudioGate()` is the one place audibility is decided; play/select/restart all route through it.
-- Beds keep rolling muted while another source is audible, so switching is instant and stays in sync.
+- Beds keep rolling muted while another source is audible, so seamless switching is instant and stays in sync.
+- In FROM TOP mode `selectTrack()` seeks all five players before calling `play()`.
+- Selector buttons are disabled until all players report ready.
 - Scene ENDED pauses all beds.
 
 ## Open TODOs
@@ -56,4 +67,4 @@ v1, 2026-08-05. Category: Miscellaneous. Shipped for live testing at Dave's requ
 
 ## Last updated
 
-2026-08-05. Initial ship for live testing.
+2026-08-05. v1.1: selector promoted to primary control, transport demoted, FROM TOP / SEAMLESS switch-mode toggle added, MUSIC 3 start moved to 0:01.

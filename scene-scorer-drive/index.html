@@ -80,40 +80,30 @@
     background: transparent;
   }
 
+  /* Transport demoted: small quiet row under the selector. */
   .transport {
     display: flex;
     gap: 8px;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 4px;
     flex-wrap: wrap;
   }
 
   .transport-btn {
     background: transparent;
-    color: var(--text);
+    color: var(--text-dim);
     border: 1px solid var(--border);
-    padding: 12px 22px;
+    padding: 8px 14px;
     font-family: inherit;
-    font-size: 11px;
+    font-size: 9px;
     letter-spacing: 0.14em;
     cursor: pointer;
     text-transform: uppercase;
     font-weight: 500;
-    transition: border-color 0.08s, background 0.08s;
+    transition: border-color 0.08s, color 0.08s;
   }
-  .transport-btn:hover:not(:disabled) { border-color: var(--border-bright); }
+  .transport-btn:hover:not(:disabled) { border-color: var(--border-bright); color: var(--text); }
   .transport-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .transport-btn.primary {
-    background: var(--accent);
-    color: var(--bg);
-    border-color: var(--accent);
-    font-weight: 600;
-    min-width: 116px;
-  }
-  .transport-btn.primary:hover:not(:disabled) {
-    background: var(--accent-glow);
-    border-color: var(--accent-glow);
-  }
 
   /* ─── VOLUME KNOB ─── */
   .vol-control {
@@ -154,39 +144,86 @@
     text-transform: uppercase;
   }
 
+  .selector-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
   .selector-label {
     font-size: 10px;
     letter-spacing: 0.18em;
     color: var(--text-dim);
-    margin-bottom: 8px;
     text-transform: uppercase;
   }
 
+  /* Selector is now the feature: big primary buttons. */
   .selector {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
+    margin-bottom: 18px;
   }
 
   .sel-btn {
     background: transparent;
     color: var(--text);
-    border: 1px solid var(--border);
-    padding: 11px 18px;
+    border: 1px solid var(--border-bright);
+    padding: 16px 26px;
     font-family: inherit;
-    font-size: 10px;
-    letter-spacing: 0.12em;
+    font-size: 12px;
+    letter-spacing: 0.14em;
     cursor: pointer;
     text-transform: uppercase;
-    font-weight: 500;
+    font-weight: 600;
+    flex: 1 1 auto;
     transition: background 0.08s, border-color 0.08s, transform 0.05s;
   }
-  .sel-btn:hover { border-color: var(--border-bright); }
-  .sel-btn:active { transform: translateY(1px); }
+  .sel-btn:hover:not(:disabled) { border-color: var(--accent); }
+  .sel-btn:active:not(:disabled) { transform: translateY(1px); }
+  .sel-btn:disabled { opacity: 0.3; cursor: not-allowed; }
   .sel-btn.active {
     background: var(--accent);
     color: var(--bg);
     border-color: var(--accent);
+  }
+
+  /* ─── SWITCH MODE TOGGLE ─── */
+  .mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mode-toggle-label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .mode-group {
+    display: flex;
+    border: 1px solid var(--border);
+  }
+  .mode-btn {
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    padding: 7px 12px;
+    font-family: inherit;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: background 0.08s, color 0.08s;
+  }
+  .mode-btn.active {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 600;
   }
 
   /* Off-screen audio-only music players. Kept in-viewport with near-zero
@@ -220,8 +257,20 @@
     <div class="click-shield" id="clickShield"></div>
   </div>
 
+  <div class="selector-row">
+    <div class="selector-label">Music Bed</div>
+    <div class="mode-toggle">
+      <div class="mode-toggle-label">Switching</div>
+      <div class="mode-group" role="group" aria-label="Switch mode">
+        <button class="mode-btn active" id="modeFromTop">From Top</button>
+        <button class="mode-btn" id="modeSeamless">Seamless</button>
+      </div>
+    </div>
+  </div>
+  <div class="selector" id="selector"></div>
+
   <div class="transport">
-    <button class="transport-btn primary" id="playBtn" disabled>LOADING</button>
+    <button class="transport-btn" id="playBtn" disabled>LOADING</button>
     <button class="transport-btn" id="restartBtn" disabled>RESTART</button>
     <div class="vol-control">
       <div class="knob" id="volKnob" role="slider" aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" tabindex="0">
@@ -230,9 +279,6 @@
       <div class="knob-label">Vol</div>
     </div>
   </div>
-
-  <div class="selector-label">Music Bed</div>
-  <div class="selector" id="selector"></div>
 
   <div class="hidden-players" id="hiddenPlayers" aria-hidden="true"></div>
 
@@ -260,7 +306,7 @@
     tracks: [
       { label: 'MUSIC 1', id: 'DqiVp0Nx5I4', volume: 100, start: 6 },
       { label: 'MUSIC 2', id: 'EsvfptdFXf4', volume: 100, start: 0 },
-      { label: 'MUSIC 3', id: 'dQw4w9WgXcQ', volume: 100, start: 0 }
+      { label: 'MUSIC 3', id: 'dQw4w9WgXcQ', volume: 100, start: 1 }
     ],
     startWith: -1
   };
@@ -275,6 +321,7 @@
   let activeTrack = CONFIG.startWith;   // -1 = temp track (scene audio)
   let masterVol = 100;
   let ccKilledOnce = false;
+  let restartOnSwitch = true;           // FROM TOP mode by default
 
   // ─── DOM REFS ────────────────────────────────────────────────────
   const $playBtn = document.getElementById('playBtn');
@@ -337,6 +384,7 @@
     tempBtn.className = 'sel-btn';
     tempBtn.textContent = CONFIG.tempLabel;
     tempBtn.dataset.idx = '-1';
+    tempBtn.disabled = true;
     $selector.appendChild(tempBtn);
 
     CONFIG.tracks.forEach((t, i) => {
@@ -344,6 +392,7 @@
       b.className = 'sel-btn';
       b.textContent = t.label;
       b.dataset.idx = String(i);
+      b.disabled = true;
       $selector.appendChild(b);
     });
 
@@ -393,6 +442,7 @@
       $playBtn.textContent = 'PLAY';
       $playBtn.disabled = false;
       $restartBtn.disabled = false;
+      $selector.querySelectorAll('.sel-btn').forEach(b => { b.disabled = false; });
       setActiveTrackUI();
     }
   }
@@ -430,11 +480,33 @@
   }
 
   // ─── MUSIC SWITCHING ─────────────────────────────────────────────
+  // FROM TOP (default): selecting any source resets scene and beds to
+  // their start points and plays. SEAMLESS: hot-switch in place, video
+  // keeps rolling; starts playback if stopped.
   function selectTrack(idx) {
+    if (!allReady) return;
     activeTrack = idx;
-    applyAudioGate();
     setActiveTrackUI();
+    if (restartOnSwitch) {
+      scenePlayer.seekTo(CONFIG.scene.start || 0, true);
+      musicPlayers.forEach((p, i) => p.seekTo(CONFIG.tracks[i].start || 0, true));
+      play();
+    } else {
+      applyAudioGate();
+      if (!isPlaying) play();
+    }
   }
+
+  // ─── SWITCH MODE TOGGLE ──────────────────────────────────────────
+  const $modeFromTop = document.getElementById('modeFromTop');
+  const $modeSeamless = document.getElementById('modeSeamless');
+  function setMode(fromTop) {
+    restartOnSwitch = fromTop;
+    $modeFromTop.classList.toggle('active', fromTop);
+    $modeSeamless.classList.toggle('active', !fromTop);
+  }
+  $modeFromTop.addEventListener('click', () => setMode(true));
+  $modeSeamless.addEventListener('click', () => setMode(false));
 
   // ─── UI ──────────────────────────────────────────────────────────
   function setActiveTrackUI() {
