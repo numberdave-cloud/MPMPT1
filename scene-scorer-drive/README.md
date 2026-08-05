@@ -71,6 +71,10 @@ The first time MUSIC 3 is selected (per page load), every control locks for 15 s
 - Confirm category (Miscellaneous assumed).
 - Note: the parent `scene-scorer/` folder has no README and no INDEX.md row. Flagged 2026-08-05, not fixed here.
 
+## Design-system pass (v1.5)
+
+Brought in line with the Interval Trainer reference spec: rack-hardware card (24px radius, 2px near-black outer frame, 1px light stroke at 0.3 opacity inset 6px), transparent page background so the card sits on Canvas white, 6-8px corner radius on all controls and the video frame (video 8px with overflow clipped), segment-style volume readout (mono accent digits with glow over ghost "888"), transport buttons at off-white text with hierarchy carried by size not dimming.
+
 ## Last updated
 
-2026-08-05. v1.4: MUSIC 3 first-trigger 15s full-control lockout (red flash on pause press, triple green flash on release). Earlier same day: v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.
+2026-08-05. v1.5: design-system compliance pass (rack card, control radii, volume readout, transport text colour). Earlier same day: v1.4 MUSIC 3 first-trigger 15s lockout; v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.

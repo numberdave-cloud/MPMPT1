@@ -23,17 +23,34 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html, body {
-    background: var(--bg);
+    background: transparent;
     color: var(--text);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
-    min-height: 100vh;
   }
 
   body {
-    padding: 20px 24px 28px;
+    padding: 4px;
     max-width: 740px;
     margin: 0 auto;
+  }
+
+  /* Rack-hardware card: 24px radius, outer dark frame, inner 1px light
+     stroke inset from the edge. The whole MOTE lives inside it. */
+  .rack {
+    position: relative;
+    background: var(--bg);
+    border: 2px solid #0B0907;
+    border-radius: 24px;
+    padding: 20px 24px 28px;
+  }
+  .rack::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(234, 224, 208, 0.3);
+    border-radius: 18px;
+    pointer-events: none;
   }
 
   .header {
@@ -59,6 +76,8 @@
     aspect-ratio: 16 / 9;
     background: #000;
     border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
     margin-bottom: 16px;
   }
   .video-wrap > div#scenePlayer,
@@ -115,8 +134,9 @@
 
   .transport-btn {
     background: transparent;
-    color: var(--text-dim);
+    color: var(--text);
     border: 1px solid var(--border);
+    border-radius: 6px;
     padding: 8px 14px;
     font-family: inherit;
     font-size: 9px;
@@ -124,9 +144,9 @@
     cursor: pointer;
     text-transform: uppercase;
     font-weight: 500;
-    transition: border-color 0.08s, color 0.08s;
+    transition: border-color 0.08s;
   }
-  .transport-btn:hover:not(:disabled) { border-color: var(--border-bright); color: var(--text); }
+  .transport-btn:hover:not(:disabled) { border-color: var(--border-bright); }
   .transport-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
   /* Lockout feedback on the pause button only. */
@@ -178,6 +198,30 @@
     text-transform: uppercase;
   }
 
+  /* Segment-style volume readout: mono digits in accent with soft glow,
+     ghost segments behind at very low opacity. */
+  .vol-readout {
+    position: relative;
+    font-family: 'Courier New', 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    min-width: 3ch;
+    text-align: right;
+  }
+  .vol-readout .live {
+    position: relative;
+    z-index: 1;
+    color: var(--accent);
+    text-shadow: 0 0 7px rgba(216, 144, 74, 0.55);
+  }
+  .vol-readout .ghost {
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: var(--text);
+    opacity: 0.06;
+  }
+
   .selector-row {
     display: flex;
     justify-content: space-between;
@@ -206,6 +250,7 @@
     background: transparent;
     color: var(--text);
     border: 1px solid var(--border-bright);
+    border-radius: 6px;
     padding: 16px 26px;
     font-family: inherit;
     font-size: 12px;
@@ -240,6 +285,8 @@
   .mode-group {
     display: flex;
     border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
   }
   .mode-btn {
     background: transparent;
@@ -282,6 +329,7 @@
 </style>
 </head>
 <body>
+  <div class="rack">
   <div class="header">
     <div class="title">SCENE SCORER</div>
   </div>
@@ -312,10 +360,12 @@
         <div class="knob-indicator" id="volIndicator"></div>
       </div>
       <div class="knob-label">Vol</div>
+      <div class="vol-readout" aria-hidden="true"><span class="ghost">888</span><span class="live" id="volReadout">100</span></div>
     </div>
   </div>
 
   <div class="hidden-players" id="hiddenPlayers" aria-hidden="true"></div>
+  </div><!-- /rack -->
 
 <script>
   // ─── CONFIG ──────────────────────────────────────────────────────
@@ -424,6 +474,7 @@
     const angle = -135 + (masterVol / 100) * 270;
     $indicator.style.transform = 'rotate(' + angle + 'deg)';
     $knob.setAttribute('aria-valuenow', String(masterVol));
+    document.getElementById('volReadout').textContent = String(masterVol);
   }
   function nudgeVol(delta) {
     masterVol = Math.max(0, Math.min(100, masterVol + delta));
