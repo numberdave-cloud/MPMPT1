@@ -75,14 +75,23 @@
     font-weight: 600;
   }
 
-  /* Plain 16:9 frame. This upload's aspect is unverified from the build
-     environment; if it turns out to be letterboxed and YouTube paints
-     chrome in the baked bars, port the asymmetric crop from
-     scene-scorer-drive (v1.6.1) and re-measure the embed height. */
+  /* Letterbox crop, ported from scene-scorer-drive v1.6.1 and re-tuned
+     to this upload. Measured from a live screenshot: 16:9 window
+     1356px wide, baked bars 98px top and bottom, picture 2.40:1.
+     As width fractions: player height 0.5625, picture 0.41667,
+     bars 0.072917 each. Crop is asymmetric:
+       top    = bar + 3% of picture = 0.085417  (buries title/channel text)
+       bottom = bar + 2% of picture = 0.081250  (More Videos pill pokes
+                ~3% above the bottom bar on this upload; Drive only
+                needed exactly one bar)
+     frame height = 0.5625 - 0.085417 - 0.08125 = 0.395833
+     frame aspect = 1/0.395833 = 2.526
+     top offset   = -0.085417/0.395833 = -21.58% */
   .video-wrap {
+    --frame-aspect: 2.526;
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: var(--frame-aspect) / 1;
     background: #000;
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -92,9 +101,11 @@
   .video-wrap > div#scenePlayer,
   .video-wrap iframe {
     position: absolute;
-    inset: 0;
+    left: 0;
+    top: -21.58%;
     width: 100%;
-    height: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
     border: none;
   }
 
