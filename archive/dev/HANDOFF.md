@@ -1,5 +1,65 @@
 # Dinner Engine — handoff
 
+## Session note - 5 Aug 2026 (Cook time shown as hours and minutes + 2 recipes)
+
+Catalogue **271 -> 273**. Preserves untouched at 1 (p001).
+
+### Recipes added
+
+- **r272 Pressure cooker BBQ pulled pork** — NYT Cooking (cooking.nytimes.com), serves 6-8,
+  cookMin 90, fresh. From a phone screenshot; the page title was cut off above the ingredient
+  list, so the name is Dave's wording and stands until he says otherwise. Imperial converted:
+  3-4 lb pork shoulder taken at the upper bound as 1.8 kg, a 12 oz can of dark soda as 355 ml
+  cola, 1/2 to 1 1/2 cups barbecue sauce at the upper bound as 375 ml. Hot sauce is optional in
+  the source and carries blank q and u. The soft rolls named in the method are not in the
+  source ingredient list, so there is no row for them. The 15 minute natural pressure release is
+  excluded as passive; the hour at high pressure is counted.
+- **r273 Slow cooker massaman beef curry** — Women's Weekly Food (womensweeklyfood.com.au),
+  serves 6, cookMin 525, fresh. Fetched from a link Dave shared. cookMin is the site's printed
+  8H 45M total. Hands-on is about 25 minutes; the rest is the 8 hour low slow-cook, which is
+  cooking rather than passive rest, so the rules say count it. Dave confirmed keeping the
+  honest number once cook times display as hours.
+- New item names: **cola**, **hot sauce**, **gravy beef**, **massaman curry paste**.
+  Gravy beef kept as its own item on Dave's call, not folded into the existing chuck steak.
+- No new produce. Everything seasonal mapped to existing SEASONALITY keys (potato, coriander,
+  lime). SEASONALITY still 68 keys.
+
+### App change: cook time reads as hours and minutes
+
+`fmtCookTime(m, caps)` added to `dev/dinner-engine.jsx` just above `CATALOGUE`. Under an hour is
+unchanged (`45 min` / `45 MIN`); an hour or more becomes `1 hr 30`, `8 hr 45`, and whole hours
+drop the minutes (`2 hr`). `caps` matches the uppercase mono pills.
+
+All five display sites now call it, so they cannot drift apart again:
+
+| Where | Was |
+|---|---|
+| Meal plan, line under the dish | `Serves 4 · 45 min · 6 non-staples` |
+| Meal plan, mono pill on the card | `45 MIN` |
+| Suggestion rows | `45 min · Serves 4` |
+| Midweek Faves pill | `45 MIN` |
+| Seasonal Picks pill | `45 MIN` |
+
+`synccheck.mjs` now also fails if any raw `{x.cookMin} min` display site reappears.
+
+### Open flags
+
+- **r048 Braised mushrooms with polenta** has `cookMin 29` but `slot "fresh"`, which breaks the
+  30-minute rule (it should be `quick`). Pre-existing, from the original Gourmet Traveller batch.
+  Left alone rather than changed without asking. One-line fix whenever Dave wants it.
+- **r157** page still to confirm. **r271** page still to confirm.
+- The 11 HelloFresh recipes drafted in an earlier session were never committed. r272 and r273
+  took the next free IDs, so if that batch comes back it starts at r274.
+- Backlog item **passive-time fields** is the real fix for slow-cooker and pressure-cooker
+  dishes: an 8 hr 45 total still sorts and reads as the longest thing in the catalogue when
+  almost all of it is unattended.
+
+### Verify on the Galaxy
+
+Fully close and reopen the PWA (service worker cache). Check a long dish reads as hours: the
+massaman should show `8 HR 45` on its card pill and `8 hr 45` in the plan line. Check a short one
+is unchanged, e.g. any 15 minute dish still reads `15 MIN`.
+
 ## Session note - 2 Aug 2026 (Preserves feature — BUILT and deployed)
 
 The brief in the entry below is now implemented end to end. Main catalogue untouched at 271
