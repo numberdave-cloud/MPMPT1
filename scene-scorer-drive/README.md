@@ -16,7 +16,7 @@ https://numberdave-cloud.github.io/MPMPT1/scene-scorer-drive/
 <iframe
   src="https://numberdave-cloud.github.io/MPMPT1/scene-scorer-drive/"
   width="100%"
-  height="680"
+  height="600"
   title="Scene Scorer — Drive [Temp Track]"
   style="border: none;"
   allow="autoplay"
@@ -24,7 +24,7 @@ https://numberdave-cloud.github.io/MPMPT1/scene-scorer-drive/
 </iframe>
 ```
 
-Height 680, not the default 600: the card stacks a 16:9 video, transport row, and a four-button selector, and at typical Canvas column widths the video alone is ~400px tall. Re-measure once live if Canvas shows a scrollbar.
+Height 600 since the v1.6 letterbox crop (the 2.35:1 window is ~90px shorter than the earlier 16:9 frame at typical Canvas widths). Was 680 pre-crop. Re-measure once live if Canvas shows a scrollbar.
 
 ## Build state
 
@@ -75,6 +75,10 @@ The first time MUSIC 3 is selected (per page load), every control locks for 15 s
 
 Brought in line with the Interval Trainer reference spec: rack-hardware card (24px radius, 2px near-black outer frame, 1px light stroke at 0.3 opacity inset 6px), transparent page background so the card sits on Canvas white, 6-8px corner radius on all controls and the video frame (video 8px with overflow clipped), segment-style volume readout (mono accent digits with glow over ghost "888"), transport buttons at off-white text with hierarchy carried by size not dimming.
 
+## Letterbox crop (v1.6)
+
+The film is ~2.35:1 inside the 16:9 upload, so YouTube's chrome (title card, share/watch-later icons, logo) paints in the baked black bars. The video window is cut to the picture: `.video-wrap` has `--frame-aspect: 2.35` and the 16:9 player is oversized and vertically centred behind it, clipping the bars. Tune `--frame-aspect` if chrome still peeks in on live (2.5 crops deeper at some picture cost). To verify live: chrome intrusion at play start, and the embed height drop (680 → 600).
+
 ## Last updated
 
-2026-08-05. v1.5: design-system compliance pass (rack card, control radii, volume readout, transport text colour). Earlier same day: v1.4 MUSIC 3 first-trigger 15s lockout; v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.
+2026-08-05. v1.6: letterbox crop clips YouTube chrome; embed height 680 → 600. Earlier same day: v1.5 design-system pass; v1.4 MUSIC 3 first-trigger 15s lockout; v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.
