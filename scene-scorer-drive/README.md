@@ -48,6 +48,10 @@ The selector is the primary control; the transport is demoted to a small quiet r
 
 PLAY/PAUSE and RESTART remain for pausing mid-scene and for FROM TOP-equivalent restarts.
 
+## MUSIC 3 first-trigger lockout
+
+The first time MUSIC 3 is selected (per page load), every control locks for 15 seconds: selector, switch-mode toggle, pause, restart, and the volume knob. There is no visual indication of the lockout except one tell: pressing the pause button flashes it red. When the 15 seconds are up the pause button flashes green three times and everything answers again. Config constants `LOCK_TRACK` (index 2) and `LOCK_SECONDS` (15) at the top of the script. Once per page load only; subsequent MUSIC 3 selections behave normally.
+
 ## Technical notes
 
 - Shared Scene Scorer machinery: four synced YT players, click-shield, caption kill, master volume knob scaling per-source volumes.
@@ -69,4 +73,4 @@ PLAY/PAUSE and RESTART remain for pausing mid-scene and for FROM TOP-equivalent 
 
 ## Last updated
 
-2026-08-05. v1.3: click-shield made inert (no click-to-pause) and opaque video cover added to hide YouTube chrome when not playing (LOADING/READY/PAUSED/END states). Earlier same day: v1.2 per-track `sceneStart` (MUSIC 3 bed 0:00, scene 1s); v1.1 selector promoted, transport demoted, switch-mode toggle.
+2026-08-05. v1.4: MUSIC 3 first-trigger 15s full-control lockout (red flash on pause press, triple green flash on release). Earlier same day: v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.

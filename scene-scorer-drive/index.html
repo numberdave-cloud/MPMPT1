@@ -129,6 +129,16 @@
   .transport-btn:hover:not(:disabled) { border-color: var(--border-bright); color: var(--text); }
   .transport-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+  /* Lockout feedback on the pause button only. */
+  @keyframes flashRed {
+    50% { background: #C04838; border-color: #C04838; color: var(--bg); }
+  }
+  .transport-btn.flash-red { animation: flashRed 0.3s ease; }
+  @keyframes flashGreen {
+    50% { background: #7BA968; border-color: #7BA968; color: var(--bg); }
+  }
+  .transport-btn.flash-green { animation: flashGreen 0.45s ease 3; }
+
   /* ─── VOLUME KNOB ─── */
   .vol-control {
     display: flex;
@@ -350,6 +360,16 @@
   let ccKilledOnce = false;
   let restartOnSwitch = true;           // FROM TOP mode by default
 
+  // ─── MUSIC 3 FIRST-TRIGGER LOCKOUT ───────────────────────────────
+  // The first time MUSIC 3 is selected, every control locks for 15s.
+  // No visual change: the interface simply stops answering. The one
+  // tell is the pause button flashing red when pressed. On release the
+  // pause button flashes green three times.
+  const LOCK_TRACK = 2;        // index of MUSIC 3
+  const LOCK_SECONDS = 15;
+  let lockUsed = false;
+  let locked = false;
+
   // ─── DOM REFS ────────────────────────────────────────────────────
   const $playBtn = document.getElementById('playBtn');
   const $restartBtn = document.getElementById('restartBtn');
@@ -368,6 +388,24 @@
   }
   function hideCover() {
     $cover.classList.add('hidden');
+  }
+
+  // ─── LOCKOUT MACHINERY ───────────────────────────────────────────
+  function flashPause(cls) {
+    $playBtn.classList.remove('flash-red', 'flash-green');
+    void $playBtn.offsetWidth;   // restart the animation
+    $playBtn.classList.add(cls);
+  }
+  $playBtn.addEventListener('animationend', () => {
+    $playBtn.classList.remove('flash-red', 'flash-green');
+  });
+  function engageLock() {
+    lockUsed = true;
+    locked = true;
+    setTimeout(() => {
+      locked = false;
+      flashPause('flash-green');
+    }, LOCK_SECONDS * 1000);
   }
 
   // ─── VOLUME HELPERS ──────────────────────────────────────────────
@@ -511,7 +549,10 @@
     updateTransportUI();
   }
 
-  function togglePlay() { isPlaying ? pause() : play(); }
+  function togglePlay() {
+    if (locked) { flashPause('flash-red'); return; }
+    isPlaying ? pause() : play();
+  }
 
   // Scene start point depends on the active source: a bed can carry its
   // own sceneStart offset (e.g. MUSIC 3 starts the scene 1s in).
@@ -521,7 +562,7 @@
   }
 
   function restart() {
-    if (!allReady) return;
+    if (!allReady || locked) return;
     scenePlayer.seekTo(sceneStartFor(activeTrack), true);
     musicPlayers.forEach((p, i) => p.seekTo(CONFIG.tracks[i].start || 0, true));
     play();
@@ -532,7 +573,7 @@
   // their start points and plays. SEAMLESS: hot-switch in place, video
   // keeps rolling; starts playback if stopped.
   function selectTrack(idx) {
-    if (!allReady) return;
+    if (!allReady || locked) return;
     activeTrack = idx;
     setActiveTrackUI();
     if (restartOnSwitch) {
@@ -543,12 +584,14 @@
       applyAudioGate();
       if (!isPlaying) play();
     }
+    if (idx === LOCK_TRACK && !lockUsed) engageLock();
   }
 
   // ─── SWITCH MODE TOGGLE ──────────────────────────────────────────
   const $modeFromTop = document.getElementById('modeFromTop');
   const $modeSeamless = document.getElementById('modeSeamless');
   function setMode(fromTop) {
+    if (locked) return;
     restartOnSwitch = fromTop;
     $modeFromTop.classList.toggle('active', fromTop);
     $modeSeamless.classList.toggle('active', !fromTop);
@@ -583,6 +626,7 @@
   // ─── VOLUME KNOB INTERACTION ─────────────────────────────────────
   let knobDragging = false, knobStartY = 0, knobStartVal = 100;
   $knob.addEventListener('pointerdown', (e) => {
+    if (locked) return;
     knobDragging = true;
     knobStartY = e.clientY;
     knobStartVal = masterVol;
@@ -602,8 +646,9 @@
   }
   $knob.addEventListener('pointerup', endKnobDrag);
   $knob.addEventListener('pointercancel', endKnobDrag);
-  $knob.addEventListener('wheel', (e) => { e.preventDefault(); nudgeVol(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+  $knob.addEventListener('wheel', (e) => { e.preventDefault(); if (locked) return; nudgeVol(e.deltaY < 0 ? 1 : -1); }, { passive: false });
   $knob.addEventListener('keydown', (e) => {
+    if (locked) return;
     if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { nudgeVol(2); e.preventDefault(); }
     else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { nudgeVol(-2); e.preventDefault(); }
   });
