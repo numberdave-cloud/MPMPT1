@@ -22,11 +22,13 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* Cross-origin iframes don't reliably composite a transparent page
-     background in Canvas, so paint the surround white to match the
-     Canvas page rather than relying on transparency. */
+  /* Transparent surround. Canvas wraps embeds in its own rounded grey
+     container; a transparent page inherits that colour exactly, so the
+     card sits directly on whatever Canvas paints. Do not set a colour
+     here: any fixed value shows as a mismatched slab inside the
+     wrapper (learned the hard way, v1.6.2). */
   html, body {
-    background: #FFFFFF;
+    background: transparent;
     color: var(--text);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
