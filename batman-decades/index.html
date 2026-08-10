@@ -22,7 +22,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html, body {
-    background: var(--bg);
+    background: transparent;
     color: var(--text);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -114,26 +114,9 @@
     opacity: 0.45;
   }
 
-  .bat-year {
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
-    color: var(--accent);
-    letter-spacing: 0.1em;
-    margin-top: 9px;
-  }
-
-  .bat-composer {
-    font-size: 9px;
-    letter-spacing: 0.16em;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-top: 3px;
-    text-align: center;
-  }
-
   .bat-indicator {
     height: 18px;
-    margin-top: 7px;
+    margin-top: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -154,6 +137,86 @@
   @keyframes batpulse {
     0%, 100% { opacity: 0.25; }
     50%      { opacity: 1; }
+  }
+
+  /* info panel */
+  .info-panel {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-top: 16px;
+    padding: 14px 18px;
+    min-height: 130px;
+  }
+
+  .info-placeholder {
+    font-size: 12px;
+    color: var(--text-faint);
+    font-style: italic;
+    letter-spacing: 0.02em;
+    text-align: center;
+    padding: 44px 0;
+  }
+
+  .info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .info-title {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .info-year {
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .info-composer {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .info-link {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(192, 120, 56, 0.4);
+    transition: color 0.1s, border-color 0.1s;
+  }
+  .info-link:hover {
+    color: var(--accent-glow);
+    border-color: var(--accent-glow);
+  }
+
+  .info-bullets {
+    list-style: none;
+  }
+  .info-bullets li {
+    font-size: 12.5px;
+    line-height: 1.55;
+    padding: 3px 0 3px 14px;
+    position: relative;
+  }
+  .info-bullets li::before {
+    content: "\00B7";
+    position: absolute;
+    left: 2px;
+    color: var(--accent);
+    font-weight: 600;
   }
 
   /* hidden YouTube players */
@@ -177,20 +240,83 @@
   <div class="rack">
     <div class="header">
       <div class="title">Batman Across the Decades</div>
-      <div class="subtitle">1966–2022</div>
+      <div class="subtitle">1966&ndash;2022</div>
     </div>
     <div class="grid" id="grid"></div>
+    <div class="info-panel" id="infoPanel">
+      <div class="info-placeholder">Press a Batman to hear that era's theme.</div>
+    </div>
     <div id="players"></div>
   </div>
 
 <script>
-  // ─── DATA ────────────────────────────────────────────────────────
+  // DATA
   const BATMEN = [
-    { year: '1966', composer: 'Hefti',        videoId: 'vRic84u4aPs', start: 10, img: 'batman-1966.jpg' },
-    { year: '1989', composer: 'Elfman',       videoId: '8JtDHoK9KL8', start: 0,  img: 'batman-1989.jpg' },
-    { year: '1995', composer: 'Goldenthal',   videoId: '4cZBRwV4z9A', start: 0,  img: 'batman-1995.jpg' },
-    { year: '2008', composer: 'Zimmer / JNH', videoId: 'BdnkbXA_piI', start: 0,  img: 'batman-2008.jpg' },
-    { year: '2022', composer: 'Giacchino',    videoId: 'Cwcinb2OxUo', start: 0,  img: 'batman-2022.jpg' }
+    {
+      year: '1966',
+      composer: 'Neal Hefti',
+      videoId: 'vRic84u4aPs',
+      start: 10,
+      maxVol: 40, /* trimmed 8 dB below the others */
+      img: 'batman-1966.jpg',
+      bullets: [
+        "Built on a twelve-bar blues progression, using only three chords until the coda.",
+        "The hook is a surf-rock guitar riff in the style of Dick Dale, over a driving bass and percussion groove.",
+        "The band: two trumpets, four trombones, two keyboards, four guitars, bass and two drum kits. A jazz-rock hybrid rather than an orchestra."
+      ]
+    },
+    {
+      year: '1989',
+      composer: 'Danny Elfman',
+      videoId: '8JtDHoK9KL8',
+      start: 28,
+      maxVol: 100,
+      img: 'batman-1989.jpg',
+      bullets: [
+        "An up-tempo minor-key march: an ascending four-note figure answered by a two-note descent, varied across the whole score.",
+        "A standard symphony orchestra with brass front and centre, using dark minor keys to invent the brooding superhero sound.",
+        "Elfman was a 36-year-old newcomer at this scale, handed Frank Miller's The Dark Knight Returns for inspiration."
+      ]
+    },
+    {
+      year: '1995',
+      composer: 'Elliot Goldenthal',
+      videoId: '4cZBRwV4z9A',
+      start: 28,
+      maxVol: 100,
+      img: 'batman-1995.jpg',
+      bullets: [
+        "Goldenthal discarded Elfman's themes entirely and wrote a new eight-note brass fanfare, heard whenever Batman acts heroically.",
+        "Batman's other calling cards: a simple descending four-note motif and a two-note recoiling chromatic brass figure.",
+        "Opinion has been divided since 1995: Elfman loyalists often dislike it, while admirers call it one of Goldenthal's most ingenious, operatic scores."
+      ]
+    },
+    {
+      year: '2008',
+      composer: 'Hans Zimmer and James Newton Howard',
+      videoId: 'BdnkbXA_piI',
+      start: 16,
+      maxVol: 100,
+      img: 'batman-2008.jpg',
+      bullets: [
+        "Batman's motif is just two notes, a rising minor third on horns over strings, representing pain and guilt rather than triumph.",
+        "Zimmer and Howard refused to write a hummable heroic tune; Zimmer called the theme a musical red herring.",
+        "The driving action theme Molossus originated in Batman Begins and recurs to bind the trilogy together."
+      ]
+    },
+    {
+      year: '2022',
+      composer: 'Michael Giacchino',
+      videoId: 'Cwcinb2OxUo',
+      start: 20,
+      maxVol: 100,
+      img: 'batman-2022.jpg',
+      bullets: [
+        "The opening two notes coincidentally mirror Nirvana's Something in the Way; the documented touchstone for its funereal feel is Chopin's Funeral March.",
+        "COVID protocols split the orchestra between Abbey Road Studios 1 and 2, recording simultaneously with two conductors.",
+        "Giacchino wrote the theme before shooting, pitching it as the unknown Beethoven sonata of Batman. Reeves first heard the demo in his car and cried."
+      ]
+    }
   ];
 
   const FADE_MS = 2000;
@@ -198,15 +324,16 @@
 
   const BAT_PNG = 'data:image/png;base64,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';
 
-  // ─── STATE ───────────────────────────────────────────────────────
-  let players = [];        // YT.Player per Batman
-  let ready = [];          // player ready flags
-  let activeIdx = null;    // which Batman is active (loading or playing)
+  // STATE
+  let players = [];
+  let ready = [];
+  let activeIdx = null;
   let fadeTimer = null;
   let apiLoaded = false;
 
-  // ─── UI ──────────────────────────────────────────────────────────
+  // UI
   const $grid = document.getElementById('grid');
+  const $infoPanel = document.getElementById('infoPanel');
 
   function buildCells() {
     BATMEN.forEach((b, i) => {
@@ -215,16 +342,29 @@
       cell.id = 'cell-' + i;
       cell.innerHTML =
         '<div class="bat-img-wrap"><img src="' + b.img + '" alt="Batman ' + b.year + '"></div>' +
-        '<div class="bat-year">' + b.year + '</div>' +
-        '<div class="bat-composer">' + b.composer + '</div>' +
         '<div class="bat-indicator"><img src="' + BAT_PNG + '" alt=""></div>';
       cell.addEventListener('click', () => handlePress(i));
       $grid.appendChild(cell);
     });
   }
 
+  function renderPanel(idx) {
+    const b = BATMEN[idx];
+    const url = 'https://www.youtube.com/watch?v=' + b.videoId;
+    $infoPanel.innerHTML =
+      '<div class="info-header">' +
+        '<div class="info-title">' +
+          '<span class="info-year">' + b.year + '</span>' +
+          '<span class="info-composer">' + b.composer + '</span>' +
+        '</div>' +
+        '<a class="info-link" href="' + url + '" target="_blank" rel="noopener">Full piece on YouTube</a>' +
+      '</div>' +
+      '<ul class="info-bullets">' +
+        b.bullets.map(t => '<li>' + t + '</li>').join('') +
+      '</ul>';
+  }
+
   function setCellState(idx, state) {
-    // state: null | 'loading' | 'playing'
     document.querySelectorAll('.bat-cell').forEach((c, i) => {
       c.classList.toggle('loading', i === idx && state === 'loading');
       c.classList.toggle('playing', i === idx && state === 'playing');
@@ -233,7 +373,7 @@
     $grid.classList.toggle('has-active', state !== null);
   }
 
-  // ─── YOUTUBE ─────────────────────────────────────────────────────
+  // YOUTUBE
   function loadApi() {
     const tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
@@ -271,14 +411,15 @@
     }
   }
 
-  // ─── PLAYBACK ────────────────────────────────────────────────────
+  // PLAYBACK
   function beginFade(idx) {
     clearInterval(fadeTimer);
+    const target = BATMEN[idx].maxVol;
     let step = 0;
     players[idx].setVolume(0);
     fadeTimer = setInterval(() => {
       step++;
-      const v = Math.min(100, Math.round((step / FADE_STEPS) * 100));
+      const v = Math.min(target, Math.round((step / FADE_STEPS) * target));
       if (players[idx] && idx === activeIdx) players[idx].setVolume(v);
       if (step >= FADE_STEPS) clearInterval(fadeTimer);
     }, FADE_MS / FADE_STEPS);
@@ -296,6 +437,8 @@
   }
 
   function handlePress(idx) {
+    renderPanel(idx);
+
     if (!apiLoaded || !ready[idx]) return;
 
     if (idx === activeIdx) {
@@ -303,7 +446,6 @@
       return;
     }
 
-    // cut the old one instantly
     if (activeIdx !== null) stopActive();
 
     activeIdx = idx;
@@ -315,7 +457,7 @@
     beginFade(idx);
   }
 
-  // ─── INIT ────────────────────────────────────────────────────────
+  // INIT
   buildCells();
   loadApi();
 </script>
