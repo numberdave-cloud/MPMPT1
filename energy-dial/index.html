@@ -383,6 +383,18 @@
     transition: border-color 0.08s;
   }
   .tune-nudge:hover { border-color: var(--border-bright); }
+  .tune-remaining {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.03em;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .tune-row.shortest .tune-remaining {
+    color: var(--accent);
+    text-shadow: 0 0 6px rgba(216, 144, 74, 0.4);
+  }
   .tune-actions {
     display: flex;
     gap: 8px;
@@ -508,6 +520,7 @@
   let masterVol = 100;
   let ccKilledOnce = false;
   let restartOnSwitch = true;           // FROM TOP mode by default
+  let tuneRefreshRemaining = null;      // set by buildTunePanel
 
   // ─── DOM REFS ────────────────────────────────────────────────────
   const $playBtn = document.getElementById('playBtn');
@@ -689,6 +702,12 @@
       $selector.querySelectorAll('.sel-btn').forEach(b => { b.disabled = false; });
       showCover('READY');
       setActiveTrackUI();
+      // Durations can lag ready by a beat; poll a few times.
+      let tries = 0;
+      const t = setInterval(() => {
+        if (tuneRefreshRemaining) tuneRefreshRemaining();
+        if (++tries >= 5) clearInterval(t);
+      }, 1000);
     }
   }
 
@@ -875,6 +894,12 @@
       inputs.push(inp);
       row.appendChild(inp);
 
+      const rem = document.createElement('span');
+      rem.className = 'tune-remaining';
+      rem.textContent = '\u2014';
+      row.dataset.srcIdx = String(i);
+      row.appendChild(rem);
+
       [-1, -0.25, 0.25, 1].forEach(d => {
         const b = document.createElement('button');
         b.className = 'tune-nudge';
@@ -911,7 +936,27 @@
 
     $panel.appendChild(actions);
 
-    function refreshReadout() { readout.textContent = tuneReadoutText(); }
+    function refreshReadout() { readout.textContent = tuneReadoutText(); refreshRemaining(); }
+
+    // Remaining = player duration - start point. Durations come from the
+    // YT players once loaded; 0 means metadata not ready yet. The row
+    // that cuts off first gets the accent highlight.
+    function refreshRemaining() {
+      const players = [scenePlayer].concat(musicPlayers);
+      const rows = Array.from($panel.querySelectorAll('.tune-row'));
+      let minIdx = -1, minVal = Infinity;
+      rows.forEach((row, i) => {
+        const span = row.querySelector('.tune-remaining');
+        let dur = 0;
+        try { dur = players[i] ? players[i].getDuration() : 0; } catch (e) {}
+        if (!dur) { span.textContent = '\u2014'; return; }
+        const remv = dur - srcs[i].get();
+        span.textContent = fmtTime(Math.max(0, remv)) + ' left of ' + fmtTime(dur);
+        if (remv < minVal) { minVal = remv; minIdx = i; }
+      });
+      rows.forEach((row, i) => row.classList.toggle('shortest', i === minIdx));
+    }
+    tuneRefreshRemaining = refreshRemaining;
 
     function applyAll() {
       srcs.forEach((src, i) => {
@@ -955,6 +1000,10 @@
     document.getElementById('tune').classList.toggle('open');
   });
   buildTunePanel();
+  // Panel is display:none for students; ?tune=1 on the URL unhides it.
+  if (new URLSearchParams(location.search).has('tune')) {
+    document.getElementById('tune').style.display = 'block';
+  }
 
   // ─── WIRE UP ─────────────────────────────────────────────────────
   $playBtn.addEventListener('click', togglePlay);
