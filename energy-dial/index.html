@@ -317,6 +317,84 @@
     font-weight: 600;
   }
 
+  /* ─── TUNE PANEL (temporary testing scaffold) ───────────────────
+     Collapsed disclosure for auditioning start times against the
+     scene. Remove or leave collapsed for student release. */
+  .tune {
+    margin-top: 14px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+  .tune-toggle {
+    background: transparent;
+    color: var(--text-faint);
+    border: none;
+    padding: 4px 0;
+    font-family: inherit;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .tune-toggle:hover { color: var(--text-dim); }
+  .tune-toggle::before { content: '▸ '; }
+  .tune.open .tune-toggle::before { content: '▾ '; }
+  .tune-panel { display: none; padding-top: 10px; }
+  .tune.open .tune-panel { display: block; }
+
+  .tune-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .tune-row-label {
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    width: 72px;
+    flex: none;
+  }
+  .tune-input {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-family: 'Courier New', 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    width: 70px;
+    text-align: center;
+    outline: none;
+  }
+  .tune-input:focus { border-color: var(--accent); }
+  .tune-nudge {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: border-color 0.08s;
+  }
+  .tune-nudge:hover { border-color: var(--border-bright); }
+  .tune-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .tune-readout {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.03em;
+  }
+
   /* Off-screen audio-only music players. Kept in-viewport with near-zero
      opacity rather than display:none so the browser doesn't throttle playback. */
   .hidden-players {
@@ -372,6 +450,11 @@
       <div class="knob-label">Vol</div>
       <div class="vol-readout" aria-hidden="true"><span class="ghost">888</span><span class="live" id="volReadout">100</span></div>
     </div>
+  </div>
+
+  <div class="tune" id="tune">
+    <button class="tune-toggle" id="tuneToggle">Tune start times</button>
+    <div class="tune-panel" id="tunePanel"></div>
   </div>
 
   <div class="hidden-players" id="hiddenPlayers" aria-hidden="true"></div>
@@ -731,6 +814,142 @@
     if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { nudgeVol(2); e.preventDefault(); }
     else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { nudgeVol(-2); e.preventDefault(); }
   });
+
+  // ─── TUNE PANEL (temporary testing scaffold) ─────────────────────
+  // Edits CONFIG start times in place so FROM TOP / RESTART audition
+  // the new alignment immediately. Accepts "2:35" or plain seconds.
+  // Nudge buttons apply and restart at once for A/B by ear. COPY gives
+  // the final values back in config form.
+  function parseTime(v) {
+    v = String(v).trim();
+    if (v.includes(':')) {
+      const parts = v.split(':');
+      const m = parseInt(parts[0] || '0', 10) || 0;
+      const s = parseFloat(parts[1] || '0') || 0;
+      return m * 60 + s;
+    }
+    const n = parseFloat(v);
+    return isNaN(n) ? 0 : n;
+  }
+  function fmtTime(sec) {
+    const m = Math.floor(sec / 60), s = Math.round(sec % 60);
+    return m + ':' + String(s).padStart(2, '0');
+  }
+  function tuneSources() {
+    const list = [{ label: 'SCENE', get: () => CONFIG.scene.start || 0, set: v => { CONFIG.scene.start = v; } }];
+    CONFIG.tracks.forEach((t, i) => {
+      list.push({ label: t.label, get: () => t.start || 0, set: v => { t.start = v; } });
+    });
+    return list;
+  }
+  function tuneReadoutText() {
+    const bits = ['scene ' + (CONFIG.scene.start || 0) + 's (' + fmtTime(CONFIG.scene.start || 0) + ')'];
+    CONFIG.tracks.forEach((t, i) => {
+      bits.push('E' + (i + 1) + ' ' + (t.start || 0) + 's (' + fmtTime(t.start || 0) + ')');
+    });
+    return bits.join(' | ');
+  }
+  function buildTunePanel() {
+    const $panel = document.getElementById('tunePanel');
+    const srcs = tuneSources();
+    const inputs = [];
+
+    srcs.forEach((src, i) => {
+      const row = document.createElement('div');
+      row.className = 'tune-row';
+
+      const lab = document.createElement('div');
+      lab.className = 'tune-row-label';
+      lab.textContent = src.label;
+      row.appendChild(lab);
+
+      const inp = document.createElement('input');
+      inp.className = 'tune-input';
+      inp.value = fmtTime(src.get());
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') applyAll(); });
+      inputs.push(inp);
+      row.appendChild(inp);
+
+      [-1, 1].forEach(d => {
+        const b = document.createElement('button');
+        b.className = 'tune-nudge';
+        b.textContent = (d > 0 ? '+' : '') + d + 's';
+        b.addEventListener('click', () => {
+          const v = Math.max(0, parseTime(inp.value) + d);
+          src.set(v);
+          inp.value = fmtTime(v);
+          refreshReadout();
+          restart();
+        });
+        row.appendChild(b);
+      });
+
+      $panel.appendChild(row);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'tune-actions';
+
+    const applyBtn = document.createElement('button');
+    applyBtn.className = 'transport-btn';
+    applyBtn.textContent = 'APPLY + RESTART';
+    actions.appendChild(applyBtn);
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'transport-btn';
+    copyBtn.textContent = 'COPY TIMES';
+    actions.appendChild(copyBtn);
+
+    const readout = document.createElement('div');
+    readout.className = 'tune-readout';
+    actions.appendChild(readout);
+
+    $panel.appendChild(actions);
+
+    function refreshReadout() { readout.textContent = tuneReadoutText(); }
+
+    function applyAll() {
+      srcs.forEach((src, i) => {
+        const v = Math.max(0, parseTime(inputs[i].value));
+        src.set(v);
+        inputs[i].value = fmtTime(v);
+      });
+      refreshReadout();
+      restart();
+    }
+    applyBtn.addEventListener('click', applyAll);
+
+    copyBtn.addEventListener('click', () => {
+      const text = tuneReadoutText();
+      const done = () => {
+        copyBtn.textContent = 'COPIED';
+        setTimeout(() => { copyBtn.textContent = 'COPY TIMES'; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+      } else {
+        fallbackCopy(text, done);
+      }
+    });
+
+    function fallbackCopy(text, done) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    refreshReadout();
+  }
+
+  document.getElementById('tuneToggle').addEventListener('click', () => {
+    document.getElementById('tune').classList.toggle('open');
+  });
+  buildTunePanel();
 
   // ─── WIRE UP ─────────────────────────────────────────────────────
   $playBtn.addEventListener('click', togglePlay);

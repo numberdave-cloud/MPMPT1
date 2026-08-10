@@ -56,6 +56,10 @@ Inherited from `scene-scorer-drive/` v1.1: selector is the primary control, tran
 - Beds keep rolling muted while another is audible, so seamless switching stays in sync.
 - Per-bed `sceneStart` offset support retained from the Drive variant but unused here.
 
+## Tune panel (temporary)
+
+v1.2 adds a collapsed "Tune start times" disclosure below the transport: per-source mm:ss inputs (scene + all beds), ±1s nudge buttons that apply and restart immediately, APPLY + RESTART for typed values, COPY TIMES for reporting final numbers. It edits CONFIG in memory only; nothing persists. Remove the panel (or leave it, it is collapsed and quiet) before student release. Open, the card is ~765px tall, so tune on the Pages URL directly rather than inside the 545px Canvas iframe.
+
 ## Open TODOs
 
 - Verify the v1.1 crop on live: no chrome at play start, no black slivers, nothing important lost at frame edges.
@@ -63,7 +67,8 @@ Inherited from `scene-scorer-drive/` v1.1: selector is the primary control, tran
 - Check every bed outlasts the scene from its start point.
 - Confirm bed order actually reads glacial → frantic, or reorder in CONFIG.
 - Confirm category (Miscellaneous assumed).
+- Strip or keep the tune panel once start times are final.
 
 ## Last updated
 
-2026-08-06. v1.1.2: bed 1 start moved to 2:35, bed 2 replaced. v1.1.1: all three beds replaced during live testing. v1.1: asymmetric letterbox crop from screenshot measurements; embed height 660 → 545. v1.0: initial build from scene-scorer-drive v1.6.3, shipped untested for live evaluation.
+2026-08-06. v1.2: temporary start-time tune panel. v1.1.2: bed 1 start moved to 2:35, bed 2 replaced. v1.1.1: all three beds replaced during live testing. v1.1: asymmetric letterbox crop from screenshot measurements; embed height 660 → 545. v1.0: initial build from scene-scorer-drive v1.6.3, shipped untested for live evaluation.
