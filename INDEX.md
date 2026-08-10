@@ -37,6 +37,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Scene Scorer — Drive [Temp Track] | `scene-scorer-drive/` | Miscellaneous | live (levels untested) | YES |
 | Batman Across the Decades | `batman-decades/` | Miscellaneous | live (v0.2, playback unverified) | YES |
 | Energy Dial | `energy-dial/` | Miscellaneous | live (v1.0, untested) | YES |
+| Case Study Search Helper | `case-study-search-helper/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
 
 ## Work in progress (not yet in repo)
 
