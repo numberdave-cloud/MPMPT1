@@ -31,8 +31,8 @@ v1.1, 2026-08-06. Category: Miscellaneous (assumed, unconfirmed). Shipped for li
 ## Config
 
 - Scene: `6z9qws7M8q8` (Terminator 2 truck chase, "Flashback FM" upload, 2.40:1 picture in a 16:9 frame), starts at 1:12 (72s), audio permanently muted
-- ENERGY 1: `ZtbDetsudtI`, starts at 1:32
-- ENERGY 2: `vyA1z2A-lhU`, starts at 0:00
+- ENERGY 1: `ZtbDetsudtI`, starts at 2:35
+- ENERGY 2: `cLc37iEdMyg`, starts at 0:48
 - ENERGY 3: `7cx3cOVnV0g`, starts at 0:36
 - Default selection: ENERGY 1. Labels deliberately unranked (no GLACIAL/FRANTIC) so students judge energy by ear.
 - All volumes 100, untrimmed.
@@ -66,4 +66,4 @@ Inherited from `scene-scorer-drive/` v1.1: selector is the primary control, tran
 
 ## Last updated
 
-2026-08-06. v1.1.1: all three beds replaced during live testing. v1.1: asymmetric letterbox crop from screenshot measurements; embed height 660 → 545. v1.0: initial build from scene-scorer-drive v1.6.3, shipped untested for live evaluation.
+2026-08-06. v1.1.2: bed 1 start moved to 2:35, bed 2 replaced. v1.1.1: all three beds replaced during live testing. v1.1: asymmetric letterbox crop from screenshot measurements; embed height 660 → 545. v1.0: initial build from scene-scorer-drive v1.6.3, shipped untested for live evaluation.
