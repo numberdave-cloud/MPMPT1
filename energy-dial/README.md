@@ -39,6 +39,10 @@ v1.3, 2026-08-06. Category: Miscellaneous (assumed, unconfirmed). Shipped for li
 - All volumes 100, untrimmed.
 - `fadeInMs: 1000`, `fadeOutMs: 150`, `fadeExp: 2` in CONFIG.
 
+## Auto-cycle (v1.4)
+
+When the scene's own clock reaches 3:00 (`cycle.at: 180`, i.e. ~1:50 of viewing after the 1:10 start), audio and picture fade out together over 10s (`cycle.fadeMs`), then the next bed loads, everything resets to start points and plays. E1 -> E2 -> E3 -> E1 indefinitely. Untouched, the widget is a self-running kiosk. Any interaction (bed select, play/pause, restart) cancels a fade in flight and behaves normally; the watcher re-arms on the next run. If the upload ends before the fade completes, it advances immediately (the END state no longer exists). A 2s post-play grace window stops seek lag from re-triggering the fade after an advance.
+
 ## Interaction model
 
 Inherited from `scene-scorer-drive/` v1.1: selector is the primary control, transport demoted beneath it. FROM TOP (default) resets scene and beds to their start points on any selection; SEAMLESS hot-switches while the video rolls. PLAY/PAUSE, RESTART, master volume knob with segment readout.
@@ -70,4 +74,4 @@ Hidden from students (`display: none`), unhidden by appending `?tune=1` to the U
 
 ## Last updated
 
-2026-08-06. v1.3.1: tune panel reachable via ?tune=1, per-source remaining-time readout with shortest highlighted. v1.3: tuned start times baked in (scene 70, E1 154, E2 43.5, E3 34.25), tune panel hidden. v1.2.1: fractional start times, quarter-second nudges (note: four independent YT players carry ~±0.1-0.3s start jitter per run, so quarter-second granularity is the useful floor). v1.2: temporary start-time tune panel. v1.1.2: bed 1 start moved to 2:35, bed 2 replaced. v1.1.1: all three beds replaced during live testing. v1.1: asymmetric letterbox crop from screenshot measurements; embed height 660 → 545. v1.0: initial build from scene-scorer-drive v1.6.3, shipped untested for live evaluation.
+2026-08-06. v1.4: auto-cycle kiosk loop (fade at scene 3:00 over 10s, advance to next bed, wrap forever; interactions cancel). v1.3.1: tune panel reachable via ?tune=1, per-source remaining-time readout with shortest highlighted. v1.3: tuned start times baked in (scene 70, E1 154, E2 43.5, E3 34.25), tune panel hidden. v1.2.1: fractional start times, quarter-second nudges (note: four independent YT players carry ~±0.1-0.3s start jitter per run, so quarter-second granularity is the useful floor). v1.2: temporary start-time tune panel. v1.1.2: bed 1 start moved to 2:35, bed 2 replaced. v1.1.1: all three beds replaced during live testing. v1.1: asymmetric letterbox crop from screenshot measurements; embed height 660 → 545. v1.0: initial build from scene-scorer-drive v1.6.3, shipped untested for live evaluation.

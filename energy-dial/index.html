@@ -143,6 +143,17 @@
     pointer-events: none;
   }
 
+  /* Cycle fade scrim: sits above the iframe, below shield and cover.
+     JS drives opacity with a per-phase transition duration. */
+  .fade-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+  }
+
   /* Transport demoted: small quiet row under the selector. */
   .transport {
     display: flex;
@@ -438,6 +449,7 @@
 
   <div class="video-wrap">
     <div id="scenePlayer"></div>
+    <div class="fade-scrim" id="fadeScrim"></div>
     <div class="click-shield" id="clickShield"></div>
     <div class="video-cover" id="videoCover"><span id="coverLabel">LOADING</span></div>
   </div>
@@ -504,6 +516,12 @@
       { label: 'ENERGY 3', id: '7cx3cOVnV0g', volume: 100, start: 34.25 }
     ],
     startWith: 0,
+    // Auto-cycle: when the SCENE's own clock reaches cycle.at seconds,
+    // audio and picture fade out together over cycle.fadeMs, then the
+    // next bed loads, everything resets to its start point and plays.
+    // E1 -> E2 -> E3 -> E1 forever. Any interaction cancels an
+    // in-progress fade; the watcher re-arms on the next run.
+    cycle: { at: 180, fadeMs: 10000, refadeMs: 600 },
     fadeInMs: 1000,
     fadeOutMs: 150,
     fadeExp: 2
@@ -521,6 +539,11 @@
   let ccKilledOnce = false;
   let restartOnSwitch = true;           // FROM TOP mode by default
   let tuneRefreshRemaining = null;      // set by buildTunePanel
+  let cycleWatch = null;                // interval polling scene time
+  let cycleFading = false;              // inside the 10s end-fade
+  let cycleAdvanceTO = null;            // timeout firing the advance
+  let cycleGraceUntil = 0;              // ignore triggers briefly post-play
+                                        // (seekTo can lag getCurrentTime)
 
   // ─── DOM REFS ────────────────────────────────────────────────────
   const $playBtn = document.getElementById('playBtn');
@@ -717,18 +740,75 @@
     try { scenePlayer.unloadModule('cc'); } catch (e) {}
   }
 
+  // ─── AUTO-CYCLE ──────────────────────────────────────────────────
+  const $scrim = document.getElementById('fadeScrim');
+
+  function setScrim(opacity, ms) {
+    $scrim.style.transition = 'opacity ' + ms + 'ms linear';
+    // force style flush so a new transition duration takes effect
+    void $scrim.offsetWidth;
+    $scrim.style.opacity = String(opacity);
+  }
+
+  function beginCycleFade() {
+    cycleFading = true;
+    setScrim(1, CONFIG.cycle.fadeMs);
+    startFade(activeTrack, 0, CONFIG.cycle.fadeMs);
+    cycleAdvanceTO = setTimeout(advanceCycle, CONFIG.cycle.fadeMs + 60);
+  }
+
+  function advanceCycle() {
+    cycleFading = false;
+    if (cycleAdvanceTO) { clearTimeout(cycleAdvanceTO); cycleAdvanceTO = null; }
+    activeTrack = (activeTrack + 1) % CONFIG.tracks.length;
+    setActiveTrackUI();
+    scenePlayer.seekTo(sceneStartFor(activeTrack), true);
+    musicPlayers.forEach((p, i) => p.seekTo(CONFIG.tracks[i].start || 0, true));
+    play();
+    setScrim(0, CONFIG.cycle.refadeMs);
+  }
+
+  // Any interaction path lands in play() or pause(); both cancel a fade
+  // in flight so manual control always wins over the kiosk loop.
+  function cancelCycleFade() {
+    if (cycleAdvanceTO) { clearTimeout(cycleAdvanceTO); cycleAdvanceTO = null; }
+    if (cycleFading) {
+      cycleFading = false;
+      setScrim(0, 300);
+    }
+  }
+
+  function startCycleWatch() {
+    stopCycleWatch();
+    cycleWatch = setInterval(() => {
+      if (!isPlaying || cycleFading) return;
+      if (Date.now() < cycleGraceUntil) return;
+      let t = 0;
+      try { t = scenePlayer.getCurrentTime(); } catch (e) { return; }
+      if (t >= CONFIG.cycle.at) beginCycleFade();
+    }, 500);
+  }
+  function stopCycleWatch() {
+    if (cycleWatch) { clearInterval(cycleWatch); cycleWatch = null; }
+  }
+
   // ─── TRANSPORT ───────────────────────────────────────────────────
   function play() {
     if (!allReady) return;
+    cancelCycleFade();
+    cycleGraceUntil = Date.now() + 2000;
     scenePlayer.playVideo();
     musicPlayers.forEach(p => p.playVideo());
     applyAudioGate(true);
     isPlaying = true;
     hideCover();
     updateTransportUI();
+    startCycleWatch();
   }
 
   function pause() {
+    cancelCycleFade();
+    stopCycleWatch();
     if (scenePlayer) scenePlayer.pauseVideo();
     musicPlayers.forEach(p => { try { p.pauseVideo(); } catch (e) {} });
     isPlaying = false;
@@ -801,10 +881,8 @@
       if (!ccKilledOnce) { setTimeout(killCaptions, 800); ccKilledOnce = true; }
     }
     if (e.data === YT.PlayerState.ENDED) {
-      musicPlayers.forEach(p => { try { p.pauseVideo(); } catch (err) {} });
-      isPlaying = false;
-      showCover('END');
-      updateTransportUI();
+      // Upload ran out before (or during) the cycle fade: advance now.
+      advanceCycle();
     }
   }
 
