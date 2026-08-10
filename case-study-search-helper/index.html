@@ -288,7 +288,7 @@
           <span class="toggle-track"><span class="toggle-knob"></span></span>
           <span class="toggle-text">Prefer Trusted Sources</span>
         </button>
-        <div class="field-hint" id="trustedHint">Only returns results from a curated list of music production and film-score sites. Placeholder list, pending your review.</div>
+        <div class="field-hint" id="trustedHint">Only returns results from a curated list of composer interviews, film-score and game-music publications. Can come back empty for obscure or very new composers.</div>
       </div>
 
       <div class="field-section">
@@ -321,10 +321,19 @@
   ];
   const BLOCK_CHIPS = ['Reddit', 'Quora', 'Pinterest', 'TikTok', 'Facebook', 'Instagram', 'YouTube'];
 
-  // Placeholder list, pending Dave's review before this ships anywhere.
+  // Verified list. Small/niche domains were live-checked on 10 Aug 2026;
+  // any domain can expire and get squatted (see squareenixmusic.com), so
+  // re-verify the niche ones roughly each semester.
   const TRUSTED_DOMAINS = [
-    'musictech.com', 'cdm.link', 'soundonsound.com',
-    'filmscoremonthly.com', 'filmtracks.com', 'soundtrack.net'
+    'shmuplations.com', 'motionpictures.org', 'filmmusicfoundation.org',
+    'hollywoodreporter.com', 'variety.com', 'billboard.com',
+    'rollingstone.com', 'vulture.com', 'npr.org',
+    'classicfm.com', 'slashfilm.com', 'screendaily.com',
+    'gamedeveloper.com', 'oscars.org', 'guides.loc.gov',
+    'thescl.com', 'vice.com', 'collider.com',
+    'parade.com', 'goldderby.com', 'laist.com',
+    'awardswatch.com', 'awardsdaily.com', 'revolvermag.com',
+    'zeldadungeon.net'
   ];
 
   const $composer = document.getElementById('composerInput');

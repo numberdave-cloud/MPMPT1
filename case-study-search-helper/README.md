@@ -34,13 +34,19 @@ only, not yet checked inside an actual Canvas iframe.
 - Multi-word terms auto-quote in the assembled query. Typed quote marks in
   any input are stripped so students can't double-quote themselves into a
   broken string.
-- TRUSTED SOURCES toggle wraps the query in a `site:` OR group. Domain list
-  is a placeholder pending Dave's review:
-  musictech.com, cdm.link, soundonsound.com, filmscoremonthly.com,
-  filmtracks.com, soundtrack.net. This is a hard restriction, not a soft
-  preference — it can return zero results for obscure or very new
-  composers. No in-widget warning about this yet (in-widget teaching text
-  is generally avoided per house style); worth a line on the Canvas page.
+- TRUSTED SOURCES toggle wraps the query in a `site:` OR group. The list is
+  25 verified domains covering composer interviews, film-score and
+  game-music publications. Small/niche domains (shmuplations.com,
+  motionpictures.org, filmmusicfoundation.org, revolvermag.com,
+  zeldadungeon.net, awardswatch.com, awardsdaily.com, goldderby.com,
+  parade.com, laist.com, collider.com, vice.com) were live-fetched and
+  confirmed real on 10 Aug 2026. This matters: squareenixmusic.com was a
+  strong candidate until a live check found the domain had expired and been
+  bought by affiliate spam, so search snippets alone can't be trusted for a
+  domain allowlist. Re-verify the niche domains roughly each semester. The
+  toggle is a hard restriction, not a soft preference, so it can return zero
+  results for obscure or very new composers. No in-widget warning beyond the
+  field hint; worth a line on the Canvas page.
 - WEB RESULTS ONLY toggle (on by default) appends `&udm=14` to the Open in
   Google link only, not to the copyable text, since that parameter has no
   meaning pasted into a search box. This forces Google's plain "Web"
@@ -55,17 +61,22 @@ only, not yet checked inside an actual Canvas iframe.
   Scene Scorer.
 
 ## Open decisions / TODOs
-- Trusted source domain list is a starting six, likely thin. No game-score
-  specialist sites included yet, only film-score and general music trade
-  press. Needs Dave's review and expansion.
-- Block list may get more entries; current six were the agreed starting
-  point, not necessarily final.
-- Student-facing copy for the Canvas page (what AND/quotes/minus/site: mean,
-  and the "trusted sources can return zero results" caveat) has not been
-  written or approved. All labels inside the widget are structural, not
-  final copy.
+- Trusted source list is game-score-light; only a handful of game-specific
+  domains (shmuplations.com, gamedeveloper.com, zeldadungeon.net,
+  revolvermag.com) survived verification. If case studies lean game-heavy, a
+  further targeted pass on game composers (Shimomura, Wintory, Coker, Korb)
+  would strengthen it.
+- Niche domains need periodic re-verification (see squareenixmusic.com note
+  above). Next check due start of next semester.
+- Block list currently seven entries (Reddit, Quora, Pinterest, TikTok,
+  Facebook, Instagram, YouTube); may grow.
+- Student-facing copy for the Canvas page (what the operators mean, and the
+  "trusted sources can return zero results" caveat) has not been written or
+  approved. All labels inside the widget are structural, not final copy.
 - Not yet verified inside a live Canvas iframe (clipboard, open-in-new-tab
   behaviour, and iframe height all pending real-world check).
 
 ## Last updated
-10 August 2026 — first ship.
+10 August 2026 — loaded the 25-domain verified trusted-source list
+(replacing the placeholder six), expanded block list to include YouTube,
+transparent page background outside the card.
