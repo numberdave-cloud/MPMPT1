@@ -374,7 +374,8 @@
     color: var(--text);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 6px 10px;
+    padding: 6px 8px;
+    min-width: 44px;
     font-family: 'Courier New', monospace;
     font-size: 11px;
     cursor: pointer;
@@ -832,8 +833,11 @@
     return isNaN(n) ? 0 : n;
   }
   function fmtTime(sec) {
-    const m = Math.floor(sec / 60), s = Math.round(sec % 60);
-    return m + ':' + String(s).padStart(2, '0');
+    sec = Math.round(sec * 100) / 100;
+    const m = Math.floor(sec / 60);
+    let s = sec - m * 60;
+    let str = (s < 10 ? '0' : '') + (Number.isInteger(s) ? String(s) : s.toFixed(2).replace(/0$/, ''));
+    return m + ':' + str;
   }
   function tuneSources() {
     const list = [{ label: 'SCENE', get: () => CONFIG.scene.start || 0, set: v => { CONFIG.scene.start = v; } }];
@@ -870,10 +874,10 @@
       inputs.push(inp);
       row.appendChild(inp);
 
-      [-1, 1].forEach(d => {
+      [-1, -0.25, 0.25, 1].forEach(d => {
         const b = document.createElement('button');
         b.className = 'tune-nudge';
-        b.textContent = (d > 0 ? '+' : '') + d + 's';
+        b.textContent = (d > 0 ? '+' : '\u2212') + String(Math.abs(d)).replace('0.', '.');
         b.addEventListener('click', () => {
           const v = Math.max(0, parseTime(inp.value) + d);
           src.set(v);
