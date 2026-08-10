@@ -26,14 +26,15 @@ Height 545: the v1.1 letterbox crop (2.526:1 window) puts the card at ~535px at 
 
 ## Build state
 
-v1.1, 2026-08-06. Category: Miscellaneous (assumed, unconfirmed). Shipped for live testing at Dave's request (YouTube refuses file:// referrers, live origin is the only test bench). Scene confirmed loading and playing on live; levels and bed lengths unverified.
+v1.3, 2026-08-06. Category: Miscellaneous (assumed, unconfirmed). Shipped for live testing at Dave's request (YouTube refuses file:// referrers, live origin is the only test bench). Scene, crop, and start-time alignment all confirmed on live; per-bed levels still untrimmed (all 100).
 
 ## Config
 
-- Scene: `6z9qws7M8q8` (Terminator 2 truck chase, "Flashback FM" upload, 2.40:1 picture in a 16:9 frame), starts at 1:12 (72s), audio permanently muted
-- ENERGY 1: `ZtbDetsudtI`, starts at 2:35
-- ENERGY 2: `cLc37iEdMyg`, starts at 0:48
-- ENERGY 3: `7cx3cOVnV0g`, starts at 0:36
+- Scene: `6z9qws7M8q8` (Terminator 2 truck chase, "Flashback FM" upload, 2.40:1 picture in a 16:9 frame), starts at 1:10 (70s), audio permanently muted
+- ENERGY 1: `ZtbDetsudtI`, starts at 2:34 (154s)
+- ENERGY 2: `cLc37iEdMyg`, starts at 0:43.5 (43.5s)
+- ENERGY 3: `7cx3cOVnV0g`, starts at 0:34.25 (34.25s)
+- Start times tuned by ear against the scene on live, 2026-08-06.
 - Default selection: ENERGY 1. Labels deliberately unranked (no GLACIAL/FRANTIC) so students judge energy by ear.
 - All volumes 100, untrimmed.
 - `fadeInMs: 1000`, `fadeOutMs: 150`, `fadeExp: 2` in CONFIG.
@@ -56,19 +57,17 @@ Inherited from `scene-scorer-drive/` v1.1: selector is the primary control, tran
 - Beds keep rolling muted while another is audible, so seamless switching stays in sync.
 - Per-bed `sceneStart` offset support retained from the Drive variant but unused here.
 
-## Tune panel (temporary)
+## Tune panel (hidden)
 
-v1.2 adds a collapsed "Tune start times" disclosure below the transport: per-source mm:ss inputs accepting fractions like 2:35.25 (scene + all beds), ±1s and ±0.25s nudge buttons that apply and restart immediately, APPLY + RESTART for typed values, COPY TIMES for reporting final numbers. It edits CONFIG in memory only; nothing persists. Remove the panel (or leave it, it is collapsed and quiet) before student release. Open, the card is ~765px tall, so tune on the Pages URL directly rather than inside the 545px Canvas iframe.
+The tune panel (v1.2) is now hidden via `display: none` on `.tune` as of v1.3; the machinery is intact. To re-tune start times, flip that rule to `block`, tune on the Pages URL (open, the card exceeds the 545px iframe), then bake values into CONFIG and hide it again.
 
 ## Open TODOs
 
-- Verify the v1.1 crop on live: no chrome at play start, no black slivers, nothing important lost at frame edges.
 - Trim per-bed `volume` by ear (YouTube normalisation means they will not arrive matched).
 - Check every bed outlasts the scene from its start point.
 - Confirm bed order actually reads glacial → frantic, or reorder in CONFIG.
 - Confirm category (Miscellaneous assumed).
-- Strip or keep the tune panel once start times are final.
 
 ## Last updated
 
-2026-08-06. v1.2.1: fractional start times, quarter-second nudges (note: four independent YT players carry ~±0.1-0.3s start jitter per run, so quarter-second granularity is the useful floor). v1.2: temporary start-time tune panel. v1.1.2: bed 1 start moved to 2:35, bed 2 replaced. v1.1.1: all three beds replaced during live testing. v1.1: asymmetric letterbox crop from screenshot measurements; embed height 660 → 545. v1.0: initial build from scene-scorer-drive v1.6.3, shipped untested for live evaluation.
+2026-08-06. v1.3: tuned start times baked in (scene 70, E1 154, E2 43.5, E3 34.25), tune panel hidden. v1.2.1: fractional start times, quarter-second nudges (note: four independent YT players carry ~±0.1-0.3s start jitter per run, so quarter-second granularity is the useful floor). v1.2: temporary start-time tune panel. v1.1.2: bed 1 start moved to 2:35, bed 2 replaced. v1.1.1: all three beds replaced during live testing. v1.1: asymmetric letterbox crop from screenshot measurements; embed height 660 → 545. v1.0: initial build from scene-scorer-drive v1.6.3, shipped untested for live evaluation.
