@@ -276,6 +276,7 @@
   let musicLevel = 70;
   let ccKilledOnce = false;
   let endPoll = null;
+  let pending150 = null;           // grace-window handle for phantom error 150
 
   // ─── DOM ─────────────────────────────────────────────────────────
   const $linkInput = document.getElementById('linkInput');
@@ -385,6 +386,7 @@
   // ─── MUSIC LOAD ──────────────────────────────────────────────────
   function loadMusic(id, start) {
     if (!id) return;
+    clearPending150();
     currentMusic = { id: id, start: start || 0 };
     setStatus('', false);
 
@@ -395,7 +397,7 @@
       musicPlayer = new YT.Player('musicPlayer', {
         videoId: id,
         playerVars: Object.assign({}, PLAYER_VARS, { start: currentMusic.start }),
-        events: { onReady: onMusicReady, onStateChange: function () {}, onError: onMusicError }
+        events: { onReady: onMusicReady, onStateChange: onMusicStateChange, onError: onMusicError }
       });
     } else {
       try {
@@ -419,9 +421,63 @@
     if (!lockedMode) { $copyBtn.disabled = false; }
   }
 
+  // YouTube throws a phantom error 150 (or 101) DURING a cueVideoById swap: it
+  // fires the code, then cues and plays the video fine a fraction of a second
+  // later. Confirmed on the repro bench: 150 at +114 ms, CUED at +159 ms, then
+  // PLAYING. The old handler reacted to that phantom by nulling the track and
+  // calling stopVideo(), which killed a video that was about to load fine.
+  // So on a 150/101 we open a short grace window instead of tearing down. If
+  // the player reaches a healthy state within it (caught in onMusicStateChange
+  // or by the deadline poll), the 150 was false and we carry on. Only if the
+  // player is still dead at the deadline do we surface the real error. Codes
+  // 100 (private) and 2 (bad link) are genuinely fatal and still fail instantly.
+  var GRACE_MS = 1800;
+
+  function clearPending150() {
+    if (pending150) { clearTimeout(pending150.timer); pending150 = null; }
+  }
+
+  function musicHealthy(s) {
+    return s === YT.PlayerState.CUED || s === YT.PlayerState.PLAYING ||
+           s === YT.PlayerState.BUFFERING || s === YT.PlayerState.PAUSED;
+  }
+
+  function recoverMusic() {
+    clearPending150();
+    setStatus('', false);
+    try { musicPlayer.setVolume(musicLevel); } catch (err) {}
+    $levelFader.disabled = lockedMode ? true : false;
+    if (!lockedMode) { $copyBtn.disabled = false; }
+  }
+
+  function onMusicStateChange(e) {
+    // A healthy state while a 150 is pending means the 150 was a phantom.
+    if (pending150 && musicHealthy(e.data)) { recoverMusic(); }
+  }
+
+  function pending150Expired() {
+    pending150 = null;
+    var s = null;
+    try { s = musicPlayer && musicPlayer.getPlayerState ? musicPlayer.getPlayerState() : null; } catch (e) {}
+    if (musicHealthy(s)) { recoverMusic(); return; }   // loaded despite the 150
+    failMusic(150);                                     // genuinely dead
+  }
+
   function onMusicError(e) {
     var code = e && e.data;   // 2 bad id, 5 html5, 100 not found/private, 101/150 embedding disabled
     console.warn('Music player error code:', code);
+    if (code === 150 || code === 101) {
+      clearPending150();
+      if (!lockedMode) { $copyBtn.disabled = true; }   // hold sharing until the track is verified
+      setStatus('Loading track...', false);
+      pending150 = { id: currentMusic ? currentMusic.id : null, timer: setTimeout(pending150Expired, GRACE_MS) };
+      return;
+    }
+    failMusic(code);
+  }
+
+  function failMusic(code) {
+    clearPending150();
     currentMusic = null;
     if (musicPlayer) { try { musicPlayer.stopVideo(); } catch (err) {} }
     $levelFader.disabled = true;
