@@ -104,7 +104,7 @@
      player under 200x200 or not genuinely visible, and with the scene muted the
      music is the only audio source, so it must be a compliant visible player.
      The opaque scene on top hides it from the student. */
-  #musicPlayer { z-index: 1; }
+  #musicMount { z-index: 1; }
   #scenePlayer { z-index: 2; }
   .click-shield {
     position: absolute; inset: 0; z-index: 3; cursor: pointer; background: transparent;
@@ -225,7 +225,7 @@
   </div>
 
   <div class="video-wrap">
-    <div id="musicPlayer"></div>
+    <div id="musicMount"></div>
     <div id="scenePlayer"></div>
     <div class="click-shield" id="clickShield"></div>
   </div>
@@ -338,7 +338,7 @@
   function onYouTubeIframeAPIReady() {
     scenePlayer = new YT.Player('scenePlayer', {
       videoId: CONFIG.scene.id,
-      playerVars: Object.assign({}, PLAYER_VARS, { start: CONFIG.scene.start, end: CONFIG.scene.end }),
+      playerVars: Object.assign({}, PLAYER_VARS, { start: CONFIG.scene.start }),
       events: { onReady: onSceneReady, onStateChange: onSceneStateChange }
     });
 
@@ -388,19 +388,18 @@
     currentMusic = { id: id, start: start || 0 };
     setStatus('', false);
 
-    if (!musicPlayer) {
-      musicPlayer = new YT.Player('musicPlayer', {
-        videoId: id,
-        playerVars: Object.assign({}, PLAYER_VARS, { start: currentMusic.start }),
-        events: { onReady: onMusicReady, onStateChange: function () {}, onError: onMusicError }
-      });
-    } else {
-      try {
-        musicPlayer.cueVideoById({ videoId: id, startSeconds: currentMusic.start });
-        musicPlayer.setVolume(musicLevel);
-      } catch (e) {}
-      afterMusicLoaded();
-    }
+    // Fresh player every load. Reusing one via cueVideoById can leave it stuck
+    // so a second track fails to start; a clean rebuild rules that out.
+    if (musicPlayer) { try { musicPlayer.destroy(); } catch (e) {} musicPlayer = null; }
+    musicReady = false;
+    var mount = document.getElementById('musicMount');
+    mount.innerHTML = '<div id="musicPlayer"></div>';
+
+    musicPlayer = new YT.Player('musicPlayer', {
+      videoId: id,
+      playerVars: Object.assign({}, PLAYER_VARS, { start: currentMusic.start }),
+      events: { onReady: onMusicReady, onStateChange: function () {}, onError: onMusicError }
+    });
   }
 
   function onMusicReady() {
@@ -417,14 +416,24 @@
   }
 
   function onMusicError(e) {
-    // 100 not found/private, 101/150 embedding disabled, 2 bad id, 5 html5
-    console.warn('Music player error code:', e && e.data);
+    var code = e && e.data;   // 2 bad id, 5 html5, 100 not found/private, 101/150 embedding disabled
+    console.warn('Music player error code:', code);
     currentMusic = null;
     if (musicPlayer) { try { musicPlayer.stopVideo(); } catch (err) {} }
     $levelFader.disabled = true;
+    var msg;
+    if (code === 101 || code === 150) {
+      msg = "This upload has embedding switched off by its owner. Try an 'audio', 'lyrics', or 'Topic' version of the track.";
+    } else if (code === 100) {
+      msg = "That video is private or no longer available.";
+    } else if (code === 2) {
+      msg = "That doesn't look like a valid YouTube link.";
+    } else {
+      msg = "Couldn't play that one. Try again, or a different upload.";
+    }
     if (!lockedMode) {
       $copyBtn.disabled = true;
-      setStatus("That link won't play here. Try another (audio or lyric uploads work best).", true);
+      setStatus(msg, true);
     } else {
       setStatus("This example's music won't play here.", true);
     }

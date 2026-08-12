@@ -32,7 +32,9 @@ Initial production ship. Pending live verification of scene start/end trimming, 
 - **Share:** COPY LINK builds `?m=ID&t=START&vol=LEVEL`. Opening a link with `m` present puts the device in locked example mode: scene plus the student's bed, their in-point, their level shown as a dimmed non-editable fader, an EXAMPLE badge, no editing controls. State rides entirely in the URL, no backend. The copied link is the github.io URL even when the tool runs embedded in Canvas, so shared examples open standalone.
 
 ## Technical notes
-- Scene start/end handled two ways for robustness: `start`/`end` playerVars on the scene player, plus a 200 ms `getCurrentTime()` poll that pauses both players and resets to the start point when the scene reaches its end. The poll keeps scene and music stopping together at the tail.
+- Scene start/end: `start` playerVar plus a 200 ms `getCurrentTime()` poll that pauses both players and resets to the start point at `end` (130 s). The scene's own `end` playerVar is deliberately NOT set, so YouTube never reaches its natural-end state and never shows the "More videos" end-screen overlay; the poll pauses on a mid-video frame instead.
+- Music player is rebuilt fresh on every load (`destroy()` then a new `YT.Player` into the persistent `#musicMount`), not reused via `cueVideoById`. Reuse could leave the player stuck so a second track failed to start.
+- Music error handling reports the YT error code distinctly: 101/150 embedding disabled, 100 private/removed, 2 bad link, else generic. Messages are student-facing and pending final wording approval.
 - YouTube IFrame API drives all playback. `<meta name="referrer" content="strict-origin-when-cross-origin">` is set to satisfy YouTube's embedder-identity check (avoids error 153 on a proper origin; note that `file://` and sandboxed previews will still throw 153, so test on the live URL or a localhost server).
 - Captions are unloaded on first PLAY (`unloadModule('captions'`/`'cc'`)) and `cc_load_policy: 0` is set.
 - A transparent click-shield sits over the scene so YouTube never receives clicks; a click on the video runs the device's own play/pause instead, which keeps the bed from being orphaned.
@@ -47,4 +49,4 @@ Initial production ship. Pending live verification of scene start/end trimming, 
 - Optional: retrofit the rounded rack-card treatment onto the curated `scene-scorer` device so the pair match (separate reviewed change, that one is live in Canvas).
 
 ## Last updated
-2026-08-12 - Fixed mid-playback error 150: music player moved from an undersized hidden box to full-size behind the scene, so it meets YouTube's visible-player requirement while staying out of view. Earlier same day: muted scene audio; initial ship (L_Cb1OepkY8, 0:37 to 2:10, paste-your-own music, level fader, locked share links, rack card).
+2026-08-12 - Rebuilt music player fresh per load (fixes second-track failures), removed the scene end playerVar so no "More videos" end screen (poll pauses at 2:10 instead), and made the error message name the failure type (embedding off / private / bad link). Earlier same day: error-150 fix (compliant visible player behind scene), muted scene, initial ship.
