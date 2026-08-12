@@ -104,7 +104,7 @@
      player under 200x200 or not genuinely visible, and with the scene muted the
      music is the only audio source, so it must be a compliant visible player.
      The opaque scene on top hides it from the student. */
-  #musicMount { z-index: 1; }
+  #musicPlayer { z-index: 1; }
   #scenePlayer { z-index: 2; }
   .click-shield {
     position: absolute; inset: 0; z-index: 3; cursor: pointer; background: transparent;
@@ -225,7 +225,7 @@
   </div>
 
   <div class="video-wrap">
-    <div id="musicMount"></div>
+    <div id="musicPlayer"></div>
     <div id="scenePlayer"></div>
     <div class="click-shield" id="clickShield"></div>
   </div>
@@ -388,18 +388,22 @@
     currentMusic = { id: id, start: start || 0 };
     setStatus('', false);
 
-    // Fresh player every load. Reusing one via cueVideoById can leave it stuck
-    // so a second track fails to start; a clean rebuild rules that out.
-    if (musicPlayer) { try { musicPlayer.destroy(); } catch (e) {} musicPlayer = null; }
-    musicReady = false;
-    var mount = document.getElementById('musicMount');
-    mount.innerHTML = '<div id="musicPlayer"></div>';
-
-    musicPlayer = new YT.Player('musicPlayer', {
-      videoId: id,
-      playerVars: Object.assign({}, PLAYER_VARS, { start: currentMusic.start }),
-      events: { onReady: onMusicReady, onStateChange: function () {}, onError: onMusicError }
-    });
+    // Build the player once and reuse it, exactly like the curated device.
+    // Destroying and recreating it made YouTube reject even embeddable videos
+    // with a false error 150.
+    if (!musicPlayer) {
+      musicPlayer = new YT.Player('musicPlayer', {
+        videoId: id,
+        playerVars: Object.assign({}, PLAYER_VARS, { start: currentMusic.start }),
+        events: { onReady: onMusicReady, onStateChange: function () {}, onError: onMusicError }
+      });
+    } else {
+      try {
+        musicPlayer.cueVideoById({ videoId: id, startSeconds: currentMusic.start });
+        musicPlayer.setVolume(musicLevel);
+      } catch (e) {}
+      afterMusicLoaded();
+    }
   }
 
   function onMusicReady() {

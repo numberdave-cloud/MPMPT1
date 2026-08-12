@@ -33,8 +33,8 @@ Initial production ship. Pending live verification of scene start/end trimming, 
 
 ## Technical notes
 - Scene start/end: `start` playerVar plus a 200 ms `getCurrentTime()` poll that pauses both players and resets to the start point at `end` (130 s). The scene's own `end` playerVar is deliberately NOT set, so YouTube never reaches its natural-end state and never shows the "More videos" end-screen overlay; the poll pauses on a mid-video frame instead.
-- Music player is rebuilt fresh on every load (`destroy()` then a new `YT.Player` into the persistent `#musicMount`), not reused via `cueVideoById`. Reuse could leave the player stuck so a second track failed to start.
-- Music error handling reports the YT error code distinctly: 101/150 embedding disabled, 100 private/removed, 2 bad link, else generic. Messages are student-facing and pending final wording approval.
+- Music player is built once (on first load) and reused via `cueVideoById`, matching the curated device. It is NOT destroyed and recreated: tearing the player down and rebuilding it made YouTube reject even embeddable videos with a false error 150.
+- Music error handling reports the YT error code distinctly: 101/150 embedding disabled, 100 private/removed, 2 bad link, else generic. Messages are student-facing and pending final wording approval. Note that error 150 from YouTube nominally means "embedding disabled" but can also be triggered by a mishandled player lifecycle, so a false 150 is a signal to check the loading code, not the video.
 - YouTube IFrame API drives all playback. `<meta name="referrer" content="strict-origin-when-cross-origin">` is set to satisfy YouTube's embedder-identity check (avoids error 153 on a proper origin; note that `file://` and sandboxed previews will still throw 153, so test on the live URL or a localhost server).
 - Captions are unloaded on first PLAY (`unloadModule('captions'`/`'cc'`)) and `cc_load_policy: 0` is set.
 - A transparent click-shield sits over the scene so YouTube never receives clicks; a click on the video runs the device's own play/pause instead, which keeps the bed from being orphaned.
@@ -49,4 +49,4 @@ Initial production ship. Pending live verification of scene start/end trimming, 
 - Optional: retrofit the rounded rack-card treatment onto the curated `scene-scorer` device so the pair match (separate reviewed change, that one is live in Canvas).
 
 ## Last updated
-2026-08-12 - Rebuilt music player fresh per load (fixes second-track failures), removed the scene end playerVar so no "More videos" end screen (poll pauses at 2:10 instead), and made the error message name the failure type (embedding off / private / bad link). Earlier same day: error-150 fix (compliant visible player behind scene), muted scene, initial ship.
+2026-08-12 - Reverted the per-load destroy/recreate of the music player: it caused false error 150 on embeddable videos. Player is now built once and reused via cueVideoById, like the curated device. Kept: player stacked behind the scene (needed because the scene is muted), no-end-screen fix, code-specific error messages.
