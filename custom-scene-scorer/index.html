@@ -386,6 +386,11 @@
       if (CONFIG.scene.muted) scenePlayer.mute();
       else scenePlayer.setVolume(CONFIG.scene.volume);
     } catch (e) {}
+    // Seek to the 0:37 in-point so the scene shows that frame, not the generic
+    // poster. seekTo() on a not-yet-started player makes YouTube begin playback
+    // (muted), so onSceneStateChange pauses it straight back on the first
+    // PLAYING event: the scene lands paused on the 0:37 frame after a brief
+    // jump, and never rolls on its own.
     try { scenePlayer.seekTo(CONFIG.scene.start || 0, true); } catch (e) {}
     sceneReady = true;
     $playBtn.textContent = 'PLAY';
@@ -399,6 +404,13 @@
   }
 
   function onSceneStateChange(e) {
+    // Safety net: if the scene reaches PLAYING without the student pressing PLAY
+    // (isPlaying stays false until play() runs), pause it straight back. Catches
+    // any stray autoplay so the scene never rolls on its own.
+    if (e.data === YT.PlayerState.PLAYING && !isPlaying) {
+      try { scenePlayer.pauseVideo(); } catch (err) {}
+      return;
+    }
     if (e.data === YT.PlayerState.PLAYING) {
       killCaptions();
       if (!ccKilledOnce) { setTimeout(killCaptions, 800); ccKilledOnce = true; }
