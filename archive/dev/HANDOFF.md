@@ -1,5 +1,32 @@
 # Dinner Engine — handoff
 
+## Session note - 12 Aug 2026 (1 recipe: steak, chimichurri + flatbread)
+
+Catalogue **273 -> 274**. Preserves untouched at 1 (p001).
+
+### Recipe added
+
+- **r274 Steak with chimichurri and yoghurt flatbread** — Gourmet Traveller
+  (gourmettraveller.com.au), serves 4, cookMin 30, quick. From a link Dave shared. Dave asked
+  to change "hanger steak" to plain "steak", applied to both the title and the ingredient;
+  weight kept as the source's 1.1 kg. cookMin 30 is an estimate (no printed total): knead dough
+  ~4 + grill steak 15 (upper of 10-15) + roll and cook four flatbreads ~10, in sequence.
+  Proving and resting excluded as passive. Olive oil is used three times (70 ml steak/flatbread,
+  125 ml chimichurri, 1 tbsp dough) and was consolidated into one 215 ml staple row. Butter
+  lettuce folded to generic "lettuce"; flat-leaf parsley -> parsley; thick Greek-style yoghurt
+  -> greek-style yoghurt; dried chilli flakes -> chilli flakes.
+- New item name: **dried yeast** (pantry, not produce). No new produce; lettuce and coriander
+  already SEASONALITY keys. SEASONALITY still 68 keys.
+
+### Also this session
+
+- The GitHub token in the project instructions had expired (401). Dave pasted a fresh PAT and
+  it works.
+- Confirmed **r253** (Stephanie Alexander's Sardine + Fennel Pasta) is the same dish as the
+  "Pasta with Sardines and Fennel" photo from Kitchen Garden Companion p.316, so nothing was
+  added. Dave chose to leave r253 as is (ref "DJ's Recipe Book", currants 0.5 cup) rather than
+  correct the source line and quantity.
+
 ## Session note - 5 Aug 2026 (Cook time shown as hours and minutes + 2 recipes)
 
 Catalogue **271 -> 273**. Preserves untouched at 1 (p001).
