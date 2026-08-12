@@ -37,7 +37,7 @@ Initial production ship. Pending live verification of scene start/end trimming, 
 - Captions are unloaded on first PLAY (`unloadModule('captions'`/`'cc'`)) and `cc_load_policy: 0` is set.
 - A transparent click-shield sits over the scene so YouTube never receives clicks; a click on the video runs the device's own play/pause instead, which keeps the bed from being orphaned.
 - Scene controls hidden (`controls: 0`), so the device transport is the only way to drive playback.
-- Music player runs hidden and audio-only, positioned in-viewport at near-zero opacity rather than `display:none` to avoid browser throttling.
+- Music player runs full-size directly behind the scene player (z-index 1 vs 2), hidden from view by the opaque scene on top. YouTube halts playback on a player under 200x200 or not genuinely visible; with the scene muted the music is the only audio source, so it must be a compliant, in-viewport player. An earlier build hid the music player in a 200x120 near-zero-opacity box and YouTube stopped it after a few seconds with error 150.
 - Page background is transparent so the rounded rack card floats on the Canvas page. The card itself keeps the dark fill.
 - Embeddability is not guaranteed for pasted or shared tracks. If a link has embedding disabled, is private, or is region-locked, the player fires an error and the device shows a "won't play here" message. Audio-only, lyric, and "Artist - Topic" uploads embed most reliably; official/Vevo videos often refuse.
 
@@ -47,4 +47,4 @@ Initial production ship. Pending live verification of scene start/end trimming, 
 - Optional: retrofit the rounded rack-card treatment onto the curated `scene-scorer` device so the pair match (separate reviewed change, that one is live in Canvas).
 
 ## Last updated
-2026-08-12 - Muted the scene's own audio (`muted: true`) so only the added music plays. Also on initial ship: new scene (L_Cb1OepkY8, 0:37 to 2:10), single paste-your-own music slot, level fader, locked share links, rack-card container on a transparent surround.
+2026-08-12 - Fixed mid-playback error 150: music player moved from an undersized hidden box to full-size behind the scene, so it meets YouTube's visible-player requirement while staying out of view. Earlier same day: muted scene audio; initial ship (L_Cb1OepkY8, 0:37 to 2:10, paste-your-own music, level fader, locked share links, rack card).

@@ -96,20 +96,19 @@
     overflow: hidden;
     margin-bottom: 16px;
   }
-  .video-wrap > div#scenePlayer,
+  .video-wrap > div,
   .video-wrap iframe {
     position: absolute; inset: 0; width: 100%; height: 100%; border: none;
   }
+  /* Music player sits full-size BEHIND the scene. YouTube halts playback on a
+     player under 200x200 or not genuinely visible, and with the scene muted the
+     music is the only audio source, so it must be a compliant visible player.
+     The opaque scene on top hides it from the student. */
+  #musicPlayer { z-index: 1; }
+  #scenePlayer { z-index: 2; }
   .click-shield {
-    position: absolute; inset: 0; z-index: 2; cursor: pointer; background: transparent;
+    position: absolute; inset: 0; z-index: 3; cursor: pointer; background: transparent;
   }
-
-  /* hidden audio-only music player: in-viewport, near-zero opacity to avoid throttling */
-  .hidden-player {
-    position: absolute; left: 0; bottom: 0; width: 200px; height: 120px;
-    opacity: 0.01; pointer-events: none; z-index: -1; overflow: hidden;
-  }
-  .hidden-player div { width: 200px; height: 120px; }
 
   /* ─── INPUT ROW ─── */
   .input-row {
@@ -226,6 +225,7 @@
   </div>
 
   <div class="video-wrap">
+    <div id="musicPlayer"></div>
     <div id="scenePlayer"></div>
     <div class="click-shield" id="clickShield"></div>
   </div>
@@ -250,10 +250,6 @@
   <div class="share-block edit-only">
     <button class="btn" id="copyBtn" disabled>COPY LINK</button>
     <input type="text" class="share-url" id="shareUrl" readonly>
-  </div>
-
-  <div class="hidden-player" id="hiddenPlayer" aria-hidden="true">
-    <div id="musicPlayer"></div>
   </div>
   </div><!-- /device -->
 
