@@ -35,6 +35,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Interval Trainer | `interval-trainer/` | Trainers | live (v0.9) | YES |
 | Tuning Practice | `tuning-practice/` | Trainers | live (v1.0) | YES |
 | Scene Scorer — Drive [Temp Track] | `scene-scorer-drive/` | Miscellaneous | live (levels untested) | YES |
+| Score Switcher [Shawshank] | `scene-scorer/` | Miscellaneous | live | YES |
 | Custom Scene Scorer | `custom-scene-scorer/` | Miscellaneous | live (phantom error-150 fix applied, pending live verification) | YES |
 | Batman Across the Decades | `batman-decades/` | Miscellaneous | live (v0.2, playback unverified) | YES |
 | Energy Dial | `energy-dial/` | Miscellaneous | live (v1.0, untested) | YES |

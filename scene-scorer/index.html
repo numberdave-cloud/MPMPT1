@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>Scene Scorer</title>
+<title>Score Switcher</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -22,18 +22,40 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* Transparent surround. Canvas wraps embeds in its own rounded grey
+     container; a transparent page inherits that colour exactly, so the
+     card sits directly on whatever Canvas paints. Do not set a colour
+     here: any fixed value shows as a mismatched slab inside the wrapper. */
   html, body {
-    background: var(--bg);
+    background: transparent;
     color: var(--text);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
-    min-height: 100vh;
   }
 
   body {
-    padding: 20px 24px 28px;
+    padding: 4px;
     max-width: 740px;
     margin: 0 auto;
+  }
+
+  /* Rack-hardware card: 24px radius, outer dark frame, inner 1px light
+     stroke inset from the edge. The whole MOTE lives inside it. Shared
+     frame with the other newer devices. */
+  .rack {
+    position: relative;
+    background: var(--bg);
+    border: 2px solid #0B0907;
+    border-radius: 24px;
+    padding: 20px 24px 28px;
+  }
+  .rack::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(234, 224, 208, 0.3);
+    border-radius: 18px;
+    pointer-events: none;
   }
 
   .header {
@@ -59,6 +81,8 @@
     aspect-ratio: 16 / 9;
     background: #000;
     border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
     margin-bottom: 16px;
   }
   .video-wrap > div#scenePlayer,
@@ -211,8 +235,9 @@
 </style>
 </head>
 <body>
+  <div class="rack">
   <div class="header">
-    <div class="title">SCENE SCORER</div>
+    <div class="title">SCORE SWITCHER</div>
   </div>
 
   <div class="video-wrap">
@@ -235,6 +260,7 @@
   <div class="selector" id="selector"></div>
 
   <div class="hidden-players" id="hiddenPlayers" aria-hidden="true"></div>
+  </div>
 
 <script>
   // ─── CONFIG ──────────────────────────────────────────────────────
@@ -254,7 +280,7 @@
       { label: 'MUSIC 2', id: 'WUC7MgkOgKA', volume: 100, start: 0 },
       { label: 'MUSIC 3', id: 'mIQ_UuZPCX0', volume: 40, start: 0 }
     ],
-    startWith: 0
+    startWith: 'none'
   };
 
   // ─── STATE ───────────────────────────────────────────────────────
