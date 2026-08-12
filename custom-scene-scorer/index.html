@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Scene Scorer: Your Cut</title>
+<script>
+  // Set locked mode before paint to avoid a flash of the edit controls.
+  if (new URLSearchParams(location.search).has('m')) {
+    document.documentElement.classList.add('locked');
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --clip: #C04838;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: transparent;
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    padding: 14px;
+    max-width: 768px;
+    margin: 0 auto;
+  }
+
+  /* rack-hardware card: outer dark frame + inner light stroke inset from the edge */
+  .device {
+    position: relative;
+    background: var(--bg);
+    border-radius: 24px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+    padding: 24px 26px 28px;
+  }
+  .device::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1px solid var(--border);
+    border-radius: 17px;
+    pointer-events: none;
+  }
+
+  /* mode visibility */
+  html.locked .edit-only { display: none !important; }
+  html:not(.locked) .locked-only { display: none !important; }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .title { font-size: 13px; letter-spacing: 0.2em; font-weight: 600; }
+  .badge {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--accent);
+    padding: 4px 9px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  .video-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .video-wrap > div#scenePlayer,
+  .video-wrap iframe {
+    position: absolute; inset: 0; width: 100%; height: 100%; border: none;
+  }
+  .click-shield {
+    position: absolute; inset: 0; z-index: 2; cursor: pointer; background: transparent;
+  }
+
+  /* hidden audio-only music player: in-viewport, near-zero opacity to avoid throttling */
+  .hidden-player {
+    position: absolute; left: 0; bottom: 0; width: 200px; height: 120px;
+    opacity: 0.01; pointer-events: none; z-index: -1; overflow: hidden;
+  }
+  .hidden-player div { width: 200px; height: 120px; }
+
+  /* ─── INPUT ROW ─── */
+  .input-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .link-input {
+    flex: 1;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+  .link-input::placeholder { color: var(--text-faint); }
+  .link-input:focus { outline: none; border-color: var(--accent); }
+
+  .btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: border-color 0.08s, background 0.08s;
+    white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--border-bright); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn.primary {
+    background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600;
+  }
+  .btn.primary:hover:not(:disabled) { background: var(--accent-glow); border-color: var(--accent-glow); }
+
+  .status {
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    margin: -8px 0 16px;
+    min-height: 15px;
+    color: var(--text-dim);
+  }
+  .status.error { color: var(--clip); }
+
+  /* ─── TRANSPORT ─── */
+  .transport {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .transport .btn.primary { min-width: 116px; }
+
+  /* ─── MUSIC LEVEL FADER ─── */
+  .level-block { margin-bottom: 20px; }
+  .level-label {
+    font-size: 10px; letter-spacing: 0.18em; color: var(--text-dim);
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .fader {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; max-width: 340px; height: 24px;
+    background: transparent; cursor: pointer; display: block;
+  }
+  .fader:focus { outline: none; }
+  .fader:disabled { opacity: 0.35; cursor: not-allowed; }
+  .fader::-webkit-slider-runnable-track { height: 2px; background: var(--border-bright); border: none; }
+  .fader::-moz-range-track { height: 2px; background: var(--border-bright); border: none; }
+  .fader::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 12px; height: 24px; margin-top: -11px;
+    background: var(--text) linear-gradient(var(--bg), var(--bg)) center/1px 100% no-repeat;
+    border: none; border-radius: 1px;
+  }
+  .fader::-moz-range-thumb {
+    width: 12px; height: 24px;
+    background: var(--text) linear-gradient(var(--bg), var(--bg)) center/1px 100% no-repeat;
+    border: none; border-radius: 1px;
+  }
+
+  /* ─── SHARE ─── */
+  .share-block { margin-top: 4px; }
+  .share-url {
+    width: 100%;
+    background: rgba(234, 224, 208, 0.04);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    margin-top: 8px;
+    display: none;
+  }
+  .share-url.show { display: block; }
+  .btn.copied { background: #6F8A50; color: var(--bg); border-color: #6F8A50; }
+
+  @media (max-width: 600px) {
+    body { padding: 16px; }
+    .btn { padding: 11px 14px; }
+  }
+</style>
+</head>
+<body>
+  <div class="device">
+  <div class="header">
+    <div class="title">CUSTOM SCENE SCORER</div>
+    <div class="badge locked-only">EXAMPLE</div>
+  </div>
+
+  <div class="video-wrap">
+    <div id="scenePlayer"></div>
+    <div class="click-shield" id="clickShield"></div>
+  </div>
+
+  <div class="input-row edit-only">
+    <input type="text" class="link-input" id="linkInput" placeholder="Paste a YouTube link" autocomplete="off" spellcheck="false">
+    <button class="btn primary" id="loadBtn">LOAD</button>
+  </div>
+
+  <div class="status edit-only" id="status"></div>
+
+  <div class="transport">
+    <button class="btn primary" id="playBtn" disabled>LOADING</button>
+    <button class="btn" id="restartBtn" disabled>RESTART</button>
+  </div>
+
+  <div class="level-block">
+    <div class="level-label">Music Level</div>
+    <input type="range" class="fader" id="levelFader" min="0" max="100" value="70" disabled aria-label="Music level">
+  </div>
+
+  <div class="share-block edit-only">
+    <button class="btn" id="copyBtn" disabled>COPY LINK</button>
+    <input type="text" class="share-url" id="shareUrl" readonly>
+  </div>
+
+  <div class="hidden-player" id="hiddenPlayer" aria-hidden="true">
+    <div id="musicPlayer"></div>
+  </div>
+  </div><!-- /device -->
+
+<script>
+  // ─── CONFIG ──────────────────────────────────────────────────────
+  // The scene is fixed and travels with the device. Students add music.
+  const CONFIG = {
+    scene: { id: 'L_Cb1OepkY8', volume: 100, start: 37, end: 130 }
+  };
+
+  const PLAYER_VARS = { controls: 0, disablekb: 1, modestbranding: 1, rel: 0, playsinline: 1, fs: 0, iv_load_policy: 3, cc_load_policy: 0 };
+
+  // ─── MODE + PARAMS ───────────────────────────────────────────────
+  const params = new URLSearchParams(location.search);
+  const lockedMode = params.has('m');
+
+  // ─── STATE ───────────────────────────────────────────────────────
+  let scenePlayer = null;
+  let musicPlayer = null;
+  let sceneReady = false;
+  let musicReady = false;
+  let isPlaying = false;
+  let currentMusic = null;         // { id, start }
+  let musicLevel = 70;
+  let ccKilledOnce = false;
+  let endPoll = null;
+
+  // ─── DOM ─────────────────────────────────────────────────────────
+  const $linkInput = document.getElementById('linkInput');
+  const $loadBtn = document.getElementById('loadBtn');
+  const $status = document.getElementById('status');
+  const $playBtn = document.getElementById('playBtn');
+  const $restartBtn = document.getElementById('restartBtn');
+  const $levelFader = document.getElementById('levelFader');
+  const $copyBtn = document.getElementById('copyBtn');
+  const $shareUrl = document.getElementById('shareUrl');
+  const $shield = document.getElementById('clickShield');
+
+  // ─── LINK PARSING ────────────────────────────────────────────────
+  function parseTime(t) {
+    t = String(t).trim();
+    if (/^\d+$/.test(t)) return parseInt(t, 10);
+    let sec = 0;
+    const h = t.match(/(\d+)\s*h/), m = t.match(/(\d+)\s*m/), s = t.match(/(\d+)\s*s/);
+    if (h) sec += parseInt(h[1], 10) * 3600;
+    if (m) sec += parseInt(m[1], 10) * 60;
+    if (s) sec += parseInt(s[1], 10);
+    if (!h && !m && !s) { const n = parseInt(t, 10); if (!isNaN(n)) sec = n; }
+    return sec;
+  }
+
+  function parseYouTube(input) {
+    if (!input) return null;
+    input = input.trim();
+    let id = null, start = 0, url = null;
+    try { url = new URL(input); } catch (e) { url = null; }
+    if (url) {
+      const host = url.hostname.replace(/^www\./, '');
+      if (host === 'youtu.be') {
+        id = url.pathname.split('/').filter(Boolean)[0] || null;
+      } else if (host.endsWith('youtube.com')) {
+        if (url.searchParams.get('v')) {
+          id = url.searchParams.get('v');
+        } else {
+          const parts = url.pathname.split('/').filter(Boolean);
+          const ei = parts.indexOf('embed'); if (ei >= 0) id = parts[ei + 1];
+          const si = parts.indexOf('shorts'); if (si >= 0) id = parts[si + 1];
+        }
+      }
+      const t = url.searchParams.get('t') || url.searchParams.get('start') || url.searchParams.get('time_continue');
+      if (t) start = parseTime(t);
+    }
+    if (!id) {
+      const mm = input.match(/[a-zA-Z0-9_-]{11}/);
+      if (mm) id = mm[0];
+    }
+    if (id && !/^[a-zA-Z0-9_-]{11}$/.test(id)) {
+      const mm = id.match(/[a-zA-Z0-9_-]{11}/);
+      id = mm ? mm[0] : null;
+    }
+    if (!id) return null;
+    return { id: id, start: Math.max(0, Math.floor(start)) };
+  }
+
+  // ─── YT SETUP ────────────────────────────────────────────────────
+  function onYouTubeIframeAPIReady() {
+    scenePlayer = new YT.Player('scenePlayer', {
+      videoId: CONFIG.scene.id,
+      playerVars: Object.assign({}, PLAYER_VARS, { start: CONFIG.scene.start, end: CONFIG.scene.end }),
+      events: { onReady: onSceneReady, onStateChange: onSceneStateChange }
+    });
+
+    if (lockedMode) {
+      musicLevel = clampLevel(params.get('vol'));
+      $levelFader.value = musicLevel;
+      loadMusic(params.get('m'), parseInt(params.get('t') || '0', 10) || 0);
+    }
+  }
+
+  function clampLevel(v) {
+    let n = parseInt(v, 10);
+    if (isNaN(n)) n = 70;
+    return Math.max(0, Math.min(100, n));
+  }
+
+  function onSceneReady() {
+    try { scenePlayer.setVolume(CONFIG.scene.volume); } catch (e) {}
+    try { scenePlayer.seekTo(CONFIG.scene.start || 0, true); } catch (e) {}
+    sceneReady = true;
+    $playBtn.textContent = 'PLAY';
+    $playBtn.disabled = false;
+    $restartBtn.disabled = false;
+  }
+
+  function killCaptions() {
+    try { scenePlayer.unloadModule('captions'); } catch (e) {}
+    try { scenePlayer.unloadModule('cc'); } catch (e) {}
+  }
+
+  function onSceneStateChange(e) {
+    if (e.data === YT.PlayerState.PLAYING) {
+      killCaptions();
+      if (!ccKilledOnce) { setTimeout(killCaptions, 800); ccKilledOnce = true; }
+    }
+    if (e.data === YT.PlayerState.ENDED) {
+      stopToTop();
+    }
+  }
+
+  // ─── MUSIC LOAD ──────────────────────────────────────────────────
+  function loadMusic(id, start) {
+    if (!id) return;
+    currentMusic = { id: id, start: start || 0 };
+    setStatus('', false);
+
+    if (!musicPlayer) {
+      musicPlayer = new YT.Player('musicPlayer', {
+        videoId: id,
+        playerVars: Object.assign({}, PLAYER_VARS, { start: currentMusic.start }),
+        events: { onReady: onMusicReady, onStateChange: function () {}, onError: onMusicError }
+      });
+    } else {
+      try {
+        musicPlayer.cueVideoById({ videoId: id, startSeconds: currentMusic.start });
+        musicPlayer.setVolume(musicLevel);
+      } catch (e) {}
+      afterMusicLoaded();
+    }
+  }
+
+  function onMusicReady() {
+    musicReady = true;
+    try { musicPlayer.setVolume(musicLevel); } catch (e) {}
+    afterMusicLoaded();
+  }
+
+  function afterMusicLoaded() {
+    // reset to a clean synced top so the next PLAY starts both together
+    stopToTop();
+    $levelFader.disabled = lockedMode ? true : false;
+    if (!lockedMode) { $copyBtn.disabled = false; }
+  }
+
+  function onMusicError(e) {
+    // 100 not found/private, 101/150 embedding disabled, 2 bad id, 5 html5
+    currentMusic = null;
+    if (musicPlayer) { try { musicPlayer.stopVideo(); } catch (err) {} }
+    $levelFader.disabled = true;
+    if (!lockedMode) {
+      $copyBtn.disabled = true;
+      setStatus("That link won't play here. Try another (audio or lyric uploads work best).", true);
+    } else {
+      setStatus("This example's music won't play here.", true);
+    }
+  }
+
+  function setStatus(msg, isError) {
+    $status.textContent = msg;
+    $status.classList.toggle('error', !!isError);
+  }
+
+  // ─── TRANSPORT ───────────────────────────────────────────────────
+  function startEndPoll() {
+    stopEndPoll();
+    if (!CONFIG.scene.end) return;
+    endPoll = setInterval(() => {
+      if (!scenePlayer) return;
+      let t = 0;
+      try { t = scenePlayer.getCurrentTime(); } catch (e) {}
+      if (t >= CONFIG.scene.end) { stopToTop(); }
+    }, 200);
+  }
+  function stopEndPoll() {
+    if (endPoll) { clearInterval(endPoll); endPoll = null; }
+  }
+
+  function stopToTop() {
+    stopEndPoll();
+    if (scenePlayer) { try { scenePlayer.pauseVideo(); scenePlayer.seekTo(CONFIG.scene.start || 0, true); } catch (e) {} }
+    if (musicPlayer && currentMusic) { try { musicPlayer.pauseVideo(); musicPlayer.seekTo(currentMusic.start, true); } catch (e) {} }
+    isPlaying = false;
+    updateTransportUI();
+  }
+
+  function play() {
+    if (!sceneReady) return;
+    scenePlayer.playVideo();
+    if (musicPlayer && currentMusic) {
+      try { musicPlayer.setVolume(musicLevel); musicPlayer.playVideo(); } catch (e) {}
+    }
+    isPlaying = true;
+    startEndPoll();
+    updateTransportUI();
+  }
+
+  function pause() {
+    if (scenePlayer) { try { scenePlayer.pauseVideo(); } catch (e) {} }
+    if (musicPlayer) { try { musicPlayer.pauseVideo(); } catch (e) {} }
+    stopEndPoll();
+    isPlaying = false;
+    updateTransportUI();
+  }
+
+  function togglePlay() { isPlaying ? pause() : play(); }
+
+  function restart() {
+    if (!sceneReady) return;
+    scenePlayer.seekTo(CONFIG.scene.start || 0, true);
+    if (musicPlayer && currentMusic) { try { musicPlayer.seekTo(currentMusic.start, true); } catch (e) {} }
+    play();
+  }
+
+  function updateTransportUI() {
+    $playBtn.textContent = isPlaying ? 'PAUSE' : 'PLAY';
+  }
+
+  // ─── SHARE LINK ──────────────────────────────────────────────────
+  function buildShareUrl() {
+    const base = location.origin + location.pathname;
+    const p = new URLSearchParams();
+    p.set('m', currentMusic.id);
+    if (currentMusic.start) p.set('t', String(currentMusic.start));
+    p.set('vol', String(musicLevel));
+    return base + '?' + p.toString();
+  }
+
+  async function copyLink() {
+    if (!currentMusic) return;
+    const url = buildShareUrl();
+    $shareUrl.value = url;
+    $shareUrl.classList.add('show');
+    $shareUrl.focus();
+    $shareUrl.select();
+    let ok = false;
+    try { await navigator.clipboard.writeText(url); ok = true; } catch (e) {
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    }
+    if (ok) {
+      $copyBtn.textContent = 'COPIED';
+      $copyBtn.classList.add('copied');
+      setTimeout(() => { $copyBtn.textContent = 'COPY LINK'; $copyBtn.classList.remove('copied'); }, 2000);
+    } else {
+      $copyBtn.textContent = 'COPY MANUALLY';
+      setTimeout(() => { $copyBtn.textContent = 'COPY LINK'; }, 2500);
+    }
+  }
+
+  // ─── WIRE UP ─────────────────────────────────────────────────────
+  function handleLoad() {
+    const parsed = parseYouTube($linkInput.value);
+    if (!parsed) { setStatus("Couldn't read that link. Paste a YouTube URL.", true); return; }
+    loadMusic(parsed.id, parsed.start);
+  }
+
+  $loadBtn.addEventListener('click', handleLoad);
+  $linkInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLoad(); });
+  $playBtn.addEventListener('click', togglePlay);
+  $restartBtn.addEventListener('click', restart);
+  $shield.addEventListener('click', togglePlay);
+  $copyBtn.addEventListener('click', copyLink);
+  $levelFader.addEventListener('input', () => {
+    musicLevel = parseInt($levelFader.value, 10);
+    if (musicPlayer && currentMusic) { try { musicPlayer.setVolume(musicLevel); } catch (e) {} }
+  });
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
