@@ -302,6 +302,7 @@
   let ccKilledOnce = false;
   let endPoll = null;
   let pending150 = null;           // grace-window handle for phantom error 150
+  let playAfterLoad = false;       // a student LOAD starts scene + music together
 
   // ─── DOM ─────────────────────────────────────────────────────────
   const $linkInput = document.getElementById('linkInput');
@@ -452,10 +453,18 @@
   }
 
   function afterMusicLoaded() {
-    // reset to a clean synced top so the next PLAY starts both together
-    stopToTop();
     $levelFader.disabled = lockedMode ? true : false;
     if (!lockedMode) { $copyBtn.disabled = false; }
+    if (playAfterLoad) {
+      // Student pressed LOAD: seek both to the top and start scene and music
+      // together. play() sets isPlaying before the state event, so the scene
+      // autoplay guard leaves this intentional play alone.
+      playAfterLoad = false;
+      restart();
+    } else {
+      // Locked/example open: sit synced at the top, paused, until PLAY.
+      stopToTop();
+    }
   }
 
   // YouTube throws a phantom error 150 (or 101) DURING a cueVideoById swap: it
@@ -515,6 +524,7 @@
 
   function failMusic(code) {
     clearPending150();
+    playAfterLoad = false;
     currentMusic = null;
     if (musicPlayer) { try { musicPlayer.stopVideo(); } catch (err) {} }
     $levelFader.disabled = true;
@@ -631,10 +641,11 @@
   function handleLoad() {
     const parsed = parseYouTube($linkInput.value);
     if (!parsed) { setStatus("Couldn't read that link. Paste a YouTube URL.", true); return; }
-    // Hard stop the instant LOAD is pressed: pause and rewind both players so
-    // the old take never keeps rolling under the new one. loadMusic then cues
-    // the new bed paused at its in-point; PLAY starts scene and music together.
-    stopToTop();
+    // Stop whatever is currently rolling (no seek, so no autoplay quirk), then
+    // flag that once the new bed is loaded, scene and music should start
+    // together from the top. afterMusicLoaded picks this up.
+    if (isPlaying) pause();
+    playAfterLoad = true;
     loadMusic(parsed.id, parsed.start);
   }
 
