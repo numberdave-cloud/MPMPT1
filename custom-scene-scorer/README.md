@@ -26,9 +26,9 @@ Height is 820 (taller than the curated Scene Scorer's 640) because the paste box
 Initial production ship. Pending live verification of scene start/end trimming, embed failure handling, and share-link round-trip.
 
 ## How it works
-- **Scene:** fixed in the CONFIG block at the top of the script. Currently video `L_Cb1OepkY8`, trimmed to `start: 37` and `end: 130` seconds (0:37 to 2:10). The scene travels with the device and cannot be changed by the student.
+- **Scene:** fixed in the CONFIG block at the top of the script. Currently video `L_Cb1OepkY8`, trimmed to `start: 37` and `end: 130` seconds (0:37 to 2:10), and `muted: true` so the scene's own audio is silent. The scene travels with the device and cannot be changed by the student. Only the added music is heard.
 - **Music:** one slot. Student pastes a link, the parser pulls the video ID plus any start timestamp (`?t=`, `&start=`, seconds or `1m23s` form; also handles `youtu.be`, `watch?v=`, `embed`, `shorts`, and bare IDs). The pasted timestamp becomes the music's in-point, aligned to the scene's first frame (0:37).
-- **Level:** a single MUSIC LEVEL fader sets the music volume (0 to 100) against fixed dialogue at 100. Default 70. This is the balance control, since an unknown pasted track can't be pre-tuned.
+- **Level:** a single MUSIC LEVEL fader sets the music volume (0 to 100). Default 70. Since the scene is muted, this is a straight music-level control.
 - **Share:** COPY LINK builds `?m=ID&t=START&vol=LEVEL`. Opening a link with `m` present puts the device in locked example mode: scene plus the student's bed, their in-point, their level shown as a dimmed non-editable fader, an EXAMPLE badge, no editing controls. State rides entirely in the URL, no backend. The copied link is the github.io URL even when the tool runs embedded in Canvas, so shared examples open standalone.
 
 ## Technical notes
@@ -47,4 +47,4 @@ Initial production ship. Pending live verification of scene start/end trimming, 
 - Optional: retrofit the rounded rack-card treatment onto the curated `scene-scorer` device so the pair match (separate reviewed change, that one is live in Canvas).
 
 ## Last updated
-2026-08-12 - Initial ship. New scene (L_Cb1OepkY8, 0:37 to 2:10), single paste-your-own music slot, level fader, locked share links, rack-card container on a transparent surround.
+2026-08-12 - Muted the scene's own audio (`muted: true`) so only the added music plays. Also on initial ship: new scene (L_Cb1OepkY8, 0:37 to 2:10), single paste-your-own music slot, level fader, locked share links, rack-card container on a transparent surround.

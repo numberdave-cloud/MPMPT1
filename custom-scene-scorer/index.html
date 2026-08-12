@@ -261,7 +261,7 @@
   // ─── CONFIG ──────────────────────────────────────────────────────
   // The scene is fixed and travels with the device. Students add music.
   const CONFIG = {
-    scene: { id: 'L_Cb1OepkY8', volume: 100, start: 37, end: 130 }
+    scene: { id: 'L_Cb1OepkY8', volume: 100, start: 37, end: 130, muted: true }
   };
 
   const PLAYER_VARS = { controls: 0, disablekb: 1, modestbranding: 1, rel: 0, playsinline: 1, fs: 0, iv_load_policy: 3, cc_load_policy: 0 };
@@ -360,7 +360,10 @@
   }
 
   function onSceneReady() {
-    try { scenePlayer.setVolume(CONFIG.scene.volume); } catch (e) {}
+    try {
+      if (CONFIG.scene.muted) scenePlayer.mute();
+      else scenePlayer.setVolume(CONFIG.scene.volume);
+    } catch (e) {}
     try { scenePlayer.seekTo(CONFIG.scene.start || 0, true); } catch (e) {}
     sceneReady = true;
     $playBtn.textContent = 'PLAY';
@@ -419,6 +422,7 @@
 
   function onMusicError(e) {
     // 100 not found/private, 101/150 embedding disabled, 2 bad id, 5 html5
+    console.warn('Music player error code:', e && e.data);
     currentMusic = null;
     if (musicPlayer) { try { musicPlayer.stopVideo(); } catch (err) {} }
     $levelFader.disabled = true;
