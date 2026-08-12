@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Error 150 Repro Bench</title>
+<style>
+  :root {
+    --bg: #1E1A17; --text: #EAE0D0; --dim: rgba(234,224,208,0.55);
+    --faint: rgba(234,224,208,0.3); --accent: #C07838; --border: rgba(234,224,208,0.15);
+    --ok: #7BA968; --bad: #C04838; --warn: #D8904A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 16px; max-width: 900px; margin: 0 auto; line-height: 1.4;
+  }
+  h1 { font-size: 15px; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .sub { font-size: 12px; color: var(--dim); margin-bottom: 16px; }
+  .row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
+  label { font-size: 11px; color: var(--dim); min-width: 62px; }
+  input[type=text] {
+    flex: 1; min-width: 220px; background: transparent; color: var(--text);
+    border: 1px solid var(--border); border-radius: 5px; padding: 8px 10px;
+    font-family: monospace; font-size: 12px;
+  }
+  button {
+    background: transparent; color: var(--text); border: 1px solid var(--border);
+    border-radius: 5px; padding: 8px 12px; font-size: 11px; letter-spacing: 0.04em;
+    cursor: pointer; text-transform: uppercase; font-family: inherit;
+  }
+  button:hover { border-color: var(--accent); }
+  button.go { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+  .btns { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
+  .stage { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; }
+  #player { width: 320px; height: 180px; background: #000; border: 1px solid var(--border); border-radius: 6px; }
+  .readout {
+    flex: 1; min-width: 200px; border: 1px solid var(--border); border-radius: 6px;
+    padding: 12px; font-family: monospace; font-size: 13px;
+  }
+  .readout .k { color: var(--dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .readout .v { font-size: 20px; margin: 2px 0 10px; }
+  .state--1 { color: var(--faint); }
+  .state-1 { color: var(--ok); }   /* playing */
+  .state-5 { color: var(--ok); }   /* cued */
+  .state-3, .state-2 { color: var(--warn); }
+  .verdict { font-size: 13px; margin-top: 8px; padding: 8px; border-radius: 5px; min-height: 34px; }
+  .verdict.ok { background: rgba(123,169,104,0.12); color: var(--ok); }
+  .verdict.bad { background: rgba(192,72,56,0.14); color: var(--bad); }
+  .log {
+    border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px;
+    font-family: monospace; font-size: 12px; height: 320px; overflow-y: auto;
+    white-space: pre-wrap; background: rgba(0,0,0,0.2);
+  }
+  .log .t { color: var(--faint); }
+  .log .err { color: var(--bad); font-weight: 700; }
+  .log .snap-ok { color: var(--ok); }
+  .log .snap-bad { color: var(--bad); }
+  .log .evt { color: var(--dim); }
+  .log .act { color: var(--warn); }
+  .hint { font-size: 11px; color: var(--faint); margin-top: 10px; }
+</style>
+</head>
+<body>
+  <h1>ERROR 150 REPRO BENCH</h1>
+  <div class="sub">
+    Bare YouTube player. Load video A, then swap to B and watch whether an error fires,
+    and whether the player recovers a moment later. Must run on the github.io origin, not a local file.
+  </div>
+
+  <div class="row">
+    <label for="linkA">Video A</label>
+    <input type="text" id="linkA" value="https://www.youtube.com/watch?v=jNQXAC9IVRw" spellcheck="false">
+  </div>
+  <div class="row">
+    <label for="linkB">Video B</label>
+    <input type="text" id="linkB" value="https://www.youtube.com/watch?v=aqz-KE-bpKQ" spellcheck="false">
+  </div>
+  <div class="hint">
+    Defaults are two known-embeddable clips. Replace them with the exact links you have seen throw a false 150 so the bench tests real offenders.
+  </div>
+
+  <div class="btns">
+    <button class="go" id="autoBtn">Auto: load A, play, swap to B in 4s</button>
+    <button id="startBtn">Create + play A</button>
+  </div>
+  <div class="btns">
+    <button id="cueBtn">Swap via cueVideoById</button>
+    <button id="loadBtn">Swap via loadVideoById</button>
+    <button id="rebuildBtn">Destroy + recreate w/ origin</button>
+    <button id="resetLogBtn">Clear log</button>
+  </div>
+
+  <div class="stage">
+    <div id="player"></div>
+    <div class="readout">
+      <div class="k">Live player state</div>
+      <div class="v" id="stateOut">-</div>
+      <div class="k">Current time</div>
+      <div class="v" id="timeOut" style="font-size:15px;">-</div>
+      <div class="k">Now showing</div>
+      <div class="v" id="whichOut" style="font-size:13px;">-</div>
+      <div class="verdict" id="verdict"></div>
+    </div>
+  </div>
+
+  <div class="log" id="log"></div>
+  <div class="hint">
+    Reading the verdict: after any error the bench checks the player at +1s and +3s. PLAYING, CUED, BUFFERING or PAUSED means the video is fine and the 150 was a false alarm (display / lifecycle bug). UNSTARTED or unchanged means the load is genuinely dead (real failure).
+  </div>
+
+<script>
+  // ── tiny parser: pull an 11-char id from most YouTube link shapes ──
+  function parseId(input) {
+    if (!input) return null;
+    input = input.trim();
+    var url = null;
+    try { url = new URL(input); } catch (e) {}
+    if (url) {
+      var host = url.hostname.replace(/^www\./, '');
+      if (host === 'youtu.be') return (url.pathname.split('/').filter(Boolean)[0] || '').slice(0,11) || null;
+      if (host.indexOf('youtube.com') >= 0) {
+        if (url.searchParams.get('v')) return url.searchParams.get('v').slice(0,11);
+        var parts = url.pathname.split('/').filter(Boolean);
+        var ei = parts.indexOf('embed'); if (ei >= 0 && parts[ei+1]) return parts[ei+1].slice(0,11);
+        var si = parts.indexOf('shorts'); if (si >= 0 && parts[si+1]) return parts[si+1].slice(0,11);
+      }
+    }
+    var m = input.match(/[a-zA-Z0-9_-]{11}/);
+    return m ? m[0] : null;
+  }
+
+  // ── state name lookup ──
+  var STATE = { '-1':'UNSTARTED', '0':'ENDED', '1':'PLAYING', '2':'PAUSED', '3':'BUFFERING', '5':'CUED' };
+
+  var player = null;
+  var whichNow = '-';
+  var logEl = document.getElementById('log');
+
+  function stamp() {
+    var d = new Date();
+    return d.toTimeString().slice(0,8) + '.' + String(d.getMilliseconds()).padStart(3,'0');
+  }
+  function log(cls, msg) {
+    var line = document.createElement('div');
+    line.innerHTML = '<span class="t">' + stamp() + '</span>  <span class="' + cls + '">' + msg + '</span>';
+    logEl.appendChild(line);
+    logEl.scrollTop = logEl.scrollHeight;
+    console.log('[' + stamp() + '] ' + msg);
+  }
+
+  function safeState() {
+    try { return player && player.getPlayerState ? player.getPlayerState() : null; } catch (e) { return null; }
+  }
+  function safeTime() {
+    try { return player && player.getCurrentTime ? player.getCurrentTime().toFixed(2) : null; } catch (e) { return null; }
+  }
+
+  // continuous readout
+  setInterval(function () {
+    var s = safeState();
+    var out = document.getElementById('stateOut');
+    if (s === null) { out.textContent = '-'; out.className = 'v'; }
+    else { out.textContent = (STATE[String(s)] || s) + ' (' + s + ')'; out.className = 'v state' + s; }
+    document.getElementById('timeOut').textContent = safeTime() === null ? '-' : safeTime() + 's';
+    document.getElementById('whichOut').textContent = whichNow;
+  }, 250);
+
+  var PLAYER_VARS = {
+    controls: 0, disablekb: 1, modestbranding: 1, rel: 0, playsinline: 1,
+    fs: 0, iv_load_policy: 3, cc_load_policy: 0, origin: window.location.origin
+  };
+
+  function onError(e) {
+    var code = e && e.data;
+    log('err', 'onError FIRED  code=' + code + (code === 150 || code === 101 ? '  ("embedding disabled" per YT)' : ''));
+    // schedule the recovery check
+    checkRecovery(code, 1000);
+    checkRecovery(code, 3000);
+  }
+
+  function checkRecovery(code, delay) {
+    setTimeout(function () {
+      var s = safeState();
+      var name = s === null ? 'NO PLAYER' : (STATE[String(s)] || s);
+      var recovered = (s === 1 || s === 5 || s === 3 || s === 2); // playing, cued, buffering, paused
+      var cls = recovered ? 'snap-ok' : 'snap-bad';
+      log(cls, '  post-error +' + (delay/1000) + 's  state=' + name + '  time=' + safeTime() +
+        '   =>  ' + (recovered ? 'RECOVERED (150 was FALSE)' : 'STILL DEAD (real failure)'));
+      var v = document.getElementById('verdict');
+      if (delay === 3000) {
+        if (recovered) { v.className = 'verdict ok'; v.textContent = 'VERDICT: video is playing after the error. The 150 was a false alarm.'; }
+        else { v.className = 'verdict bad'; v.textContent = 'VERDICT: video is still dead after the error. This is a real load failure.'; }
+      }
+    }, delay);
+  }
+
+  function onStateChange(e) {
+    log('evt', 'onStateChange  ' + (STATE[String(e.data)] || e.data) + ' (' + e.data + ')');
+  }
+
+  function makePlayer(id, autoplay) {
+    whichNow = id;
+    document.getElementById('verdict').className = 'verdict';
+    document.getElementById('verdict').textContent = '';
+    player = new YT.Player('player', {
+      videoId: id,
+      playerVars: PLAYER_VARS,
+      events: {
+        onReady: function () {
+          log('act', 'onReady  (fresh player built with id=' + id + ')');
+          if (autoplay) { try { player.playVideo(); } catch (e) {} }
+        },
+        onStateChange: onStateChange,
+        onError: onError
+      }
+    });
+  }
+
+  // ── controls ──
+  function idA() { return parseId(document.getElementById('linkA').value); }
+  function idB() { return parseId(document.getElementById('linkB').value); }
+
+  document.getElementById('startBtn').addEventListener('click', function () {
+    var id = idA();
+    if (!id) { log('err', 'Could not parse Video A'); return; }
+    if (player) { try { player.destroy(); } catch (e) {} player = null; }
+    log('act', 'CREATE player with A (' + id + ')');
+    makePlayer(id, true);
+  });
+
+  document.getElementById('autoBtn').addEventListener('click', function () {
+    var a = idA(), b = idB();
+    if (!a || !b) { log('err', 'Need both A and B parsed'); return; }
+    if (player) { try { player.destroy(); } catch (e) {} player = null; }
+    log('act', 'AUTO: create A (' + a + '), play, then cueVideoById B (' + b + ') in 4s');
+    makePlayer(a, true);
+    setTimeout(function () {
+      log('act', 'AUTO: swapping to B via cueVideoById now (the suspect move)');
+      whichNow = b;
+      try { player.cueVideoById({ videoId: b, startSeconds: 0 }); } catch (e) { log('err', 'cueVideoById threw: ' + e); }
+    }, 4000);
+  });
+
+  document.getElementById('cueBtn').addEventListener('click', function () {
+    if (!player) { log('err', 'No player yet. Create + play A first.'); return; }
+    var b = idB(); if (!b) { log('err', 'Could not parse Video B'); return; }
+    log('act', 'SWAP via cueVideoById -> ' + b);
+    whichNow = b;
+    try { player.cueVideoById({ videoId: b, startSeconds: 0 }); } catch (e) { log('err', 'cueVideoById threw: ' + e); }
+  });
+
+  document.getElementById('loadBtn').addEventListener('click', function () {
+    if (!player) { log('err', 'No player yet. Create + play A first.'); return; }
+    var b = idB(); if (!b) { log('err', 'Could not parse Video B'); return; }
+    log('act', 'SWAP via loadVideoById -> ' + b);
+    whichNow = b;
+    try { player.loadVideoById({ videoId: b, startSeconds: 0 }); } catch (e) { log('err', 'loadVideoById threw: ' + e); }
+  });
+
+  document.getElementById('rebuildBtn').addEventListener('click', function () {
+    var b = idB(); if (!b) { log('err', 'Could not parse Video B'); return; }
+    log('act', 'DESTROY + RECREATE fresh player with B (' + b + '), origin included');
+    if (player) { try { player.destroy(); } catch (e) {} player = null; }
+    makePlayer(b, true);
+  });
+
+  document.getElementById('resetLogBtn').addEventListener('click', function () {
+    logEl.innerHTML = '';
+    document.getElementById('verdict').className = 'verdict';
+    document.getElementById('verdict').textContent = '';
+  });
+
+  function onYouTubeIframeAPIReady() {
+    log('evt', 'YT API ready. Origin = ' + window.location.origin);
+    log('evt', 'Press an Auto / Create button to begin.');
+  }
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
