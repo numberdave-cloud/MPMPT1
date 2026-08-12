@@ -86,10 +86,27 @@
     font-weight: 600;
   }
 
+  /* The visible window is a cropped strip of the 16:9 players. YouTube's top
+     title/channel bar and bottom "More videos" bar sit at the edges of each
+     player, so enlarging the players and clipping to a shorter, slightly
+     narrower window pushes that chrome out of view. Both players are cropped
+     identically. The music player stays a large, viewport-intersecting element
+     (its visible strip is well over 200px), so the sole-audio halt stays away.
+     Tune against the LIVE embed. These are the only two knobs worth touching:
+       --frame-aspect : shape of the window. 1.778 = full 16:9 (no crop).
+                        Higher = wider / more letterboxed. 2.0 is a gentle crop.
+       --scene-zoom   : enlarge the video to push the top and bottom YouTube
+                        bars out of frame and pull the sides in. 1.0 = none.
+                        Raise it until the title bar and the bottom bar are gone.
+       --scene-shift  : optional vertical nudge (% of player height) if the
+                        cropped band needs recentring on the action. */
   .video-wrap {
+    --frame-aspect: 2.0;
+    --scene-zoom: 1.18;
+    --scene-shift: 0%;
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: var(--frame-aspect);
     background: #000;
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -98,11 +115,19 @@
   }
   .video-wrap > div,
   .video-wrap iframe {
-    position: absolute; inset: 0; width: 100%; height: 100%; border: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border: none;
+    transform: translate(-50%, -50%) translateY(var(--scene-shift)) scale(var(--scene-zoom));
+    transform-origin: center center;
   }
   /* Music player sits full-size BEHIND the scene. YouTube halts playback on a
      player under 200x200 or not genuinely visible, and with the scene muted the
-     music is the only audio source, so it must be a compliant visible player.
+     music is the only audio source, so it must stay a compliant visible player.
      The opaque scene on top hides it from the student. */
   #musicPlayer { z-index: 1; }
   #scenePlayer { z-index: 2; }
@@ -594,6 +619,10 @@
   function handleLoad() {
     const parsed = parseYouTube($linkInput.value);
     if (!parsed) { setStatus("Couldn't read that link. Paste a YouTube URL.", true); return; }
+    // Hard stop the instant LOAD is pressed: pause and rewind both players so
+    // the old take never keeps rolling under the new one. loadMusic then cues
+    // the new bed paused at its in-point; PLAY starts scene and music together.
+    stopToTop();
     loadMusic(parsed.id, parsed.start);
   }
 
