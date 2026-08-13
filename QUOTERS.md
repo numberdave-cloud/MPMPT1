@@ -63,6 +63,12 @@ Reference: -3 dB is x0.71, -6 dB is x0.50, -9 dB is x0.36, -12 dB is x0.25.
 - **The PLAY / REPLAY button** hides by opacity, never `display`, so removing it does not reflow the card and shunt the title text.
 - **Stacked layout** resets `flex` on both columns. In a column flex container `flex-basis` applies to height, so an unreset basis silently inflates the widget.
 
+## Source crop, instance-local
+
+`quoter-2001-dawn-of-man/` adds `--zoom`, `--offx` and `--offy` to `:root` and sizes the iframe with them, to strip the letterbox off a source that arrives pillarboxed and letterboxed at once. It ships with a `?tune=1` panel for dialling the values.
+
+This is not yet in the shared machinery. The other four folders are unchanged. It is a good candidate for backporting with `--zoom: 1` as the default, which is a no-op for sources that do not need it.
+
 ## Embed
 
 Height 480 covers every instance so far in side-by-side layout. Stacked (below 660px) heights vary with notes length, so re-measure per instance:

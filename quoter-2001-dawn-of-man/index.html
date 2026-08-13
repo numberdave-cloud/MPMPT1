@@ -20,6 +20,20 @@
     /* lifted control tones: tracks and outlines on the transport row */
     --control: rgba(234, 224, 208, 0.34);
     --control-bright: rgba(234, 224, 208, 0.52);
+
+    /* ─── SOURCE CROP ───
+       This upload is 4:3 pillarboxed inside the 16:9 player, and the film
+       image is letterboxed inside that 4:3 frame, so the picture arrives
+       with bars on all four sides. Enlarging the iframe past the stage and
+       letting the stage clip it removes them.
+         1.000  raw source, bars all round
+         1.333  side bars gone exactly (4:3 to 16:9), thin top/bottom bars left
+         1.430  picture fills the frame, roughly 3.4% lost off each side
+       Offsets are a percentage of the iframe's own size, for recentring a
+       source whose letterbox is not symmetrical. This one is centred. */
+    --zoom: 1.43;
+    --offx: 0%;
+    --offy: 0%;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -71,11 +85,16 @@
     overflow: hidden;
   }
 
+  /* enlarged past the stage and clipped by its overflow, rather than
+     transform: scale(), so YouTube actually renders at the larger size
+     and the picture does not go soft. */
   .video-stage iframe {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    top: 50%;
+    left: 50%;
+    width: calc(100% * var(--zoom));
+    height: calc(100% * var(--zoom));
+    transform: translate(calc(-50% + var(--offx)), calc(-50% + var(--offy)));
     border: 0;
     z-index: 1;
   }
@@ -343,6 +362,95 @@
     margin-top: 13px;
   }
 
+  /* ─── TUNE PANEL ─── hidden unless ?tune=1 ─── */
+  .tune {
+    display: none;
+    max-width: 840px;
+    margin: 10px auto 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    padding: 14px 18px;
+  }
+  .tune.on { display: block; }
+  .tune-label {
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .tune-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 9px;
+  }
+  .tune-row span:first-child {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    width: 62px;
+    flex-shrink: 0;
+  }
+  .tune-row input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 3px;
+    background: var(--control);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    min-width: 80px;
+  }
+  .tune-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 6px; height: 16px;
+    background: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--bg);
+  }
+  .tune-row input[type="range"]::-moz-range-thumb {
+    width: 6px; height: 16px;
+    background: var(--accent);
+    border: none; border-radius: 0;
+  }
+  .tune-val {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    width: 56px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .tune-presets { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 10px; }
+  .tune-presets button {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--control);
+    border-radius: 3px;
+    padding: 7px 11px;
+    font-family: inherit;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .tune-presets button:hover { border-color: var(--accent); color: var(--accent); }
+  .tune-out {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
   /* stack on narrow columns */
   @media (max-width: 660px) {
     .main { flex-direction: column; gap: 16px; align-items: center; }
@@ -408,6 +516,32 @@
       <!-- ═══════════════════════════════════════════════════════════════ -->
 
     </div>
+  </div>
+
+  <!-- hidden unless ?tune=1. never seen by students. -->
+  <div class="tune" id="tune">
+    <div class="tune-label">Crop Tune</div>
+    <div class="tune-row">
+      <span>Zoom</span>
+      <input type="range" id="tZoom" min="1" max="2" step="0.005" value="1.43">
+      <span class="tune-val" id="tZoomV">1.430</span>
+    </div>
+    <div class="tune-row">
+      <span>Offset X</span>
+      <input type="range" id="tX" min="-20" max="20" step="0.5" value="0">
+      <span class="tune-val" id="tXV">0%</span>
+    </div>
+    <div class="tune-row">
+      <span>Offset Y</span>
+      <input type="range" id="tY" min="-20" max="20" step="0.5" value="0">
+      <span class="tune-val" id="tYV">0%</span>
+    </div>
+    <div class="tune-presets">
+      <button data-z="1">Raw source</button>
+      <button data-z="1.333">Kill side bars</button>
+      <button data-z="1.43">Fill frame</button>
+    </div>
+    <div class="tune-out" id="tOut"></div>
   </div>
 
 <script>
@@ -736,6 +870,43 @@
   // ─── WIRE ───
   $coverBtn.addEventListener('click', playClip);
   $stopBtn.addEventListener('click', stopClip);
+
+  // ─── CROP TUNE PANEL ─── only exists when ?tune=1 is on the URL ───
+  (function () {
+    if (!/[?&]tune=1\b/.test(location.search)) return;
+    const $t = document.getElementById('tune');
+    $t.classList.add('on');
+    const $z = document.getElementById('tZoom');
+    const $x = document.getElementById('tX');
+    const $y = document.getElementById('tY');
+    const $zv = document.getElementById('tZoomV');
+    const $xv = document.getElementById('tXV');
+    const $yv = document.getElementById('tYV');
+    const $out = document.getElementById('tOut');
+    const root = document.documentElement;
+
+    function apply() {
+      const z = (+$z.value).toFixed(3);
+      const x = (+$x.value).toFixed(1);
+      const y = (+$y.value).toFixed(1);
+      root.style.setProperty('--zoom', z);
+      root.style.setProperty('--offx', x + '%');
+      root.style.setProperty('--offy', y + '%');
+      $zv.textContent = z;
+      $xv.textContent = x + '%';
+      $yv.textContent = y + '%';
+      $out.textContent =
+        '--zoom: ' + z + ';\n' +
+        '--offx: ' + x + '%;\n' +
+        '--offy: ' + y + '%;';
+    }
+
+    [$z, $x, $y].forEach(el => el.addEventListener('input', apply));
+    $t.querySelectorAll('.tune-presets button').forEach(b => {
+      b.addEventListener('click', () => { $z.value = b.dataset.z; apply(); });
+    });
+    apply();
+  })();
 
   function safe(fn) { try { fn(); } catch (e) {} }
   function safeGet(fn, fallback) { try { return fn(); } catch (e) { return fallback; } }
