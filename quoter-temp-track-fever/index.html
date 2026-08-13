@@ -550,11 +550,11 @@
   // ══════════════════════════════════════════════════════════════
   const QUOTE = {
     videoId: 'IEfQ_9DIItI',   // Every Frame a Painting, temp score supplement
-    start: 121,               // 2:01 — quote content start (s), full volume from here
-    end: 162,                 // 2:42 — quote content end (s), fade-out begins here (moved 2s earlier)
-    fadeIn: 3,                // seconds of audio fade-in, ending at start (0 = hard cut)
-    fadeOut: 3,               // seconds of audio fade-out AFTER end   (0 = hard cut)
-    silentLead: 2,            // seconds of silence at the very start, BEFORE the fade-in begins
+    start: 122.5,             // 2:02.5 — Dracula theme starts here, full volume from here
+    end: 161,                 // 2:41 — quote content end (s), fade-out begins here
+    fadeIn: 2,                // fade-in over the 2s before the theme (2:00.5 to 2:02.5)
+    fadeOut: 2,               // fade-out 2:41 to 2:43, so it is silent by 2:43
+    silentLead: 4,            // silent, visually locked-out lead so YouTube's overlay is never seen
     title: 'Temp Track Fever: Ilan Vs. Wojciech',   // Dave's title
     source: 'Every Frame A Painting',               // Dave's credit
     sourceUrl: '',            // '' = auto-link to this video on YouTube

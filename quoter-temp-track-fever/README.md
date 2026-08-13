@@ -24,7 +24,7 @@ https://numberdave-cloud.github.io/MPMPT1/quoter-temp-track-fever/
 </iframe>
 ```
 
-Height 380. Measured with the real copy: 355px from 900px wide upward, 326px at 800px, 338px at 700px, 563px stacked below 660px. 380 gives a small buffer at normal Canvas desktop width. Below about 780px wide the widget scrolls inside the frame. Use 590 if the Canvas mobile app matters for this page.
+Height 380. Measured with the real copy: 355px from 900px wide upward, 326px at 800px, 338px at 700px, 563px stacked below 660px. Timing changes do not affect height. 380 gives a small buffer at normal Canvas desktop width. Below about 780px wide the widget scrolls inside the frame. Use 590 if the Canvas mobile app matters for this page.
 
 ## Build state
 
@@ -33,22 +33,23 @@ v1, 2026-08-13. Category: Miscellaneous. Copy final. Card title and source credi
 ## Clip
 
 - Video ID `IEfQ_9DIItI`, Every Frame a Painting, roughly 4:30 long
-- Quote content 2:01 to 2:42 (121s to 162s), displayed length 0:41
-- 2s silent lead, then 3s fade in, then hold, then 3s fade out. Actual playback runs 116s (1:56) to 165s (2:45).
-- Timeline: 1:56 to 1:58 silent (video rolling, volume zero), 1:58 to 2:01 fade in, 2:01 to 2:42 full, 2:42 to 2:45 fade out.
-- The silent lead and fade-in sit on the pre-roll before 2:01, so the quoted cue arrives clean at full volume exactly at 2:01. Same house style as the plain fade-in. The title card holds through the silent lead and the fade, dissolving as the music reaches full.
-- Two pieces play back to back inside the window: the Kilar Dracula cue first, then the Eshkeri Stardust cue. The fade brings you into the first and out of the second. The cut between them sits untouched in the middle, which is the whole point of the quote, so do not fade across it.
+- Quote content 2:02.5 to 2:41 (122.5s to 161s), displayed length 0:39. The Dracula theme starts at 2:02.5.
+- Timeline: 1:56.5 to 2:00.5 silent and visually locked out (video rolling under the title card, volume zero), 2:00.5 to 2:02.5 fade in, full at 2:02.5 as the theme starts, hold to 2:41, 2:41 to 2:43 fade out, silent by 2:43.
+- The silent lead runs 4s and the fade-in 2s, so the title card covers the video for a full 6s from the moment of play. YouTube's start-up overlay fires at play and clears within 3 to 4s, so it is never seen. The card dissolves at 2:02.5 as the music arrives.
+- Two pieces play back to back inside the window: the Kilar Dracula cue first, then the Eshkeri Stardust cue. The cut between them sits untouched in the middle, which is the whole point of the quote, so do not fade across it.
 - Volume starts at 50%, `levelTrim` currently 0 dB
 
 ## Source crop
 
 Not needed. This source is a 16:9 native YouTube video essay, so `--zoom` is left at 1, a no-op. The crop machinery and the `?tune=1` panel are still present, inherited from the 2001 build, in case a framing quirk turns up on a real listen. At zoom 1 they do nothing.
 
-## Silent lead
+## Silent lead and lockout
 
-This instance uses `silentLead: 2`, a field not in the other quoters. It inserts silent seconds at the very front, before the fade-in, so the video rolls silent for 2s and then the audio fades up. `PLAY_START` moves back to carry it, `FADE_IN_AT` marks where the ramp actually begins, and `REVEAL_AT` holds the card across the lead plus the fade so it dissolves as the music arrives.
+This instance uses `silentLead: 4`, a field not in the other quoters. It plays the video silent for 4s before the 2s fade-in begins, and `REVEAL_AT` holds the title card across the whole 6s so YouTube's overlay is never seen. The card dissolves as the music reaches full volume at 2:02.5.
 
-Interpretation worth confirming on a listen: the silent lead and the fade-in both sit on pre-2:01 content, so full volume lands exactly at 2:01 and the cue's attack is heard clean. If instead the intent was for the video to begin at 2:01, hold silent for 2s of the cue, then fade into it, that is a different setup: it plays the first 2s of the Dracula cue silently and fades into it slightly in. Say which you want after hearing it.
+`silentLead` is the lever if any overlay ever peeks through: raise it and the lockout grows, the card still dissolving at `start`. `start` is deliberately 2:02.5, the exact moment the Dracula theme begins, so full volume lands on the theme's first note.
+
+The silent lead and fade-in sit on the pre-2:02.5 content, so the quoted theme arrives clean at full volume. The 2s fade-in therefore rides over whatever is in the source at 2:00.5 to 2:02.5, the run-up to the theme. Confirm that run-up is quiet enough on a listen; if it carries audible narration, the fade will lift it slightly before the theme.
 
 The field defaults to 0 elsewhere, so it is a no-op for every other quoter. Good candidate to backport into the shared engine alongside the crop.
 
@@ -75,7 +76,7 @@ Shared machinery identical to every other quoter.
 ## Open TODOs
 
 - Tune `levelTrim` by ear.
-- Confirm the silent-lead interpretation above after a listen.
+- Confirm on a listen: theme entry clean at 2:02.5, overlay fully hidden, silent by 2:43.
 - Confirm the two copy edits above.
 - Confirm the fade feel across the mid-clip cut between the two pieces.
 - Confirm the folder name before it goes into Canvas.
@@ -84,4 +85,4 @@ Shared machinery identical to every other quoter.
 
 ## Last updated
 
-2026-08-13. Initial build, clip window 2:01 to 2:44 with 3s fades, crop reset to no-op, Dave's title, credit and copy in. Then moved the fade-out 2s earlier (end 2:44 to 2:42) and added a 2s silent lead before the fade-in.
+2026-08-13. Initial build, then retimed twice. Now: Dracula theme start at 2:02.5 with full volume landing there, a 4s silent and locked-out lead plus a 2s fade-in (6s of card cover so the YouTube overlay is never seen), and a fade-out ending silent at 2:43.

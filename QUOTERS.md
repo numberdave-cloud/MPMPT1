@@ -15,7 +15,7 @@ Category for all quoters: **Miscellaneous**.
 | `quoter-ruiner-instrumental-solo/` | Nine Inch Nails - Ruiner Instrumental Break | `RkT-aMgZvQI` | 2:44 to 3:51 | 1:07 | 0 dB | live, untested |
 | `quoter-drive-opening-credits/` | Drive - Opening Credits | `BHVbbcHWX4k` | 0:05 to 1:27 | 1:22 | 0 dB | live, untested, fragile source |
 | `quoter-2001-dawn-of-man/` | 2001: A Space Odyssey - The Dawn of Man | `ypEaGQb6dJk` | 6:02 to 7:40 | 1:38 | 0 dB | live, copy final, cropped source, fragile source |
-| `quoter-temp-track-fever/` | Temp Track Fever: Ilan Vs. Wojciech | `IEfQ_9DIItI` | 2:01 to 2:42 | 0:41 | 0 dB | live, copy final, 2s silent lead, 16:9 native |
+| `quoter-temp-track-fever/` | Temp Track Fever: Ilan Vs. Wojciech | `IEfQ_9DIItI` | 2:02.5 to 2:41 | 0:39 | 0 dB | live, copy final, 4s locked-out silent lead, 16:9 native |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
@@ -112,4 +112,4 @@ Quoter clips depend on the source video staying up. An unofficial or fan upload 
 
 ## Last updated
 
-2026-08-13. Added `quoter-temp-track-fever/` (16:9 native, no crop), then gave it a 2s silent lead and moved its fade-out 2s earlier. Silent-lead machinery is instance-local, other folders unchanged.
+2026-08-13. Added `quoter-temp-track-fever/` (16:9 native, no crop), then retimed it: theme start 2:02.5, 4s locked-out silent lead plus 2s fade-in so the YouTube overlay is never seen, fade-out silent by 2:43. Silent-lead machinery is instance-local, other folders unchanged.
