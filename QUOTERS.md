@@ -15,6 +15,7 @@ Category for all quoters: **Miscellaneous**.
 | `quoter-ruiner-instrumental-solo/` | Nine Inch Nails - Ruiner Instrumental Break | `RkT-aMgZvQI` | 2:44 to 3:51 | 1:07 | 0 dB | live, untested |
 | `quoter-drive-opening-credits/` | Drive - Opening Credits | `BHVbbcHWX4k` | 0:05 to 1:27 | 1:22 | 0 dB | live, untested, fragile source |
 | `quoter-2001-dawn-of-man/` | 2001: A Space Odyssey - The Dawn of Man | `ypEaGQb6dJk` | 6:02 to 7:40 | 1:38 | 0 dB | live, copy final, cropped source, fragile source |
+| `quoter-temp-track-fever/` | Temp Track Fever: Ilan Vs. Wojciech | `IEfQ_9DIItI` | 2:01 to 2:44 | 0:43 | 0 dB | live, copy final, 16:9 native, official-ish source |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
@@ -75,7 +76,7 @@ This is not yet in the shared machinery. The other four folders are unchanged. I
 
 ## Embed
 
-Height 480 covers every instance so far in side-by-side layout, except `quoter-2001-dawn-of-man/`, which uses 400 after a layout rebalance. Stacked (below 660px) heights vary with notes length, so re-measure per instance:
+Height 480 covers most instances in side-by-side layout. `quoter-2001-dawn-of-man/` uses 400 and `quoter-temp-track-fever/` uses 380, both after the wider-notes-column layout. Stacked (below 660px) heights vary with notes length, so re-measure per instance:
 
 | Folder | 900px | 700px | 480px stacked |
 | --- | --- | --- | --- |
@@ -84,6 +85,7 @@ Height 480 covers every instance so far in side-by-side layout, except `quoter-2
 | `quoter-ruiner-instrumental-solo/` | 389 | 329 | 537 |
 | `quoter-drive-opening-credits/` | 389 | 380 | 567 |
 | `quoter-2001-dawn-of-man/` | 379 | 462 | 645 |
+| `quoter-temp-track-fever/` | 355 | 338 | 563 |
 
 ```html
 <iframe
@@ -103,4 +105,4 @@ Quoter clips depend on the source video staying up. An unofficial or fan upload 
 
 ## Last updated
 
-2026-08-13. Added `quoter-2001-dawn-of-man/`. Shared machinery unchanged.
+2026-08-13. Added `quoter-temp-track-fever/` (16:9 native, no crop). Shared machinery unchanged.
