@@ -29,6 +29,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | YouTube Quoter [Mick Gordon — Doom brief] | `quoter-mick-gordon-doom-brief-1/` | Miscellaneous | live | YES |
 | YouTube Quoter [NIN — Ruiner instrumental] | `quoter-ruiner-instrumental-solo/` | Miscellaneous | live | YES |
 | YouTube Quoter [Drive — opening credits] | `quoter-drive-opening-credits/` | Miscellaneous | live | YES |
+| YouTube Quoter [2001 — The Dawn of Man] | `quoter-2001-dawn-of-man/` | Miscellaneous | live (v1, copy pending) | YES |
 | Groove Maker | `groove-maker/` | Composition | live (v0.1, audibly unverified) | YES |
 | Orchestra Stems | `orchestra-stems/` | Miscellaneous | live | YES |
 | Compression | `compression-explorer/` | Mixing | live | YES |

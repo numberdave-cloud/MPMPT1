@@ -14,6 +14,7 @@ Category for all quoters: **Miscellaneous**.
 | `quoter-mick-gordon-doom-brief-1/` | Mick Gordon discussing the Doom brief | `U4FNBMZsqrY` | 2:33 to 4:12 | 1:39 | -6 dB | live, untested |
 | `quoter-ruiner-instrumental-solo/` | Nine Inch Nails - Ruiner Instrumental Break | `RkT-aMgZvQI` | 2:44 to 3:51 | 1:07 | 0 dB | live, untested |
 | `quoter-drive-opening-credits/` | Drive - Opening Credits | `BHVbbcHWX4k` | 0:05 to 1:27 | 1:22 | 0 dB | live, untested, fragile source |
+| `quoter-2001-dawn-of-man/` | 2001: A Space Odyssey - The Dawn of Man | `ypEaGQb6dJk` | 6:02 to 7:40 | 1:38 | 0 dB | live, untested, placeholder copy, fragile source |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
@@ -72,6 +73,7 @@ Height 480 covers every instance so far in side-by-side layout. Stacked (below 6
 | `quoter-mick-gordon-doom-brief-1/` | 389 | 326 | 439 |
 | `quoter-ruiner-instrumental-solo/` | 389 | 329 | 537 |
 | `quoter-drive-opening-credits/` | 389 | 380 | 567 |
+| `quoter-2001-dawn-of-man/` | 388 | 326 | 497 (placeholder notes) |
 
 ```html
 <iframe
@@ -91,4 +93,4 @@ Quoter clips depend on the source video staying up. An unofficial or fan upload 
 
 ## Last updated
 
-2026-07-22.
+2026-08-13. Added `quoter-2001-dawn-of-man/`. Shared machinery unchanged.
