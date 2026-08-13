@@ -54,7 +54,10 @@
     background: var(--bg);
     border-radius: 12px;
     padding: 20px 22px;
-    max-width: 840px;
+    /* wider than the other quoters: this instance has a long notes block,
+       and giving the notes column more width costs nothing horizontally
+       inside Canvas while taking ~120px off the embed height. */
+    max-width: 900px;
     margin: 0 auto;
   }
 
@@ -66,9 +69,9 @@
   }
 
   .col-video {
-    flex: 1 1 460px;
+    flex: 1 1 440px;
     min-width: 0;
-    max-width: 500px;
+    max-width: 440px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -328,7 +331,7 @@
 
   /* ─── NOTES PANEL ─── */
   .notes {
-    flex: 0 1 258px;
+    flex: 0 1 360px;
     min-width: 0;
     border-left: 1px solid var(--border);
     padding-left: 20px;
@@ -454,11 +457,11 @@
   /* stack on narrow columns */
   @media (max-width: 660px) {
     .main { flex-direction: column; gap: 16px; align-items: center; }
-    .col-video { flex: 0 0 auto; width: 100%; max-width: 500px; }
+    .col-video { flex: 0 0 auto; width: 100%; max-width: 440px; }
     .notes {
       flex: 0 0 auto;
       width: 100%;
-      max-width: 500px;
+      max-width: 440px;
       align-self: auto;
       border-left: none;
       border-top: 1px solid var(--border);
@@ -509,8 +512,8 @@
       <aside class="notes">
         <div class="notes-label">Notes</div>
         <div class="notes-body">
-          <p>Placeholder. Notes copy for this quote has not been written yet and this panel is here to hold its space and its height while the clip timing is tested.</p>
-          <p class="listen">Placeholder for the prompt line, the sentence that tells the student what to listen for or what to do.</p>
+          <p>The music in <em>2001: A Space Odyssey</em> is iconic, but the story behind it is stranger than the film lets on. Kubrick edited the film using existing classical recordings as temp tracks, then hired the composer Alex North to write an original score. As he cut the film, Kubrick fell for his temp tracks and decided to keep them. He dropped North's score completely, and North didn't find out until he watched the premiere in New York and heard the classical pieces in place of his own music.</p>
+          <p class="listen">Watch this clip and ask yourself what function the music is playing here. Why do you think Kubrick was so attached to this piece of music and how it worked with this scene? Given the scene has no dialogue, what is the audio saying that the visual is not?</p>
         </div>
       </aside>
       <!-- ═══════════════════════════════════════════════════════════════ -->

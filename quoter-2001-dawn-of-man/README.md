@@ -16,7 +16,7 @@ https://numberdave-cloud.github.io/MPMPT1/quoter-2001-dawn-of-man/
 <iframe
   src="https://numberdave-cloud.github.io/MPMPT1/quoter-2001-dawn-of-man/"
   width="100%"
-  height="480"
+  height="400"
   title="2001: A Space Odyssey - The Dawn of Man"
   style="border: none;"
   loading="lazy"
@@ -24,11 +24,13 @@ https://numberdave-cloud.github.io/MPMPT1/quoter-2001-dawn-of-man/
 </iframe>
 ```
 
-Height 480. Measured with the current placeholder notes: 388px at 900px wide, 326px at 700px, 497px stacked below 660px. Re-measure once the real notes copy lands, since notes length drives the stacked height.
+Height 400, not the 480 used by the other quoters. Measured with the real notes copy: 379px from 900px wide upward, 420px at 800px, 462px at 700px, 645px stacked below 660px.
+
+480 was leaving roughly 90px of dead white space inside the Canvas iframe, which is what prompted the change. 400 gives a 21px buffer at normal Canvas desktop width. Below about 820px wide the widget will scroll inside the frame. Use 470 if narrow desktop windows matter for this page, or 660 if the Canvas mobile app does.
 
 ## Build state
 
-v1, 2026-08-13. Category: Miscellaneous. Deployed for live testing only. Not yet embedded in Canvas. Card title, source credit and notes copy are all placeholders awaiting Dave.
+v2, 2026-08-13. Category: Miscellaneous. Notes copy is final. Card title and source credit are still working values awaiting confirmation.
 
 ## Current clip
 
@@ -68,7 +70,21 @@ This is currently local to this instance. The other four quoters are untouched a
 
 ## Notes copy
 
-Placeholder. Two paragraphs sized to roughly match the other quoters so the layout and height measurements are meaningful. Replace both, keeping the second one in the `listen` class so it keeps the divider rule and brighter text.
+Dave's copy, used as written apart from three changes, all flagged to him:
+
+- "attached to with this piece of music" to "attached to this piece of music". Dictation artefact.
+- "dialog" to "dialogue". Australian spelling.
+- The first mention of the film title is wrapped in `<em>`, which the notes stylesheet renders as italic in full-strength text. Later mentions are left plain.
+
+Paragraph one is the context and sits in the dim body style. Paragraph two carries the `listen` class, which gives it the divider rule above and brighter text, and holds the three questions.
+
+## Layout
+
+This instance diverges from the other quoters: frame `max-width` 900px rather than 840, video column 440px rather than 500, notes column 360px rather than 258.
+
+The notes block here is long enough that it, not the video, sets the height. At the original 258px the notes column ran 439px against the video's 324px and the widget came to 503px. Widening the notes to 360px balances the two columns at 315 and 291 and brings the widget to 379px. Costs nothing horizontally, since Canvas gives roughly 960px and the frame plus body padding comes to 924px.
+
+Worth knowing for any future quoter with a long notes block: widen the notes column before reaching for a smaller font.
 
 ## Technical notes
 
@@ -79,16 +95,16 @@ Shared machinery identical to every other quoter, no changes made to it in this 
 
 ## Open TODOs
 
-- Supply the real notes copy, card title and source credit.
+- Confirm the card title and source credit, both still working values.
+- Confirm the three copy edits listed under Notes copy.
 - Confirm the fade interpretation above.
 - Confirm the folder name before it goes into Canvas.
 - Tune `levelTrim` by ear.
 - Confirm 1.43 (fills the frame) against 1.333 (keeps a thin letterbox).
 - Decide whether to backport the crop to the shared quoter template.
-- Re-measure stacked height after the real copy lands.
 - Live-test overlay flash suppression, fade feel, captions off.
 - Note a backup video ID against takedown.
 
 ## Last updated
 
-2026-08-13. Initial build from the current quoter template. Clip window 6:02 to 7:40, 3s fades, placeholder title, credit and notes. Then added the source crop at `--zoom: 1.43` to remove the four-sided letterbox, plus a `?tune=1` crop panel.
+2026-08-13. Initial build, clip window 6:02 to 7:40 with 3s fades. Source crop at `--zoom: 1.43` to remove the four-sided letterbox, plus a `?tune=1` crop panel. Then real notes copy in, columns rebalanced to a 900px frame, and embed height cut from 480 to 400.

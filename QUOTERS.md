@@ -14,7 +14,7 @@ Category for all quoters: **Miscellaneous**.
 | `quoter-mick-gordon-doom-brief-1/` | Mick Gordon discussing the Doom brief | `U4FNBMZsqrY` | 2:33 to 4:12 | 1:39 | -6 dB | live, untested |
 | `quoter-ruiner-instrumental-solo/` | Nine Inch Nails - Ruiner Instrumental Break | `RkT-aMgZvQI` | 2:44 to 3:51 | 1:07 | 0 dB | live, untested |
 | `quoter-drive-opening-credits/` | Drive - Opening Credits | `BHVbbcHWX4k` | 0:05 to 1:27 | 1:22 | 0 dB | live, untested, fragile source |
-| `quoter-2001-dawn-of-man/` | 2001: A Space Odyssey - The Dawn of Man | `ypEaGQb6dJk` | 6:02 to 7:40 | 1:38 | 0 dB | live, untested, placeholder copy, fragile source |
+| `quoter-2001-dawn-of-man/` | 2001: A Space Odyssey - The Dawn of Man | `ypEaGQb6dJk` | 6:02 to 7:40 | 1:38 | 0 dB | live, copy final, cropped source, fragile source |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
@@ -63,6 +63,10 @@ Reference: -3 dB is x0.71, -6 dB is x0.50, -9 dB is x0.36, -12 dB is x0.25.
 - **The PLAY / REPLAY button** hides by opacity, never `display`, so removing it does not reflow the card and shunt the title text.
 - **Stacked layout** resets `flex` on both columns. In a column flex container `flex-basis` applies to height, so an unreset basis silently inflates the widget.
 
+## Long notes blocks
+
+The notes column, not the video, sets the widget height once the notes run long. `quoter-2001-dawn-of-man/` hit this: at the standard 258px column its notes ran 439px against a 324px video column. Widening the notes column to 360px, inside a 900px frame with a 440px video column, balanced the two and took the widget from 503px to 379px. Reach for column width before font size.
+
 ## Source crop, instance-local
 
 `quoter-2001-dawn-of-man/` adds `--zoom`, `--offx` and `--offy` to `:root` and sizes the iframe with them, to strip the letterbox off a source that arrives pillarboxed and letterboxed at once. It ships with a `?tune=1` panel for dialling the values.
@@ -71,7 +75,7 @@ This is not yet in the shared machinery. The other four folders are unchanged. I
 
 ## Embed
 
-Height 480 covers every instance so far in side-by-side layout. Stacked (below 660px) heights vary with notes length, so re-measure per instance:
+Height 480 covers every instance so far in side-by-side layout, except `quoter-2001-dawn-of-man/`, which uses 400 after a layout rebalance. Stacked (below 660px) heights vary with notes length, so re-measure per instance:
 
 | Folder | 900px | 700px | 480px stacked |
 | --- | --- | --- | --- |
@@ -79,7 +83,7 @@ Height 480 covers every instance so far in side-by-side layout. Stacked (below 6
 | `quoter-mick-gordon-doom-brief-1/` | 389 | 326 | 439 |
 | `quoter-ruiner-instrumental-solo/` | 389 | 329 | 537 |
 | `quoter-drive-opening-credits/` | 389 | 380 | 567 |
-| `quoter-2001-dawn-of-man/` | 388 | 326 | 497 (placeholder notes) |
+| `quoter-2001-dawn-of-man/` | 379 | 462 | 645 |
 
 ```html
 <iframe
