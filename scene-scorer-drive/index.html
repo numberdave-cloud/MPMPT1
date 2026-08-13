@@ -143,6 +143,18 @@
     pointer-events: none;
   }
 
+  /* Ending fade scrim: driven by the poll, opacity 0 → 1 across the
+     fade window. Sits under the cover so END lands on an already-black
+     frame. */
+  .fade-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+  }
+
   /* Transport demoted: small quiet row under the selector. */
   .transport {
     display: flex;
@@ -356,6 +368,7 @@
 
   <div class="video-wrap">
     <div id="scenePlayer"></div>
+    <div class="fade-scrim" id="fadeScrim"></div>
     <div class="click-shield" id="clickShield"></div>
     <div class="video-cover" id="videoCover"><span id="coverLabel">LOADING</span></div>
   </div>
@@ -440,6 +453,16 @@
   let lockUsed = false;
   let locked = false;
 
+  // ─── SCRIPTED ENDING ─────────────────────────────────────────────
+  // Audio and picture fade from FADE_START over FADE_DURATION seconds
+  // of scene time, then everything stops, re-seeks, and arms for a
+  // restart. Fade values are computed from the current scene time each
+  // poll tick, so pause/resume mid-fade behaves.
+  const FADE_START = 120;      // 2:00
+  const FADE_DURATION = 10;    // silent and black by 2:10
+  let fadeGain = 1;            // 1 → 0 across the fade window
+  let ended = false;
+
   // ─── DOM REFS ────────────────────────────────────────────────────
   const $playBtn = document.getElementById('playBtn');
   const $restartBtn = document.getElementById('restartBtn');
@@ -450,6 +473,7 @@
   const $indicator = document.getElementById('volIndicator');
   const $cover = document.getElementById('videoCover');
   const $coverLabel = document.getElementById('coverLabel');
+  const $scrim = document.getElementById('fadeScrim');
 
   // ─── VIDEO COVER ─────────────────────────────────────────────────
   function showCover(label) {
@@ -478,9 +502,47 @@
     }, LOCK_SECONDS * 1000);
   }
 
+  // ─── ENDING FADE POLL ────────────────────────────────────────────
+  function resetFade() {
+    ended = false;
+    fadeGain = 1;
+    $scrim.style.opacity = '0';
+  }
+
+  function endScene() {
+    musicPlayers.forEach((p, i) => {
+      try { p.pauseVideo(); p.seekTo(CONFIG.tracks[i].start || 0, true); } catch (e) {}
+    });
+    try { scenePlayer.pauseVideo(); scenePlayer.seekTo(sceneStartFor(activeTrack), true); } catch (e) {}
+    isPlaying = false;
+    ended = true;
+    showCover('END');
+    fadeGain = 1;                    // re-armed for the next run
+    $scrim.style.opacity = '0';      // cover is opaque; clear beneath it
+    updateTransportUI();
+  }
+
+  function fadeTick() {
+    if (!allReady || !isPlaying || ended) return;
+    let t;
+    try { t = scenePlayer.getCurrentTime(); } catch (e) { return; }
+    if (typeof t !== 'number' || isNaN(t)) return;
+    if (t >= FADE_START + FADE_DURATION) { endScene(); return; }
+    const p = Math.max(0, Math.min(1, (t - FADE_START) / FADE_DURATION));
+    $scrim.style.opacity = String(p);
+    // Perceptual audio curve: linear amplitude reads as a late cliff,
+    // so square the remaining fraction (same lesson as the quoter fades).
+    const g = Math.pow(1 - p, 2);
+    if (g !== fadeGain) {
+      fadeGain = g;
+      applyMasterVol();
+    }
+  }
+  setInterval(fadeTick, 100);
+
   // ─── VOLUME HELPERS ──────────────────────────────────────────────
   function effVol(base) {
-    return Math.max(0, Math.min(100, Math.round(base * masterVol / 100)));
+    return Math.max(0, Math.min(100, Math.round(base * masterVol / 100 * fadeGain)));
   }
   function applyMasterVol() {
     if (scenePlayer && activeTrack === -1) {
@@ -622,6 +684,7 @@
 
   function togglePlay() {
     if (locked) { flashPause('flash-red'); return; }
+    if (ended) { restart(); return; }
     isPlaying ? pause() : play();
   }
 
@@ -634,6 +697,7 @@
 
   function restart() {
     if (!allReady || locked) return;
+    resetFade();
     scenePlayer.seekTo(sceneStartFor(activeTrack), true);
     musicPlayers.forEach((p, i) => p.seekTo(CONFIG.tracks[i].start || 0, true));
     play();
@@ -647,7 +711,10 @@
     if (!allReady || locked) return;
     activeTrack = idx;
     setActiveTrackUI();
-    if (restartOnSwitch) {
+    // After the scripted ending, any selection restarts from the top
+    // regardless of switching mode.
+    if (restartOnSwitch || ended) {
+      resetFade();
       scenePlayer.seekTo(sceneStartFor(idx), true);
       musicPlayers.forEach((p, i) => p.seekTo(CONFIG.tracks[i].start || 0, true));
       play();

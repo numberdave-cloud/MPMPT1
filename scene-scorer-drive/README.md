@@ -52,6 +52,10 @@ PLAY/PAUSE and RESTART remain for pausing mid-scene and for FROM TOP-equivalent 
 
 The first time MUSIC 3 is selected (per page load), every control locks for 15 seconds: selector, switch-mode toggle, pause, restart, and the volume knob. There is no visual indication of the lockout except one tell: pressing the pause button flashes it red. When the 15 seconds are up the pause button flashes green three times and everything answers again. Config constants `LOCK_TRACK` (index 2) and `LOCK_SECONDS` (15) at the top of the script. Once per page load only; subsequent MUSIC 3 selections behave normally.
 
+## Scripted ending (v1.8)
+
+The scene never reaches the upload's 2:46 end. A 100ms poll watches scene time: from 2:00 (`FADE_START`) the picture fades to black via a scrim and the audible source's volume rides down a squared perceptual curve, both fully out by 2:10 (`FADE_START + FADE_DURATION`). At 2:10 everything pauses, all players re-seek to their start points, and the cover shows END. Pressing PLAY or any source button after the ending restarts from the top regardless of switching mode. Fade values are computed from current scene time each tick, so pause/resume mid-fade behaves. `fadeGain` multiplies inside `effVol()` so the master knob balance is preserved through the fade.
+
 ## Technical notes
 
 - Shared Scene Scorer machinery: four synced YT players, click-shield, caption kill, master volume knob scaling per-source volumes.
@@ -81,4 +85,4 @@ The film is ~2.35:1 inside the 16:9 upload, so YouTube's chrome (title card, sha
 
 ## Last updated
 
-2026-08-05. v1.7: bed lineup change — MUSIC 1 now Taxi Driver main title (`uZ-vP32zHQk`), former MUSIC 1 (mathcore) moved to MUSIC 2, Star Wars cantina track dropped, MUSIC 3 unchanged. v1.6.3: surround reverted to transparent. The grey seen on live is Canvas's own rounded embed container, not a transparency failure; transparent inherits it seamlessly, while the v1.6.2 white paint showed as a mismatched slab inside it. v1.6.1: asymmetric letterbox crop (2.6:1 frame, top-biased) after channel text peeked in at the top on live. v1.6: letterbox crop clips YouTube chrome; embed height 680 → 600. Earlier same day: v1.5 design-system pass; v1.4 MUSIC 3 first-trigger 15s lockout; v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.
+2026-08-05. v1.8: scripted ending — audio and video fade from 2:00, silent, black, and re-armed by 2:10. v1.7: bed lineup change — MUSIC 1 now Taxi Driver main title (`uZ-vP32zHQk`), former MUSIC 1 (mathcore) moved to MUSIC 2, Star Wars cantina track dropped, MUSIC 3 unchanged. v1.6.3: surround reverted to transparent. The grey seen on live is Canvas's own rounded embed container, not a transparency failure; transparent inherits it seamlessly, while the v1.6.2 white paint showed as a mismatched slab inside it. v1.6.1: asymmetric letterbox crop (2.6:1 frame, top-biased) after channel text peeked in at the top on live. v1.6: letterbox crop clips YouTube chrome; embed height 680 → 600. Earlier same day: v1.5 design-system pass; v1.4 MUSIC 3 first-trigger 15s lockout; v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.
