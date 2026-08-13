@@ -33,9 +33,9 @@ v1.1, 2026-08-05. Category: Miscellaneous. Shipped for live testing at Dave's re
 ## Config
 
 - Scene: `BHVbbcHWX4k` (Drive opening credits, 2:46, same upload as `quoter-drive-opening-credits/` — shared takedown risk, see that README)
-- MUSIC 1: `DqiVp0Nx5I4`, starts at 0:06 (mathcore)
-- MUSIC 2: `EsvfptdFXf4` (Star Wars cantina swing)
-- MUSIC 3: `dQw4w9WgXcQ`, bed starts at 0:00 but carries `sceneStart: 1` so the scene begins 1s in when chosen from the top (1987 pop)
+- MUSIC 1: `uZ-vP32zHQk` (Taxi Driver main title, noir jazz — the plausible alternative)
+- MUSIC 2: `DqiVp0Nx5I4`, starts at 0:06 (mathcore)
+- MUSIC 3: `dQw4w9WgXcQ`, bed starts at 0:00 but carries `sceneStart: 1` so the scene begins 1s in when chosen from the top (1987 pop; also the lockout track)
 - Default selection: TEMP TRACK. Bed labels deliberately blind so students judge by ear.
 - All volumes 100, untrimmed.
 
@@ -66,7 +66,7 @@ The first time MUSIC 3 is selected (per page load), every control locks for 15 s
 ## Open TODOs
 
 - Trim per-bed `volume` by ear against the temp track.
-- Check MUSIC 2 outlasts the 2:46 scene (some cuts of that piece run shorter).
+- Check MUSIC 1 (Taxi Driver) outlasts the 2:46 scene.
 - Confirm blind labels vs named labels.
 - Confirm category (Miscellaneous assumed).
 - Note: the parent `scene-scorer/` folder has no README and no INDEX.md row. Flagged 2026-08-05, not fixed here.
@@ -81,4 +81,4 @@ The film is ~2.35:1 inside the 16:9 upload, so YouTube's chrome (title card, sha
 
 ## Last updated
 
-2026-08-05. v1.6.3: surround reverted to transparent. The grey seen on live is Canvas's own rounded embed container, not a transparency failure; transparent inherits it seamlessly, while the v1.6.2 white paint showed as a mismatched slab inside it. v1.6.1: asymmetric letterbox crop (2.6:1 frame, top-biased) after channel text peeked in at the top on live. v1.6: letterbox crop clips YouTube chrome; embed height 680 → 600. Earlier same day: v1.5 design-system pass; v1.4 MUSIC 3 first-trigger 15s lockout; v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.
+2026-08-05. v1.7: bed lineup change — MUSIC 1 now Taxi Driver main title (`uZ-vP32zHQk`), former MUSIC 1 (mathcore) moved to MUSIC 2, Star Wars cantina track dropped, MUSIC 3 unchanged. v1.6.3: surround reverted to transparent. The grey seen on live is Canvas's own rounded embed container, not a transparency failure; transparent inherits it seamlessly, while the v1.6.2 white paint showed as a mismatched slab inside it. v1.6.1: asymmetric letterbox crop (2.6:1 frame, top-biased) after channel text peeked in at the top on live. v1.6: letterbox crop clips YouTube chrome; embed height 680 → 600. Earlier same day: v1.5 design-system pass; v1.4 MUSIC 3 first-trigger 15s lockout; v1.3 inert shield + video cover; v1.2 per-track `sceneStart`; v1.1 selector promoted, transport demoted, switch-mode toggle.
