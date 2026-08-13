@@ -22,17 +22,18 @@ Height is 190, not the 600 default. This is a slim single-row player. Measured c
 ```
 
 ## Build state
-v1.0. Not yet verified playing inside a live Canvas iframe.
+v1.1. Fixes a Canvas internal-scroll issue and sets the default volume to 70%. Not yet re-verified playing inside a live Canvas iframe.
 
 ## What it plays
 Main Title from Star Wars: A New Hope. John Williams and the Wiener Philharmoniker, from "John Williams in Vienna" (Deutsche Grammophon, 2020). YouTube ID `54hoKbTWon4`.
 
 ## Technical notes
-- Audio comes from the YouTube IFrame API, not embedded base64. The video iframe is rendered but parked off-screen (1px, positioned off-canvas) so only sound reaches the student. `display:none` would stop playback, so it stays positioned instead.
+- Audio comes from the YouTube IFrame API, not embedded base64. The IFrame API builds a 640x360 player, so its wrapper is a 1px absolutely positioned box with `overflow:hidden` that clips the player out of sight. It is rendered rather than set to `display:none`, which would stop playback. Clipping it also stops that 640x360 box inflating the document height (the original ship missed this and caused an internal scroll inside the Canvas iframe).
+- `html` and `body` are locked to 100% height with `overflow:hidden`, so page content can never exceed the iframe and Canvas cannot scroll the card internally. The card is centred in whatever embed height is set. Keep the embed height at or above 185 so nothing clips on narrow mobile, where the transport row wraps.
 - The fade is automation, not a real audio tap. Web Audio cannot read a cross-origin YouTube stream, so the fade polls `getCurrentTime` and calls `setVolume` on an 80ms ticker.
 - Three config constants at the top of the script control the fade: `FADE_START` (210s = 3:30), `FADE_DURATION` (30s), `STOP_AFTER_FADE` (true, pauses the source once it reaches silence). Change these plus `VIDEO_ID` to reuse the player on another page or track.
 - Progress bar scale is `FADE_START + FADE_DURATION` (240s = 4:00), not the real track length, so the bar fills to 100% at the exact moment the track goes silent. The time readout shows elapsed against that 4:00 scale.
-- Volume fader is a custom control, not a native range input: drag the handle, scroll over it, or use arrow keys (Home/End jump to 0/100). Clicking the track does not jump the value. The fader is a master level that multiplies with the fade, so pulling it down still fades from the lower level and never rides back up.
+- Volume fader is a custom control, not a native range input: drag the handle, scroll over it, or use arrow keys (Home/End jump to 0/100). Clicking the track does not jump the value. It initialises at 70%. The fader is a master level that multiplies with the fade, so pulling it down still fades from the lower level and never rides back up.
 - Once the fade completes, the play button becomes a replay: it seeks to 0 and restores the fader level.
 - iOS Safari needs the play tap as its audio gesture; the play button handler calls `playVideo` directly to satisfy that.
 
@@ -43,4 +44,5 @@ Main Title from Star Wars: A New Hope. John Williams and the Wiener Philharmonik
 - EQ animation beside the transport is a cosmetic "playing" tell, not real spectrum data. Remove if it reads as too decorative for the design system.
 
 ## Last updated
-13 August 2026. Initial ship. Audio-only YouTube player with a single metadata line, custom volume fader, and a 3:30 to 4:00 fade to silence.
+13 August 2026 (v1.1). Fixed a Canvas internal-scroll problem: the hidden YouTube player was inflating document height, so the card scrolled inside the iframe. Clipped the player with overflow:hidden and locked the body to the iframe height. Default volume now starts at 70%.
+13 August 2026 (v1.0). Initial ship. Audio-only YouTube player with a single metadata line, custom volume fader, and a 3:30 to 4:00 fade to silence.

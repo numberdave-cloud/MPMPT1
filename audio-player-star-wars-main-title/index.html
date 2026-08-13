@@ -22,15 +22,18 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html, body {
+    height: 100%;
     background: transparent;
     color: var(--text);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
+    overflow: hidden;
   }
 
   body {
     padding: 14px;
     display: flex;
+    align-items: center;
     justify-content: center;
   }
 
@@ -232,7 +235,7 @@
         <div class="vrule" aria-hidden="true"></div>
 
         <div class="vol" id="vol" role="slider" tabindex="0"
-             aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+             aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
           <svg class="spk" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 00-2.5-4.03v8.05A4.5 4.5 0 0016.5 12zm-2.5-9v2.06a7 7 0 010 13.87V22a9 9 0 000-19z"/></svg>
           <div class="vol-track" id="volTrack">
             <div class="vol-fill" id="volFill"></div>
@@ -241,7 +244,7 @@
         </div>
       </div>
 
-      <div class="yt-host" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;">
+      <div class="yt-host" style="position:absolute;left:0;bottom:0;width:1px;height:1px;overflow:hidden;pointer-events:none;">
         <div id="ytHost"></div>
       </div>
 
@@ -266,7 +269,7 @@
   let ticker = null;
   let lastVol = -1;
   let finished = false;
-  let userVol = 100;   // fader position, 0..100
+  let userVol = 70;    // fader position, 0..100 (default 70%)
   let dragging = false;
 
   // ─── DOM ─────────────────────────────────────────────────────────
