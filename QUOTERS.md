@@ -15,7 +15,7 @@ Category for all quoters: **Miscellaneous**.
 | `quoter-ruiner-instrumental-solo/` | Nine Inch Nails - Ruiner Instrumental Break | `RkT-aMgZvQI` | 2:44 to 3:51 | 1:07 | 0 dB | live, untested |
 | `quoter-drive-opening-credits/` | Drive - Opening Credits | `BHVbbcHWX4k` | 0:05 to 1:27 | 1:22 | 0 dB | live, untested, fragile source |
 | `quoter-2001-dawn-of-man/` | 2001: A Space Odyssey - The Dawn of Man | `ypEaGQb6dJk` | 6:02 to 7:40 | 1:38 | 0 dB | live, copy final, cropped source, fragile source |
-| `quoter-temp-track-fever/` | Temp Track Fever: Ilan Vs. Wojciech | `IEfQ_9DIItI` | 2:01 to 2:44 | 0:43 | 0 dB | live, copy final, 16:9 native, official-ish source |
+| `quoter-temp-track-fever/` | Temp Track Fever: Ilan Vs. Wojciech | `IEfQ_9DIItI` | 2:01 to 2:42 | 0:41 | 0 dB | live, copy final, 2s silent lead, 16:9 native |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
@@ -45,6 +45,7 @@ Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 | `source` | credit text on the card. `''` hides it |
 | `sourceUrl` | `''` auto-links to the video on YouTube |
 | `showLength` | shows `end - start` on the card |
+| `silentLead` | seconds of silence at the very front, before the fade-in. Default 0. Instance-local so far, see below |
 
 ## Levels
 
@@ -67,6 +68,12 @@ Reference: -3 dB is x0.71, -6 dB is x0.50, -9 dB is x0.36, -12 dB is x0.25.
 ## Long notes blocks
 
 The notes column, not the video, sets the widget height once the notes run long. `quoter-2001-dawn-of-man/` hit this: at the standard 258px column its notes ran 439px against a 324px video column. Widening the notes column to 360px, inside a 900px frame with a 440px video column, balanced the two and took the widget from 503px to 379px. Reach for column width before font size.
+
+## Silent lead, instance-local
+
+`quoter-temp-track-fever/` adds a `silentLead` field and the constants `SILENT_LEAD` and `FADE_IN_AT`, plus a silent-lead branch in the envelope poll. It plays the video silent for N seconds before the fade-in begins. `PLAY_START` moves back to carry it and `REVEAL_AT` holds the card across the lead so it dissolves as the music arrives.
+
+The silent lead and fade-in sit on the pre-roll, so the quoted content still arrives clean at full volume at `start`. Default 0, a no-op for every other quoter. Good backport candidate for the shared engine alongside the crop.
 
 ## Source crop, instance-local
 
@@ -105,4 +112,4 @@ Quoter clips depend on the source video staying up. An unofficial or fan upload 
 
 ## Last updated
 
-2026-08-13. Added `quoter-temp-track-fever/` (16:9 native, no crop). Shared machinery unchanged.
+2026-08-13. Added `quoter-temp-track-fever/` (16:9 native, no crop), then gave it a 2s silent lead and moved its fade-out 2s earlier. Silent-lead machinery is instance-local, other folders unchanged.

@@ -551,9 +551,10 @@
   const QUOTE = {
     videoId: 'IEfQ_9DIItI',   // Every Frame a Painting, temp score supplement
     start: 121,               // 2:01 — quote content start (s), full volume from here
-    end: 164,                 // 2:44 — quote content end (s), fade-out begins here
-    fadeIn: 3,                // seconds of audio fade-in BEFORE start (0 = hard cut)
+    end: 162,                 // 2:42 — quote content end (s), fade-out begins here (moved 2s earlier)
+    fadeIn: 3,                // seconds of audio fade-in, ending at start (0 = hard cut)
     fadeOut: 3,               // seconds of audio fade-out AFTER end   (0 = hard cut)
+    silentLead: 2,            // seconds of silence at the very start, BEFORE the fade-in begins
     title: 'Temp Track Fever: Ilan Vs. Wojciech',   // Dave's title
     source: 'Every Frame A Painting',               // Dave's credit
     sourceUrl: '',            // '' = auto-link to this video on YouTube
@@ -563,14 +564,17 @@
   };
   // ══════════════════════════════════════════════════════════════
 
-  // played window extends either side to carry the audio fades
-  const PLAY_START = Math.max(0, QUOTE.start - (QUOTE.fadeIn || 0));
+  // played window extends either side to carry the audio fades, plus an
+  // optional silent lead at the very front (video rolling, volume at zero)
+  const SILENT_LEAD = Math.max(0, QUOTE.silentLead || 0);
+  const PLAY_START = Math.max(0, QUOTE.start - (QUOTE.fadeIn || 0) - SILENT_LEAD);
+  const FADE_IN_AT = QUOTE.start - (QUOTE.fadeIn || 0);   // fade-in begins here, after the silent lead
   const PLAY_END   = QUOTE.end + (QUOTE.fadeOut || 0);
 
   // how long the title card is held over the video after play, to cover
   // YouTube's start-up overlay flash. bump if any of it still peeks through.
   const REVEAL_HOLD     = 4.2;
-  const REVEAL_AT       = PLAY_START + Math.max(QUOTE.fadeIn || 0, REVEAL_HOLD);
+  const REVEAL_AT       = PLAY_START + Math.max((QUOTE.fadeIn || 0) + SILENT_LEAD, REVEAL_HOLD);
   const REVEAL_DISSOLVE = 0.8;   // seconds, card dissolving away into the video
 
   // the card fades back in across the audio fade-out, so the end mirrors
@@ -805,11 +809,13 @@
       if (!ready) return;
       const t = safeGet(() => player.getCurrentTime(), PLAY_START);
 
-      // audio envelope: up across the fade-in, hold through the quote,
-      // down across the fade-out
+      // audio envelope: silent lead, up across the fade-in, hold through
+      // the quote, down across the fade-out
       let factor = 1;
-      if (QUOTE.fadeIn && t < QUOTE.start) {
-        factor = (t - PLAY_START) / QUOTE.fadeIn;
+      if (t < FADE_IN_AT) {
+        factor = 0;                                    // silent lead, before the fade-in
+      } else if (QUOTE.fadeIn && t < QUOTE.start) {
+        factor = (t - FADE_IN_AT) / QUOTE.fadeIn;
       } else if (QUOTE.fadeOut && t > QUOTE.end) {
         factor = 1 - (t - QUOTE.end) / QUOTE.fadeOut;
       }
