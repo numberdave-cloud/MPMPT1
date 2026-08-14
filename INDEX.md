@@ -23,6 +23,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Song Structure Navigator | `song-nav-nowhere/` | Composition | live | YES |
 | Vintage Sampler | `vintage-sampler/` | Composition | live | YES |
 | Skill Loop Player | `skill-loop-player/` | Miscellaneous | live | YES |
+| Video in Live: Skill Loops | `skill-loop-video-in-live/` | Miscellaneous | live (v1.0, playback unverified in Canvas) | YES |
 | EQ Explorer | `eq-explorer/` | Mixing | live (v0.1, single source) | YES |
 | Vertical Remixing | `vertical-remixing/` | Arranging | live | YES |
 | YouTube Quoter [Korven — Apprehension Engine] | `youtube-quoter/` | Miscellaneous | live | YES |
