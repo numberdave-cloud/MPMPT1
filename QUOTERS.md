@@ -16,6 +16,7 @@ Category for all quoters: **Miscellaneous**.
 | `quoter-drive-opening-credits/` | Drive - Opening Credits | `BHVbbcHWX4k` | 0:05 to 1:27 | 1:22 | 0 dB | live, untested, fragile source |
 | `quoter-2001-dawn-of-man/` | 2001: A Space Odyssey - The Dawn of Man | `ypEaGQb6dJk` | 6:02 to 7:40 | 1:38 | 0 dB | live, copy final, cropped source, fragile source |
 | `quoter-temp-track-fever/` | Temp Track Fever: Ilan Vs. Wojciech | `IEfQ_9DIItI` | 2:02.5 to 2:41 | 0:39 | 0 dB | live, copy final, 4s locked-out silent lead, 16:9 native |
+| `quoter-baby-driver/` | Baby Driver (2017) | `6XMuUVw7TOM` | 2:07 to 3:17 | 1:10 | 0 dB | live, copy pending, 3s locked-out lead, crop assumed 16:9 |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
@@ -83,7 +84,7 @@ This is not yet in the shared machinery. The other four folders are unchanged. I
 
 ## Embed
 
-Height 480 covers most instances in side-by-side layout. `quoter-2001-dawn-of-man/` uses 400 and `quoter-temp-track-fever/` uses 380, both after the wider-notes-column layout. Stacked (below 660px) heights vary with notes length, so re-measure per instance:
+Height 480 covers most instances in side-by-side layout. `quoter-2001-dawn-of-man/` uses 400 and `quoter-temp-track-fever/` and `quoter-baby-driver/` use 380, all after the wider-notes-column layout. Stacked (below 660px) heights vary with notes length, so re-measure per instance:
 
 | Folder | 900px | 700px | 480px stacked |
 | --- | --- | --- | --- |
@@ -93,6 +94,7 @@ Height 480 covers most instances in side-by-side layout. `quoter-2001-dawn-of-ma
 | `quoter-drive-opening-credits/` | 389 | 380 | 567 |
 | `quoter-2001-dawn-of-man/` | 379 | 462 | 645 |
 | `quoter-temp-track-fever/` | 355 | 338 | 563 |
+| `quoter-baby-driver/` | 355 (placeholder) | 294 (placeholder) | 522 (placeholder) |
 
 ```html
 <iframe
@@ -112,4 +114,4 @@ Quoter clips depend on the source video staying up. An unofficial or fan upload 
 
 ## Last updated
 
-2026-08-13. Added `quoter-temp-track-fever/` (16:9 native, no crop), then retimed it: theme start 2:02.5, 4s locked-out silent lead plus 2s fade-in so the YouTube overlay is never seen, fade-out silent by 2:43. Silent-lead machinery is instance-local, other folders unchanged.
+2026-08-13. Added `quoter-baby-driver/` (Baby Driver 2017, ColumbiaPicturesPH, 2:07 to 3:17, 3s locked-out lead, copy pending). Shared machinery unchanged.
