@@ -32,7 +32,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | YouTube Quoter [Drive — opening credits] | `quoter-drive-opening-credits/` | Miscellaneous | live | YES |
 | YouTube Quoter [2001 — The Dawn of Man] | `quoter-2001-dawn-of-man/` | Miscellaneous | live (v2, copy final) | YES |
 | YouTube Quoter [Temp Track Fever] | `quoter-temp-track-fever/` | Miscellaneous | live (v1) | YES |
-| YouTube Quoter [Baby Driver] | `quoter-baby-driver/` | Miscellaneous | live (v1, copy pending) | YES |
+| YouTube Quoter [Baby Driver] | `quoter-baby-driver/` | Miscellaneous | live (v2, copy final) | YES |
 | Groove Maker | `groove-maker/` | Composition | live (v0.1, audibly unverified) | YES |
 | Orchestra Stems | `orchestra-stems/` | Miscellaneous | live | YES |
 | Compression | `compression-explorer/` | Mixing | live | YES |

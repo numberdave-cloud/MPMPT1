@@ -28,7 +28,7 @@ Height 380, provisional. Measured with placeholder notes: 355px from 900px wide 
 
 ## Build state
 
-v1, 2026-08-13. Category: Miscellaneous. Timing set. Notes copy is a placeholder awaiting Dave. Card title and source credit are Dave's, as given. Deployed for live testing, not yet embedded in Canvas.
+v2, 2026-08-13. Category: Miscellaneous. Copy final. Card title and source credit are Dave's, as given. Deployed for live testing, not yet embedded in Canvas.
 
 ## Clip
 
@@ -45,7 +45,11 @@ Not set. `--zoom` is 1, a no-op, on the assumption this ColumbiaPicturesPH uploa
 
 ## Notes copy
 
-Placeholder, awaiting Dave. Two paragraphs sized to roughly match the other quoters so the layout measurements mean something. Replace both, keeping the second in the `listen` class so it keeps the divider rule and brighter text. Italicise film titles on first mention with `<em>`, per house pattern.
+Dave's copy, used as written. Top paragraph on spotting and Wright's edit-to-music approach, prompt line below in the `listen` class. Film title italicised on first mention with `<em>`. Opening letter of the prompt capitalised (Dave sent it lowercase).
+
+A Wright quote from a 2017 interview was built in and then dropped at Dave's call. The quote-block CSS (`.notes-body blockquote`) is left in place but inert, since it is a reasonable thing to reuse if a quote is wanted later.
+
+The prompt line uses the notes column at 291px balanced against a 291px video, widget height 355px.
 
 ## Layout
 
@@ -60,7 +64,6 @@ Shared machinery identical to every other quoter. Carries the instance-local `si
 
 ## Open TODOs
 
-- Drop in the real notes copy when Dave supplies it, then re-measure height.
 - Tune `levelTrim` by ear.
 - Confirm the crop assumption (16:9 native) on a live view.
 - Confirm the fade feel and that the overlay stays hidden to 2:07.
@@ -69,4 +72,4 @@ Shared machinery identical to every other quoter. Carries the instance-local `si
 
 ## Last updated
 
-2026-08-13. Initial build from the current quoter template. Clip window 2:07 to 3:17, 3s fades, 3s locked-out silent lead, no crop, Dave's title and credit, placeholder copy.
+2026-08-13. Initial build, clip window 2:07 to 3:17, 3s fades, 3s locked-out silent lead, no crop. Then Dave's final copy in (top spotting paragraph, prompt line), a Wright quote added and then dropped at Dave's call.
