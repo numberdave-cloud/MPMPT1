@@ -17,6 +17,7 @@ Category for all quoters: **Miscellaneous**.
 | `quoter-2001-dawn-of-man/` | 2001: A Space Odyssey - The Dawn of Man | `ypEaGQb6dJk` | 6:02 to 7:40 | 1:38 | 0 dB | live, copy final, cropped source, fragile source |
 | `quoter-temp-track-fever/` | Temp Track Fever: Ilan Vs. Wojciech | `IEfQ_9DIItI` | 2:02.5 to 2:41 | 0:39 | 0 dB | live, copy final, 4s locked-out silent lead, 16:9 native |
 | `quoter-baby-driver/` | Baby Driver (2017) | `6XMuUVw7TOM` | 2:07 to 3:17 | 1:10 | 0 dB | live, copy final, 3s locked-out lead, crop assumed 16:9 |
+| `quoter-there-will-be-blood/` | There Will Be Blood (2007) - Peachtree Dance Scene | `GBeiNFPNWQM` | 1:10 to 2:20 | 1:07 | 0 dB | live, copy final, 3s locked-out lead, scope letterbox crop pending |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
@@ -95,6 +96,7 @@ Height 480 covers most instances in side-by-side layout. `quoter-2001-dawn-of-ma
 | `quoter-2001-dawn-of-man/` | 379 | 462 | 645 |
 | `quoter-temp-track-fever/` | 355 | 338 | 563 |
 | `quoter-baby-driver/` | 355 | 294 | 501 |
+| `quoter-there-will-be-blood/` | 355 | 379 | 584 |
 
 ```html
 <iframe
@@ -114,4 +116,4 @@ Quoter clips depend on the source video staying up. An unofficial or fan upload 
 
 ## Last updated
 
-2026-08-13. Added `quoter-baby-driver/` (Baby Driver 2017, ColumbiaPicturesPH, 2:07 to 3:17, 3s locked-out lead, copy pending). Shared machinery unchanged.
+2026-08-13. Added `quoter-there-will-be-blood/` (There Will Be Blood 2007, ocean scene, 1:10 to 2:20, 3s locked-out lead). Scope film, so a letterbox crop is expected but not yet applied. Shared machinery unchanged.
