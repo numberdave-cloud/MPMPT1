@@ -50,6 +50,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Audio Player [Midnight Express: The Chase] | `audio-player-midnight-express/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
 | Audio Player [Terminator 2: Main Theme] | `audio-player-terminator-2/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
 | Audio Player [Under the Skin: Lonely Void] | `audio-player-under-the-skin/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
+| Audio Player [Mausam & Escape] | `audio-player-mausam-escape/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
 
 ## Work in progress (not yet in repo)
 
