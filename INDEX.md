@@ -22,6 +22,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Song Structure Analyser [Live Set Export + Detailed] | `song-structure-v4-als-export/` | Composition | live | YES |
 | Song Structure Navigator | `song-nav-nowhere/` | Composition | live | YES |
 | Vintage Sampler | `vintage-sampler/` | Composition | live | YES |
+| Character Generator | `character-generator/` | Composition | live | YES |
 | Skill Loop Player | `skill-loop-player/` | Miscellaneous | live | YES |
 | Video in Live: Skill Loops | `skill-loop-video-in-live/` | Miscellaneous | live (v1.0, playback unverified in Canvas) | YES |
 | EQ Explorer | `eq-explorer/` | Mixing | live (v0.1, single source) | YES |

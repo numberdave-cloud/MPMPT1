@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Character Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --clip: #C04838;
+    --success: #7BA968;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.35);
+    --frame: 20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: transparent;
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body { padding: var(--frame); }
+
+  /* ─── DEVICE ─── */
+  .device {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--accent);
+    padding: 22px 26px 24px;
+    max-width: 580px;
+    margin: 0 auto;
+  }
+
+  .device-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 16px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+
+  .device-title {
+    font-size: 14px;
+    letter-spacing: 0.28em;
+    font-weight: 600;
+  }
+
+  .char-no {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+
+  /* ─── FIELDS ─── */
+  .field {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .field:last-child { border-bottom: none; }
+
+  .field-label {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 7px;
+  }
+
+  .field-value {
+    font-size: 22px;
+    line-height: 1.35;
+    font-weight: 500;
+    color: var(--text);
+    transition: color 0.12s, opacity 0.06s;
+    min-height: 30px;
+  }
+  .field.character .field-value { font-weight: 600; letter-spacing: 0.01em; }
+  .field-value.cycling { color: var(--text-dim); opacity: 0.7; }
+  .field-value.land { color: var(--accent); }
+  .field-value.egg { color: var(--accent-glow); }
+
+  /* ─── ACTIONS ─── */
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+
+  .spin-btn {
+    flex: 2;
+    background: var(--accent);
+    color: var(--bg);
+    border: 1px solid var(--accent);
+    padding: 16px 24px;
+    font-family: inherit;
+    font-size: 14px;
+    letter-spacing: 0.28em;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.1s, border-color 0.1s, opacity 0.1s, transform 0.05s;
+  }
+  .spin-btn:hover:not(:disabled) { background: var(--accent-glow); border-color: var(--accent-glow); }
+  .spin-btn:active:not(:disabled) { transform: translateY(1px); }
+  .spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .copy-btn {
+    flex: 1;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 16px 20px;
+    font-family: inherit;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.1s, color 0.1s, transform 0.05s;
+  }
+  .copy-btn:hover:not(:disabled) { border-color: var(--border-bright); }
+  .copy-btn:active:not(:disabled) { transform: translateY(1px); }
+  .copy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .copy-btn.copied { border-color: var(--success); color: var(--success); }
+
+  @media (max-width: 560px) {
+    :root { --frame: 12px; }
+    .device { padding: 18px 18px 20px; }
+    .field-value { font-size: 20px; }
+    .spin-btn { font-size: 13px; letter-spacing: 0.22em; }
+  }
+</style>
+</head>
+<body>
+  <div class="device">
+    <div class="device-head">
+      <div class="device-title">CHARACTER GENERATOR</div>
+      <div class="char-no" id="charNo">CHARACTER NO. 0000</div>
+    </div>
+    <div id="fields"></div>
+    <div class="actions">
+      <button class="spin-btn" id="spinBtn">New Character</button>
+      <button class="copy-btn" id="copyBtn">Copy</button>
+    </div>
+  </div>
+
+<script>
+  // Character descriptors (film reference in comment, hidden from display)
+  const CHARACTERS = [
+    'Archaeologist',      // Indiana Jones
+    'Assassin',           // Léon / John Wick
+    'Boxer',              // Rocky
+    'Replicant / android',// Blade Runner
+    'Mob boss',           // The Godfather
+    'Spy',                // James Bond
+    'Pirate',             // Pirates of the Caribbean
+    'Astronaut',          // Interstellar
+    'Getaway driver',     // Drive
+    'Wizard',             // The Lord of the Rings
+    'Detective',          // Se7en / Chinatown
+    'Ballerina',          // Black Swan
+    'Gladiator',          // Gladiator
+    'Illusionist',        // The Prestige
+    'Bounty hunter',      // The Mandalorian
+    'Con artist',         // Catch Me If You Can
+    'Ship captain',       // Jaws / Master and Commander
+    'Cult leader',        // Midsommar / The Master
+    'Nun',                // Doubt
+    'Soldier',            // Saving Private Ryan
+    'Fashion editor',     // The Devil Wears Prada
+    'Dressmaker',         // Phantom Thread
+    'Governess',          // Jane Eyre / Rebecca
+    'Novelist'            // Little Women
+  ];
+
+  // Subtext suggestions (film reference in comment, hidden from display)
+  const SUBTEXTS = [
+    'trying to rescue their daughter',         // Taken
+    "hiding that they've already turned traitor", // many
+    'being slowly won over by the enemy',      // The Departed / Donnie Brasco
+    'slowly losing their grip on reality',     // The Shining
+    'seeking revenge',                         // Gladiator / John Wick
+    "pretending to be someone they're not",    // The Talented Mr Ripley
+    'falling for someone forbidden',           // Brokeback Mountain
+    'haunted by guilt over a past mistake',    // Manchester by the Sea
+    'desperate to prove they matter',          // Whiplash
+    "protecting a child that isn't theirs",    // Logan / Léon
+    'terrified but hiding it to lead others',  // many war films
+    'running out of time',                     // Ikiru
+    'consumed by ambition',                    // There Will Be Blood / Macbeth
+    'longing to go home',                      // E.T. / Cast Away
+    'unable to let go of the past',            // Vertigo
+    'losing their humanity',                   // Blade Runner / The Fly
+    'sacrificing themselves for others',       // Armageddon
+    'trying to escape their fate',             // Minority Report
+    "craving a parent's approval",             // Star Wars
+    'nursing a quiet, obsessive rage',         // Taxi Driver
+    'torn between duty and desire',            // Casablanca
+    'waiting for someone who may never return',// Atonement / The English Patient
+    'realising they married the wrong person', // The Bridges of Madison County
+    'longing for the life they gave up'        // La La Land
+  ];
+
+  // Secret combo. Fills both reels at once, roughly 1 in 45 spins.
+  const EGG = { character: 'A lactose intolerant sumo wrestler', subtext: 'who drank four milkshakes at lunch' };
+  const EGG_CHANCE = 1 / 45;
+
+  const REELS = [
+    { key: 'character', label: 'Character', extraClass: 'character' },
+    { key: 'subtext',   label: 'Subtext' }
+  ];
+
+  const $fields = document.getElementById('fields');
+  const $spin = document.getElementById('spinBtn');
+  const $copy = document.getElementById('copyBtn');
+  const $charNo = document.getElementById('charNo');
+  const valueEls = {};
+  let current = null;
+
+  REELS.forEach(r => {
+    const field = document.createElement('div');
+    field.className = 'field' + (r.extraClass ? ' ' + r.extraClass : '');
+    const label = document.createElement('div');
+    label.className = 'field-label';
+    label.textContent = r.label;
+    const value = document.createElement('div');
+    value.className = 'field-value';
+    field.appendChild(label);
+    field.appendChild(value);
+    $fields.appendChild(field);
+    valueEls[r.key] = value;
+  });
+
+  function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function pick(arr, prevVal) { const c = arr.filter(v => v !== prevVal); return rand(c.length ? c : arr); }
+
+  function rollCharacter(prev) {
+    if (Math.random() < EGG_CHANCE) {
+      return { character: EGG.character, subtext: EGG.subtext, egg: true };
+    }
+    return {
+      character: pick(CHARACTERS, prev ? prev.character : null),
+      subtext:   pick(SUBTEXTS,   prev ? prev.subtext   : null),
+      egg: false
+    };
+  }
+
+  function randDisplay(key) { return key === 'character' ? rand(CHARACTERS) : rand(SUBTEXTS); }
+  function charNumber() { return String(Math.floor(1000 + Math.random() * 9000)); }
+
+  let spinning = false;
+  function spin() {
+    if (spinning) return;
+    spinning = true; $spin.disabled = true; $copy.disabled = true; resetCopyBtn();
+    const final = rollCharacter(current);
+    const CYCLE_MS = 55, FIRST_STOP = 480, STAGGER = 200;
+    const numTimer = setInterval(() => { $charNo.textContent = 'CHARACTER NO. ' + charNumber(); }, CYCLE_MS);
+    let lastStop = 0;
+    REELS.forEach((r, i) => {
+      const el = valueEls[r.key];
+      el.classList.add('cycling');
+      const cycleTimer = setInterval(() => { el.textContent = randDisplay(r.key); }, CYCLE_MS);
+      const stopAt = FIRST_STOP + i * STAGGER; lastStop = stopAt;
+      setTimeout(() => {
+        clearInterval(cycleTimer);
+        el.textContent = final[r.key];
+        el.classList.remove('cycling');
+        el.classList.add(final.egg ? 'egg' : 'land');
+        if (!final.egg) setTimeout(() => el.classList.remove('land'), 220);
+      }, stopAt);
+    });
+    setTimeout(() => {
+      clearInterval(numTimer);
+      $charNo.textContent = 'CHARACTER NO. ' + (final.egg ? '8888' : charNumber());
+      current = final; spinning = false; $spin.disabled = false; $copy.disabled = false;
+    }, lastStop + 260);
+  }
+
+  function applyCharacter(c) {
+    REELS.forEach(r => {
+      const el = valueEls[r.key];
+      el.textContent = c[r.key];
+      el.classList.remove('land', 'egg');
+      if (c.egg) el.classList.add('egg');
+    });
+    $charNo.textContent = 'CHARACTER NO. ' + (c.egg ? '8888' : charNumber());
+    current = c;
+  }
+
+  function buildCopyText() {
+    const lines = [$charNo.textContent, ''];
+    REELS.forEach(r => lines.push(r.label.toUpperCase() + ': ' + current[r.key]));
+    return lines.join('\n');
+  }
+  function resetCopyBtn() { $copy.textContent = 'Copy'; $copy.classList.remove('copied'); }
+  function flashCopied() { $copy.textContent = 'Copied \u2713'; $copy.classList.add('copied'); setTimeout(resetCopyBtn, 1800); }
+  async function handleCopy() {
+    if (spinning || !current) return;
+    const text = buildCopyText();
+    try { await navigator.clipboard.writeText(text); flashCopied(); }
+    catch (err) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); flashCopied(); } catch (e) { $copy.textContent = 'Copy failed'; }
+      document.body.removeChild(ta);
+    }
+  }
+
+  $spin.addEventListener('click', spin);
+  $copy.addEventListener('click', handleCopy);
+  applyCharacter(rollCharacter(null));
+</script>
+</body>
+</html>
