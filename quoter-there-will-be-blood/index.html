@@ -569,11 +569,11 @@
   // ══════════════════════════════════════════════════════════════
   const QUOTE = {
     videoId: 'GBeiNFPNWQM',   // There Will Be Blood, Peachtree dance scene
-    start: 73,                // 1:13 — full volume from here (fade-in begins at 1:10)
+    start: 70,                // 1:10 — sound and video both fully up by here
     end: 140,                 // 2:20 — fade-out begins here
-    fadeIn: 3,                // fade-in from 1:10 to 1:13
+    fadeIn: 5,                // smooth 5s fade-in ending at 1:10 (sound leads the video)
     fadeOut: 3,               // fade-out 2:20 to 2:23
-    silentLead: 3,            // silent, visually locked-out lead so YouTube's overlay is never seen
+    silentLead: 0,            // no silent gap: sound fades in from the moment of play
     title: 'There Will Be Blood (2007) - Peachtree Dance Scene',   // Dave's title
     source: '',               // no link title supplied; card hides the credit line when empty
     sourceUrl: '',            // '' = auto-link to this video on YouTube
@@ -593,8 +593,10 @@
   // how long the title card is held over the video after play, to cover
   // YouTube's start-up overlay flash. bump if any of it still peeks through.
   const REVEAL_HOLD     = 4.2;
-  const REVEAL_AT       = PLAY_START + Math.max((QUOTE.fadeIn || 0) + SILENT_LEAD, REVEAL_HOLD);
   const REVEAL_DISSOLVE = 0.8;   // seconds, card dissolving away into the video
+  // reveal so the dissolve finishes as the audio reaches full, but never before
+  // YouTube's start-up overlay has had time to clear
+  const REVEAL_AT       = Math.max(PLAY_START + REVEAL_HOLD, QUOTE.start - REVEAL_DISSOLVE);
 
   // the card fades back in across the audio fade-out, so the end mirrors
   // the start. minimum 0.6s so a hard-cut clip still lands softly.
@@ -678,6 +680,8 @@
   let poll = null;
   let lastVol = 50;
   let envGain = 1;          // current fade-envelope gain, 0..1
+  let fadeInStart = 0;      // wall-clock ms anchor for a smooth fade-in ramp
+  let fadeOutStart = 0;     // wall-clock ms anchor for a smooth fade-out ramp
 
   // ─── YOUTUBE API BOOTSTRAP ───
   (function () {
@@ -795,6 +799,7 @@
     hasPlayed = true;
     curtainDropped = false;
     endFadeStarted = false;
+    fadeInStart = 0; fadeOutStart = 0;
     enterCurtain();
     envGain = 0;
     $stopBtn.disabled = false;
@@ -828,18 +833,27 @@
       if (!ready) return;
       const t = safeGet(() => player.getCurrentTime(), PLAY_START);
 
-      // audio envelope: silent lead, up across the fade-in, hold through
-      // the quote, down across the fade-out
-      let factor = 1;
-      if (t < FADE_IN_AT) {
-        factor = 0;                                    // silent lead, before the fade-in
-      } else if (QUOTE.fadeIn && t < QUOTE.start) {
-        factor = (t - FADE_IN_AT) / QUOTE.fadeIn;
-      } else if (QUOTE.fadeOut && t > QUOTE.end) {
-        factor = 1 - (t - QUOTE.end) / QUOTE.fadeOut;
+      // audio envelope. YouTube's getCurrentTime only ticks ~4x a second, so
+      // driving a fade straight off it sounds stepped. We use t to detect WHICH
+      // phase we are in, then run the ramp itself off the wall clock so it moves
+      // every poll for a smooth slope.
+      const now = performance.now();
+      let factor;
+      if (QUOTE.fadeOut && t >= QUOTE.end) {
+        if (fadeOutStart === 0) fadeOutStart = now;
+        factor = 1 - (now - fadeOutStart) / 1000 / QUOTE.fadeOut;
+      } else if (t < QUOTE.start) {
+        if (!QUOTE.fadeIn) {
+          factor = 0;                                  // hard cut: silent until start
+        } else {
+          if (t >= FADE_IN_AT && fadeInStart === 0) fadeInStart = now;   // ramp anchor
+          factor = fadeInStart ? (now - fadeInStart) / 1000 / QUOTE.fadeIn : 0;
+        }
+      } else {
+        factor = 1;                                    // hold through the quote
       }
       factor = Math.max(0, Math.min(1, factor));
-      if (factor < 0.02) factor = 0;      // land on true silence, not a stub
+      if (factor < 0.02) factor = 0;      // true silence at the extremes
       envGain = fadeGain(factor);
       pushVolume(envGain);
 

@@ -17,7 +17,7 @@ Category for all quoters: **Miscellaneous**.
 | `quoter-2001-dawn-of-man/` | 2001: A Space Odyssey - The Dawn of Man | `ypEaGQb6dJk` | 6:02 to 7:40 | 1:38 | 0 dB | live, copy final, cropped source, fragile source |
 | `quoter-temp-track-fever/` | Temp Track Fever: Ilan Vs. Wojciech | `IEfQ_9DIItI` | 2:02.5 to 2:41 | 0:39 | 0 dB | live, copy final, 4s locked-out silent lead, 16:9 native |
 | `quoter-baby-driver/` | Baby Driver (2017) | `6XMuUVw7TOM` | 2:07 to 3:17 | 1:10 | 0 dB | live, copy final, 3s locked-out lead, crop assumed 16:9 |
-| `quoter-there-will-be-blood/` | There Will Be Blood (2007) - Peachtree Dance Scene | `GBeiNFPNWQM` | 1:10 to 2:20 | 1:07 | 0 dB | live, copy final, 3s locked-out lead, scope letterbox crop pending |
+| `quoter-there-will-be-blood/` | There Will Be Blood (2007) - Peachtree Dance Scene | `GBeiNFPNWQM` | 1:10 to 2:20 | 1:10 | 0 dB | live, copy final, smooth wall-clock fade, no silent lead, scope crop pending |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
@@ -71,6 +71,10 @@ Reference: -3 dB is x0.71, -6 dB is x0.50, -9 dB is x0.36, -12 dB is x0.25.
 
 The notes column, not the video, sets the widget height once the notes run long. `quoter-2001-dawn-of-man/` hit this: at the standard 258px column its notes ran 439px against a 324px video column. Widening the notes column to 360px, inside a 900px frame with a 440px video column, balanced the two and took the widget from 503px to 379px. Reach for column width before font size.
 
+## Smooth fade, instance-local
+
+`quoter-there-will-be-blood/` drives the fade envelope off `performance.now()` rather than `player.getCurrentTime()`. YouTube's reported time updates ~4x a second, which makes a fade computed from it sound stepped. The poll uses reported time only to pick the phase and runs the ramp off the wall clock, giving a step every 50ms. `fadeInStart` / `fadeOutStart` anchor it. Strong backport candidate: every quoter's fade currently runs through the coarse-time path.
+
 ## Silent lead, instance-local
 
 `quoter-temp-track-fever/` adds a `silentLead` field and the constants `SILENT_LEAD` and `FADE_IN_AT`, plus a silent-lead branch in the envelope poll. It plays the video silent for N seconds before the fade-in begins. `PLAY_START` moves back to carry it and `REVEAL_AT` holds the card across the lead so it dissolves as the music arrives.
@@ -116,4 +120,4 @@ Quoter clips depend on the source video staying up. An unofficial or fan upload 
 
 ## Last updated
 
-2026-08-13. Added `quoter-there-will-be-blood/` (There Will Be Blood 2007, ocean scene, 1:10 to 2:20, 3s locked-out lead). Scope film, so a letterbox crop is expected but not yet applied. Shared machinery unchanged.
+2026-08-13. Reworked `quoter-there-will-be-blood/` fade: smooth wall-clock ramp, no silent lead, sound and video both up by 1:10 with sound leading. Smooth-fade machinery is instance-local, a backport candidate. Scope crop still pending.

@@ -28,22 +28,22 @@ Height 380. Measured with the real copy: 355px from 900px wide upward, 338px at 
 
 ## Build state
 
-v1, 2026-08-13. Category: Miscellaneous. Shipped. Copy final. Title is Dave's. No source credit supplied. Deployed to Pages, not yet embedded in Canvas.
+v2, 2026-08-13. Category: Miscellaneous. Shipped. Copy final. Title is Dave's. No source credit supplied. Deployed to Pages, not yet embedded in Canvas.
 
 ## Clip
 
 - Video ID `GBeiNFPNWQM`, There Will Be Blood ocean scene
-- Quote content 1:13 to 2:20 (73s to 140s) at full volume, displayed length 1:07
-- Fade-in begins at 1:10 and reaches full at 1:13. Fade-out begins at 2:20 and is silent by 2:23.
-- Timeline: 1:07 to 1:10 silent and locked out (video rolling under the card, volume zero), 1:10 to 1:13 fade in, full at 1:13, hold to 2:20, 2:20 to 2:23 fade out
-- `silentLead` 3s plus `fadeIn` 3s give a 6s card cover from play, so YouTube's overlay is never seen. Card dissolves at 1:13 as full volume arrives.
+- Quote content 1:10 to 2:20 (70s to 140s) at full volume, displayed length 1:10
+- Fade-in runs 1:05 to 1:10, a smooth 5s ramp, then full at 1:10. Fade-out begins at 2:20 and is silent by 2:23.
+- Timeline: 1:05 sound starts fading in from silence (video hidden under the card), 1:09.2 the card begins dissolving, 1:10 both audio and video fully up, hold to 2:20, 2:20 to 2:23 fade out.
+- No silent lead. The sound fades in from the moment of play and leads the video reveal by about 4.2s, so it never feels like nothing is happening. The card still covers YouTube's overlay for 4.2s, which clears in time.
 - Volume starts at 50%, `levelTrim` currently 0 dB
 
-## Fade interpretation, needs confirming
+## Fade smoothness
 
-Dave said "fade in from 1:10" and "fade out from 2:20". Read literally and symmetrically: both fades begin at those points. So the fade-in runs 1:10 to 1:13 and full volume lands at 1:13, and the displayed length reads 1:07 rather than 1:10 because the full-volume span is 1:13 to 2:20.
+The fade is driven off a wall clock, not off `player.getCurrentTime()`. YouTube only updates its reported time about four times a second, so a fade computed straight from it lands in roughly twelve coarse steps and sounds ragged. The poll now uses the reported time only to decide which phase it is in (fade-in, hold, fade-out) and runs the actual ramp off `performance.now()`, so the volume moves every 50ms poll. Measured over the fade-in: the old path made 18 volume changes with jumps up to 5 units at once, the new path makes 49 changes with a largest jump of 2.
 
-The other reading is full volume by 1:10 with the fade-in as pre-roll before it. That would pull in audio from before 1:10 (outside the stated window), so the literal reading was chosen to keep everything at or after 1:10. If full-by-1:10 is wanted instead, set `start` to 70 and `fadeIn` stays 3, and the length reads 1:10.
+`fadeInStart` and `fadeOutStart` hold the wall-clock anchors, set the first poll tick that enters each fade and reset on each play. This is instance-local, a good backport candidate for the shared engine since every quoter's fade runs through the same coarse-time path.
 
 ## Source crop, LIKELY NEEDED
 
@@ -77,11 +77,10 @@ Shared machinery identical to every other quoter. Carries the instance-local `si
 
 - Confirm the letterbox on a live view and apply the scope crop (about `--zoom: 1.32`).
 - Supply a source credit / link title if one is wanted (currently none, credit line hidden).
-- Confirm the fade interpretation and the 1:07 length readout.
 - Tune `levelTrim` by ear, the score is quiet.
 - Confirm the folder name before it goes into Canvas.
 - Note a backup video ID against takedown.
 
 ## Last updated
 
-2026-08-13. Initial build and ship. Clip 1:10 to 2:20 with 3s fades and a 3s locked-out lead, no crop yet (scope letterbox expected), Dave's title, no credit, copy in.
+2026-08-13. Initial build and ship, then reworked the fade after Dave's feedback: rebuilt it off a wall clock so it is smooth not stepped, removed the silent lead so sound starts at play, and retimed so sound and video are both fully up by 1:10 with sound leading the video. Scope letterbox crop still expected.
