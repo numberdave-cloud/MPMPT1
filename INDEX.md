@@ -52,6 +52,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Audio Player [Under the Skin: Lonely Void] | `audio-player-under-the-skin/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
 | Audio Player [Mausam & Escape] | `audio-player-mausam-escape/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
 | Audio Player [Order in the Chaos] | `audio-player-order-in-chaos/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
+| Audio Player [Solar Sailer] | `audio-player-solar-sailer/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
 
 ## Work in progress (not yet in repo)
 
