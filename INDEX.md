@@ -59,6 +59,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Audio Player [Solar Sailer] | `audio-player-solar-sailer/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
 | Audio Player [History of the Ring] | `audio-player-history-of-the-ring/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
 | Audio Player [Beethoven 5th] | `audio-player-beethoven-5th/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
+| Audio Player [Phat Planet - Leftfield] | `audio-player-phat-planet/` | Miscellaneous | live (v1.0) | YES |
 
 ## Work in progress (not yet in repo)
 

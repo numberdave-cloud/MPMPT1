@@ -42,6 +42,7 @@ shape rather than reworking a different one.
 | `audio-player-terminator-2/` | Terminator 2: Main Theme | `lqcHjUJadp8` | fade-out | 0:00 | out at 1:35, 10s | live, confirmed working |
 | `audio-player-mausam-escape/` | Mausam & Escape | `_WOWIH41W4c` | fade-in | 0:36 | in over 4s | live, confirmed working |
 | `audio-player-history-of-the-ring/` | History of the Ring | `GuiROE85RMQ` | fade-in+out | 0:23 | in to 0:28, out at 1:34 over 8s | live, confirmed working |
+| `audio-player-phat-planet/` | Phat Planet - Leftfield | `5GC_X_tI5kA` | fade-in+out | 0:40 | in to 0:45, out at 1:10 over 5s | live, confirmed working |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
