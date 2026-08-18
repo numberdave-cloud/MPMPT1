@@ -19,6 +19,7 @@ Category for all quoters: **Miscellaneous**.
 | `quoter-baby-driver/` | Baby Driver (2017) | `6XMuUVw7TOM` | 2:07 to 3:17 | 1:10 | 0 dB | live, copy final, 3s locked-out lead, crop assumed 16:9 |
 | `quoter-there-will-be-blood/` | There Will Be Blood (2007) - Peachtree Dance Scene | `GBeiNFPNWQM` | 1:10 to 2:20 | 1:10 | 0 dB | live, copy final, smooth wall-clock fade, no silent lead, scope crop pending |
 | `quoter-lotr-history-of-the-ring/` | Appearance of the History of the Ring Theme | `whF2na8AIbw` | 0:24 to 1:38 | 1:09 | 0 dB | live, copy final, 5s fade-in under 5s card hold (no chrome), 70% base vol, scope crop + level pending |
+| `quoter-one-melody-six-modes/` | One melody across six modes | `4n-O95j05WM` | 0:00 to 2:16 | 2:04 | 0 dB | live, copy final, plays from 0:00, 5s fade-in under 5s card hold (no chrome), 7s fade-out to 2:16, 50% base vol, official channel source |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
