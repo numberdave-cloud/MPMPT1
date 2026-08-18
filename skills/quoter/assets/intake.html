@@ -1,0 +1,154 @@
+<!--
+  Quoter intake panel. Render this with the visualizer (show_widget).
+  Before rendering, replace every __VIDEO_ID__ with the YouTube ID from the link.
+  On Build the panel calls sendPrompt with a spec for the skill to parse.
+-->
+<h2 class="sr-only">Quoter intake panel: title and source, quote timings and fades, one or two note sections, then build.</h2>
+<div style="background: var(--surface-1); border-radius: 12px; padding: 1.25rem; font-family: var(--font-sans);">
+
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; font-size: 12px; color: var(--text-muted);">
+    <span>Video</span>
+    <span style="font-family: var(--font-mono); color: var(--text-secondary);">__VIDEO_ID__</span>
+  </div>
+
+  <div style="display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 200px;">
+      <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;">Card title</div>
+      <input id="q-title" type="text" placeholder="The name you give the quote" style="width: 100%;" />
+    </div>
+    <div style="flex: 1; min-width: 200px;">
+      <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;">Source credit (optional)</div>
+      <input id="q-source" type="text" placeholder="e.g. Max Konyi" style="width: 100%;" />
+    </div>
+  </div>
+
+  <div style="background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 12px;">
+    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">Quote</div>
+
+    <div style="display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 14px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; color: var(--text-secondary);">Full at</span>
+        <input id="q-start" type="text" placeholder="0:05" style="width: 76px;" />
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; color: var(--text-secondary);">Fade-out from</span>
+        <input id="q-end" type="text" placeholder="2:09" style="width: 76px;" />
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 14px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; color: var(--text-secondary);">Fade-in</span>
+        <input id="q-fadein" type="number" min="0" value="5" style="width: 60px;" /><span style="font-size: 13px; color: var(--text-secondary);">s</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; color: var(--text-secondary);">Fade-out</span>
+        <input id="q-fadeout" type="number" min="0" value="7" style="width: 60px;" /><span style="font-size: 13px; color: var(--text-secondary);">s</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; color: var(--text-secondary);">Silent lead</span>
+        <input id="q-lead" type="number" min="0" value="0" style="width: 60px;" /><span style="font-size: 13px; color: var(--text-secondary);">s</span>
+      </div>
+    </div>
+
+    <div style="font-size: 12px; color: var(--text-muted); margin: 0 0 6px;">Fade curve</div>
+    <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+      <button class="qp" data-g="curve" data-v="linear" style="font-size: 14px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 6px 13px; cursor: pointer;">Linear</button>
+      <button class="qp" data-g="curve" data-v="smooth" style="font-size: 14px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 6px 13px; cursor: pointer;">Smooth</button>
+      <button class="qp" data-g="curve" data-v="gradual" style="font-size: 14px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 6px 13px; cursor: pointer;">Very gradual</button>
+    </div>
+
+    <div style="font-size: 12px; color: var(--text-muted); margin: 0 0 6px;">Show length on card</div>
+    <div style="display: flex; gap: 8px;">
+      <button class="qp" data-g="len" data-v="on" style="font-size: 14px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 6px 13px; cursor: pointer;">On</button>
+      <button class="qp" data-g="len" data-v="off" style="font-size: 14px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 6px 13px; cursor: pointer;">Off</button>
+    </div>
+  </div>
+
+  <div style="background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap;">
+      <div style="font-size: 13px; color: var(--text-secondary);">Notes</div>
+      <div style="display: flex; gap: 8px;">
+        <button class="qp" data-g="layout" data-v="two" style="font-size: 13px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 5px 12px; cursor: pointer;">Two sections</button>
+        <button class="qp" data-g="layout" data-v="one" style="font-size: 13px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 5px 12px; cursor: pointer;">One section</button>
+      </div>
+    </div>
+
+    <div id="q-main-label" style="font-size: 12px; color: var(--text-muted); margin: 0 0 4px;">Above the line</div>
+    <textarea id="q-notes" rows="3" placeholder="The main notes. Blank line between paragraphs." style="width: 100%; resize: vertical; margin-bottom: 12px;"></textarea>
+
+    <div id="q-listen-wrap">
+      <div style="font-size: 12px; color: var(--text-muted); margin: 0 0 4px;">Below the line, the listen prompt</div>
+      <textarea id="q-listen" rows="2" placeholder="What to watch or listen for." style="width: 100%; resize: vertical;"></textarea>
+    </div>
+  </div>
+
+  <div id="q-error" style="font-size: 13px; color: var(--text-danger); margin-bottom: 10px; min-height: 18px;"></div>
+
+  <button id="q-build" style="font-size: 14px; font-weight: 500; background: var(--fill-accent); color: var(--on-accent); border: 0.5px solid transparent; border-radius: var(--radius); padding: 10px 18px; cursor: pointer;">Build it &#8599;</button>
+
+</div>
+
+<script>
+  const state = { curve: 'smooth', len: 'on', layout: 'two' };
+  const $ = id => document.getElementById(id);
+  const err = $('q-error');
+  function paint(g) {
+    document.querySelectorAll('.qp[data-g="' + g + '"]').forEach(b => {
+      const on = b.dataset.v === state[g];
+      b.style.background = on ? 'var(--fill-accent)' : 'transparent';
+      b.style.color = on ? 'var(--on-accent)' : 'var(--text-primary)';
+      b.style.borderColor = on ? 'transparent' : 'var(--border-strong)';
+    });
+  }
+  function sync() {
+    $('q-listen-wrap').style.display = state.layout === 'two' ? 'block' : 'none';
+    $('q-main-label').textContent = state.layout === 'two' ? 'Above the line' : 'Notes';
+  }
+  document.querySelectorAll('.qp').forEach(b => {
+    b.addEventListener('click', () => { state[b.dataset.g] = b.dataset.v; paint(b.dataset.g); sync(); err.textContent = ''; });
+  });
+  document.querySelectorAll('input, textarea').forEach(i => i.addEventListener('input', () => { err.textContent = ''; }));
+  function parseTime(s) {
+    s = (s || '').trim();
+    if (!s) return null;
+    if (s.indexOf(':') === -1) { const n = Number(s); return isFinite(n) && n >= 0 ? Math.round(n) : null; }
+    const p = s.split(':'); if (p.length !== 2) return null;
+    const m = Number(p[0]), sec = Number(p[1]);
+    if (!isFinite(m) || !isFinite(sec) || sec >= 60 || sec < 0 || m < 0) return null;
+    return Math.round(m * 60 + sec);
+  }
+  ['curve', 'len', 'layout'].forEach(paint); sync();
+  $('q-build').addEventListener('click', () => {
+    const title = $('q-title').value.trim();
+    if (!title) { err.textContent = 'Give it a title first.'; return; }
+    const st = parseTime($('q-start').value), en = parseTime($('q-end').value);
+    if (st === null) { err.textContent = 'Full-at needs a time like 0:05.'; return; }
+    if (en === null) { err.textContent = 'Fade-out-from needs a time like 2:09.'; return; }
+    const fi = Number($('q-fadein').value), fo = Number($('q-fadeout').value), sl = Number($('q-lead').value);
+    if (![fi, fo, sl].every(n => isFinite(n) && n >= 0)) { err.textContent = 'Fades and lead need to be numbers.'; return; }
+    const notes = $('q-notes').value.trim();
+    if (!notes) { err.textContent = 'Add the notes.'; return; }
+    const listen = $('q-listen').value.trim();
+    if (state.layout === 'two' && !listen) { err.textContent = 'Two sections needs a listen prompt, or switch to one section.'; return; }
+    const src = $('q-source').value.trim();
+    const lines = [
+      'Build the quoter from this intake:',
+      'video: __VIDEO_ID__',
+      'title: ' + title,
+      'source: ' + (src || '(none)'),
+      'start (full at): ' + $('q-start').value.trim(),
+      'end (fade-out from): ' + $('q-end').value.trim(),
+      'fade-in: ' + Math.round(fi) + 's',
+      'fade-out: ' + Math.round(fo) + 's',
+      'silent lead: ' + Math.round(sl) + 's',
+      'fade curve: ' + state.curve,
+      'show length: ' + state.len,
+      'notes layout: ' + (state.layout === 'two' ? 'two sections' : 'one section'),
+      state.layout === 'two' ? 'notes (above the line):' : 'notes:',
+      notes
+    ];
+    if (state.layout === 'two') { lines.push('listen prompt (below the line):', listen); }
+    sendPrompt(lines.join('\n'));
+  });
+</script>
