@@ -35,6 +35,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | YouTube Quoter [Temp Track Fever] | `quoter-temp-track-fever/` | Miscellaneous | live (v1) | YES |
 | YouTube Quoter [Baby Driver] | `quoter-baby-driver/` | Miscellaneous | live (v2, copy final) | YES |
 | YouTube Quoter [There Will Be Blood] | `quoter-there-will-be-blood/` | Miscellaneous | live (v1, crop pending) | YES |
+| YouTube Quoter [History of the Ring Theme] | `quoter-lotr-history-of-the-ring/` | Miscellaneous | live (v1, level + crop pending) | YES |
 | Groove Maker | `groove-maker/` | Composition | live (v0.1, audibly unverified) | YES |
 | Orchestra Stems | `orchestra-stems/` | Miscellaneous | live | YES |
 | Compression | `compression-explorer/` | Mixing | live | YES |
