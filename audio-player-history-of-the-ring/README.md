@@ -36,16 +36,18 @@ The History of the Ring leitmotif from The Lord of the Rings. Howard Shore.
 YouTube ID `GuiROE85RMQ`.
 
 ## Fade shape
-- Fades in from silence starting at 0:00, reaching full level at 0:28.
+- Enters silent at 0:23, eases up to full level by 0:28 on a raised-cosine
+  S-curve (gentle out of silence, no bump onto full).
 - Holds at full from 0:28 to 1:34.
 - Fades out from 1:34 to silence at 1:42, then pauses and offers replay.
-- Config constants at the top of the script: `FADE_IN_END` (28), `FADE_OUT_START`
-  (94 = 1:34), `FADE_OUT_DURATION` (8). `SCALE` is `FADE_OUT_START +
-  FADE_OUT_DURATION` (102), and the progress bar fills to 100% at that point.
-- The fade-in is read as a full ramp from the top of the track. It is not a
-  short fade from a later entry point. If a later entry point is wanted, add a
-  START_AT and seek to it on play (see the Mausam & Escape player for that
-  pattern).
+- Config constants at the top of the script: `START_AT` (23 = 0:23),
+  `FADE_IN_END` (28), `FADE_OUT_START` (94 = 1:34), `FADE_OUT_DURATION` (8).
+  `SCALE` is `FADE_OUT_START + FADE_OUT_DURATION` (102).
+- Progress bar and time readout run from `START_AT`, so they read 0:00 when
+  playback begins and fill to 100% at 1:42 (span 79s).
+- The fade-in is eased (raised cosine), not linear, so it does not sound abrupt
+  leaving silence. The fade-out is still linear. Playback seeks to `START_AT` on
+  first play and on replay.
 
 ## Technical notes
 - Audio comes from the YouTube IFrame API, not embedded base64. The IFrame API
@@ -54,8 +56,9 @@ YouTube ID `GuiROE85RMQ`.
   rather than set to `display:none`, which would stop playback.
 - The fade is automation, not a real audio tap. Web Audio cannot read a
   cross-origin YouTube stream, so the fade polls `getCurrentTime` and calls
-  `setVolume` on an 80ms ticker. `fadeFactor` ramps up across 0 to `FADE_IN_END`,
-  holds at 1, then ramps down across `FADE_OUT_START` to `SCALE`.
+  `setVolume` on an 80ms ticker. `fadeFactor` eases up across `START_AT` to
+  `FADE_IN_END` on a raised-cosine curve, holds at 1, then ramps down linearly
+  across `FADE_OUT_START` to `SCALE`.
 - The `fading` glow on the progress bar is active during both fade windows.
 - Progress bar and time readout run 0 to `SCALE` (102s). At `SCALE` the ENDED
   path is not needed; the ticker calls `finish` when currentTime passes `SCALE`,
@@ -72,12 +75,12 @@ YouTube ID `GuiROE85RMQ`.
 
 ## Open decisions / TODOs
 - Playback and both fade curves not yet verified in a live Canvas iframe.
-- Fade-in read as a 28s ramp from the top. Confirm this is the intended shape
-  rather than a short fade from a later entry point.
-- Fade-out duration set to 8s (1:34 to 1:42). Adjust if a different length or
-  end point is wanted.
+- Fade-in eased with a raised-cosine curve. If a faster arrival or a slower
+  onset is wanted, change the curve in `fadeFactor`.
+- Fade-out duration set to 8s (1:34 to 1:42) and still linear. Adjust or ease it
+  if wanted.
 - Default fader level is 70%. Raise the default if a louder level is wanted.
 
 ## Last updated
-17 August 2026 (v1.0). Initial ship. Fade in to 0:28, hold, fade out from 1:34
-to 1:42, stop.
+17 August 2026 (v1.1). Corrected entry point to 0:23 with an eased 5s fade-in to
+70% by 0:28. Fade-out unchanged (1:34 to 1:42, stop).

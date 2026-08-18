@@ -253,17 +253,19 @@
 
 <script>
   // ─── CONFIG ──────────────────────────────────────────────────────
-  // Fade-in then fade-out player. Playback starts at the top silent, ramps up
+  // Fade-in then fade-out player. Playback enters at START_AT silent, eases up
   // to full by FADE_IN_END, holds, then fades to silence and stops. Change
   // these to reuse it elsewhere.
   const VIDEO_ID          = 'GuiROE85RMQ';
+  const START_AT          = 23;   // seconds. playback enters here. 23 = 0:23
   const FADE_IN_END       = 28;   // seconds. full level reached here. 28 = 0:28
   const FADE_OUT_START    = 94;   // seconds. fade to silence begins here. 94 = 1:34
   const FADE_OUT_DURATION = 8;    // seconds. length of the fade to silence
   const STOP_AFTER_FADE   = true; // pause the source once it has faded to nothing
 
-  // The player treats FADE_OUT_START + FADE_OUT_DURATION as the full length of
-  // the bed, so the progress bar fills to 100% at the moment it goes silent.
+  // The player treats FADE_OUT_START + FADE_OUT_DURATION as the far end of the
+  // bed. The progress bar and readout run from START_AT, so they read 0:00 when
+  // playback begins and fill to 100% at the moment it goes silent.
   const SCALE = FADE_OUT_START + FADE_OUT_DURATION;
 
   // ─── STATE ───────────────────────────────────────────────────────
@@ -272,6 +274,7 @@
   let ticker = null;
   let lastVol = -1;
   let finished = false;
+  let started = false; // true once playback has entered at START_AT
   let userVol = 70;    // fader position, 0..100 (default 70%)
   let dragging = false;
 
@@ -286,7 +289,7 @@
   const $volFill   = document.getElementById('volFill');
   const $volHandle = document.getElementById('volHandle');
 
-  $total.textContent = ' / ' + fmt(SCALE);
+  $total.textContent = ' / ' + fmt(SCALE - START_AT);
   paintVol();
 
   // ─── YOUTUBE IFRAME API ──────────────────────────────────────────
@@ -330,18 +333,27 @@
   // ─── TRANSPORT ───────────────────────────────────────────────────
   $playBtn.addEventListener('click', function () {
     if (!ready) return;
-    if (finished) {                    // replay from the top
+    if (finished) {                    // replay: re-enter at START_AT, silent
       finished = false;
+      started = true;
       lastVol = -1;
       $rack.classList.remove('fading');
-      player.seekTo(0, true);
+      player.seekTo(START_AT, true);
+      applyVolume(START_AT);           // fadeFactor(START_AT) = 0 -> silent
       player.playVideo();
       return;
     }
     if (player.getPlayerState() === YT.PlayerState.PLAYING) {
       player.pauseVideo();
     } else {
-      applyVolume(safeTime());
+      if (!started) {                  // first play: jump in at START_AT, silent
+        started = true;
+        lastVol = -1;
+        player.seekTo(START_AT, true);
+        applyVolume(START_AT);
+      } else {                         // resume from a pause, at current level
+        applyVolume(safeTime());
+      }
       player.playVideo();
     }
   });
@@ -354,13 +366,17 @@
     const t = safeTime();
     applyVolume(t);
     updateProgress(t);
-    $rack.classList.toggle('fading', t < FADE_IN_END || (t >= FADE_OUT_START && t < SCALE));
+    $rack.classList.toggle('fading', (t >= START_AT && t < FADE_IN_END) || (t >= FADE_OUT_START && t < SCALE));
     if (t >= SCALE) finish();
   }
 
   // ─── VOLUME + FADE ───────────────────────────────────────────────
   function fadeFactor(t) {
-    if (t < FADE_IN_END) return t / FADE_IN_END;                        // fade in from silence
+    if (t < START_AT) return 0;                                         // before entry
+    if (t < FADE_IN_END) {                                              // eased fade in
+      const p = (t - START_AT) / (FADE_IN_END - START_AT);             // 0..1 progress
+      return 0.5 - 0.5 * Math.cos(Math.PI * p);                         // raised-cosine S-curve
+    }
     if (t < FADE_OUT_START) return 1;                                   // full
     if (t < SCALE) return 1 - (t - FADE_OUT_START) / FADE_OUT_DURATION; // fade out to silence
     return 0;
@@ -382,14 +398,16 @@
     stopTicker();
     setBtn('done');
     $rack.classList.remove('playing', 'fading');
-    updateProgress(SCALE);
-    $elapsed.textContent = fmt(SCALE);
+    $fill.style.width = '100%';
+    $elapsed.textContent = fmt(SCALE - START_AT);
   }
 
   function updateProgress(t) {
-    const pct = Math.min(100, (t / SCALE) * 100);
+    const rel = Math.max(0, t - START_AT);
+    const span = SCALE - START_AT;
+    const pct = Math.min(100, (rel / span) * 100);
     $fill.style.width = pct + '%';
-    $elapsed.textContent = fmt(Math.min(t, SCALE));
+    $elapsed.textContent = fmt(Math.min(rel, span));
   }
 
   // ─── FADER CONTROL ───────────────────────────────────────────────
