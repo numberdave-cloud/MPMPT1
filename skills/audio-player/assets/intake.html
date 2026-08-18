@@ -1,0 +1,143 @@
+<!--
+  Audio player intake panel. Render this with the visualizer (show_widget).
+  Before rendering, replace:
+    __VIDEO_ID__  with the YouTube ID from the pasted link (appears twice)
+    __TITLE__     with the track title if the user gave one, else leave empty
+  On Build the panel calls sendPrompt with a one-line spec for the skill to parse.
+-->
+<h2 class="sr-only">Audio player intake panel: set the title, whole track or quote, entry and exit points, then build.</h2>
+<div style="background: var(--surface-1); border-radius: 12px; padding: 1.25rem; font-family: var(--font-sans);">
+
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; font-size: 12px; color: var(--text-muted);">
+    <i class="ti ti-brand-youtube" aria-hidden="true" style="font-size: 16px;"></i>
+    <span>Video</span>
+    <span style="font-family: var(--font-mono); color: var(--text-secondary);">__VIDEO_ID__</span>
+  </div>
+
+  <div style="margin-bottom: 12px;">
+    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;">Track title</div>
+    <input id="ap-title" type="text" value="__TITLE__" placeholder="Track title and artist" aria-label="Track title" style="width: 100%;" />
+  </div>
+
+  <div style="background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 12px;">
+    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">Player type</div>
+    <div style="display: flex; gap: 8px;">
+      <button class="ap-pill" data-group="mode" data-val="whole" style="font-size: 14px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 7px 14px; cursor: pointer;">Whole track</button>
+      <button class="ap-pill" data-group="mode" data-val="quote" style="font-size: 14px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 7px 14px; cursor: pointer;">Quote</button>
+    </div>
+  </div>
+
+  <div id="ap-quote" style="background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 12px;">
+
+    <div style="font-size: 12px; color: var(--text-muted); margin: 0 0 6px;">Comes in</div>
+    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+      <button class="ap-pill" data-group="start" data-val="top" style="font-size: 14px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 7px 14px; cursor: pointer;">From the top</button>
+      <button class="ap-pill" data-group="start" data-val="point" style="font-size: 14px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 7px 14px; cursor: pointer;">Start point + fade-in</button>
+    </div>
+    <div id="ap-start-fields" style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+      <span style="font-size: 13px; color: var(--text-secondary);">Full at</span>
+      <input id="ap-start-time" type="text" placeholder="1:05" aria-label="Start point" style="width: 80px;" />
+      <span style="font-size: 13px; color: var(--text-secondary); margin-left: 4px;">fade-in</span>
+      <input id="ap-start-fade" type="number" min="0" value="5" aria-label="Fade-in length in seconds" style="width: 64px;" />
+      <span style="font-size: 13px; color: var(--text-secondary);">s</span>
+    </div>
+
+    <div style="font-size: 12px; color: var(--text-muted); margin: 0 0 6px;">Goes out</div>
+    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+      <button class="ap-pill" data-group="end" data-val="end" style="font-size: 14px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 7px 14px; cursor: pointer;">To the end</button>
+      <button class="ap-pill" data-group="end" data-val="point" style="font-size: 14px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); border-radius: 999px; padding: 7px 14px; cursor: pointer;">End point + fade-out</button>
+    </div>
+    <div id="ap-end-fields" style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 13px; color: var(--text-secondary);">Fade starts</span>
+      <input id="ap-end-time" type="text" placeholder="3:20" aria-label="End point" style="width: 80px;" />
+      <span style="font-size: 13px; color: var(--text-secondary); margin-left: 4px;">fade-out</span>
+      <input id="ap-end-fade" type="number" min="0" value="10" aria-label="Fade-out length in seconds" style="width: 64px;" />
+      <span style="font-size: 13px; color: var(--text-secondary);">s</span>
+    </div>
+  </div>
+
+  <div id="ap-error" style="font-size: 13px; color: var(--text-danger); margin-bottom: 10px; min-height: 18px;"></div>
+
+  <button id="ap-build" style="font-size: 14px; font-weight: 500; background: var(--fill-accent); color: var(--on-accent); border: 0.5px solid transparent; border-radius: var(--radius); padding: 10px 18px; cursor: pointer;">Build it ↗</button>
+
+</div>
+
+<script>
+  const state = { mode: 'quote', start: 'point', end: 'point' };
+  const $ = id => document.getElementById(id);
+  const err = $('ap-error');
+
+  function paintGroup(group) {
+    document.querySelectorAll('.ap-pill[data-group="' + group + '"]').forEach(b => {
+      const on = b.dataset.val === state[group];
+      b.style.background = on ? 'var(--fill-accent)' : 'transparent';
+      b.style.color = on ? 'var(--on-accent)' : 'var(--text-primary)';
+      b.style.borderColor = on ? 'transparent' : 'var(--border-strong)';
+    });
+  }
+
+  function sync() {
+    $('ap-quote').style.display = state.mode === 'quote' ? 'block' : 'none';
+    $('ap-start-fields').style.display = state.start === 'point' ? 'flex' : 'none';
+    $('ap-end-fields').style.display = state.end === 'point' ? 'flex' : 'none';
+  }
+
+  document.querySelectorAll('.ap-pill').forEach(b => {
+    b.addEventListener('click', () => {
+      state[b.dataset.group] = b.dataset.val;
+      paintGroup(b.dataset.group);
+      sync();
+      err.textContent = '';
+    });
+  });
+
+  document.querySelectorAll('#ap-title, #ap-start-time, #ap-start-fade, #ap-end-time, #ap-end-fade')
+    .forEach(i => i.addEventListener('input', () => { err.textContent = ''; }));
+
+  function parseTime(s) {
+    s = (s || '').trim();
+    if (!s) return null;
+    if (s.indexOf(':') === -1) { const n = Number(s); return isFinite(n) && n >= 0 ? Math.round(n) : null; }
+    const p = s.split(':');
+    if (p.length !== 2) return null;
+    const m = Number(p[0]), sec = Number(p[1]);
+    if (!isFinite(m) || !isFinite(sec) || sec >= 60 || sec < 0 || m < 0) return null;
+    return Math.round(m * 60 + sec);
+  }
+
+  ['mode', 'start', 'end'].forEach(paintGroup);
+  sync();
+
+  $('ap-build').addEventListener('click', () => {
+    const title = $('ap-title').value.trim();
+    if (!title) { err.textContent = 'Give it a title first.'; return; }
+
+    const lines = ['Build the audio player from this intake:', 'video: __VIDEO_ID__', 'title: ' + title];
+
+    if (state.mode === 'whole') {
+      lines.push('mode: whole track (plain, plays to the natural end)');
+    } else {
+      lines.push('mode: quote');
+      if (state.start === 'top') {
+        lines.push('start: from the top, no fade-in');
+      } else {
+        const t = parseTime($('ap-start-time').value);
+        const f = Number($('ap-start-fade').value);
+        if (t === null) { err.textContent = 'Start point needs a time like 1:05.'; return; }
+        if (!isFinite(f) || f < 0) { err.textContent = 'Fade-in length needs to be a number.'; return; }
+        lines.push('start: full at ' + $('ap-start-time').value.trim() + ' with a ' + Math.round(f) + 's fade-in');
+      }
+      if (state.end === 'end') {
+        lines.push('end: to the natural end, no fade-out');
+      } else {
+        const t = parseTime($('ap-end-time').value);
+        const f = Number($('ap-end-fade').value);
+        if (t === null) { err.textContent = 'End point needs a time like 3:20.'; return; }
+        if (!isFinite(f) || f < 0) { err.textContent = 'Fade-out length needs to be a number.'; return; }
+        lines.push('end: fade-out starts at ' + $('ap-end-time').value.trim() + ' over ' + Math.round(f) + 's');
+      }
+    }
+
+    sendPrompt(lines.join('\n'));
+  });
+</script>

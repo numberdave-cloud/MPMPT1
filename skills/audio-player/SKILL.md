@@ -27,22 +27,32 @@ that already works. Do not re-implement it.
 
 ## Intake
 
-Drive the build from a short tap sequence, not a typed spec. Use the tappable
-input tool for the categorical choices. Only two things are typed, because
-buttons cannot hold them: the title (it is the user's copy) and any exact
-timecodes.
+Collect everything in one panel, do not ask the fields one at a time. The panel
+is `assets/intake.html`.
 
-1. **Title.** Ask for it, or take it from the trigger. Track title and artist,
-   used verbatim. Do not invent or paraphrase copy. Italicise a film title with
-   `<em>` on first mention only if the user's text does.
-2. **Whole track or quote.** One tap.
-   - Whole track: no fades, no offset. Plays from the top to the natural end.
-   - Quote: has a start side and an end side, each of which can be left open.
-3. **For a quote, one tap per side.**
-   - Start: "From the top" (cold, no fade-in), or "Start point plus fade-in".
-   - End: "To the end" (no fade-out, plays out), or "End point plus fade-out".
-4. **Numbers.** For any side not left open, ask for the values on one typed line:
-   the start point and fade-in length, the end point and fade-out length.
+1. Pull the video ID from the pasted link.
+2. Read `assets/intake.html`. Replace every `__VIDEO_ID__` with the ID and every
+   `__TITLE__` with the track title if the user gave one in the trigger,
+   otherwise leave it empty. The title is the user's copy, so do not invent or
+   paraphrase it.
+3. Render the result with the visualizer (`show_widget`) so it appears inline.
+   The panel collects the title, whole-track-or-quote, the two sides and the
+   fade lengths, and validates before it will build.
+4. When the user taps Build, the panel calls `sendPrompt` and the spec arrives
+   as the next message, in this shape:
+
+   ```
+   Build the audio player from this intake:
+   video: <id>
+   title: <title>
+   mode: quote
+   start: full at 0:45 with a 5s fade-in
+   end: fade-out starts at 1:10 over 5s
+   ```
+
+   `mode: whole track` is a plain player. Either side of a quote may instead read
+   "from the top, no fade-in" or "to the natural end, no fade-out".
+5. Parse the spec and build, using the convention and mapping below.
 
 ### The fade convention
 
