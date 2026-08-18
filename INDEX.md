@@ -37,6 +37,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | YouTube Quoter [There Will Be Blood] | `quoter-there-will-be-blood/` | Miscellaneous | live (v1, crop pending) | YES |
 | YouTube Quoter [History of the Ring Theme] | `quoter-lotr-history-of-the-ring/` | Miscellaneous | live (v1, level + crop pending) | YES |
 | YouTube Quoter [One Melody Across Six Modes] | `quoter-one-melody-six-modes/` | Miscellaneous | live (v1, level pending) | YES |
+| YouTube Quoter [Spielberg & Williams on Jaws] | `quoter-spielberg-williams-jaws/` | Miscellaneous | live (v1.0) | YES |
 | Groove Maker | `groove-maker/` | Composition | live (v0.1, audibly unverified) | YES |
 | Orchestra Stems | `orchestra-stems/` | Miscellaneous | live | YES |
 | Compression | `compression-explorer/` | Mixing | live | YES |

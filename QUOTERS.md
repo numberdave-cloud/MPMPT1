@@ -20,6 +20,7 @@ Category for all quoters: **Miscellaneous**.
 | `quoter-there-will-be-blood/` | There Will Be Blood (2007) - Peachtree Dance Scene | `GBeiNFPNWQM` | 1:10 to 2:20 | 1:10 | 0 dB | live, copy final, smooth wall-clock fade, no silent lead, scope crop pending |
 | `quoter-lotr-history-of-the-ring/` | Appearance of the History of the Ring Theme | `whF2na8AIbw` | 0:24 to 1:38 | 1:09 | 0 dB | live, copy final, 5s fade-in under 5s card hold (no chrome), 70% base vol, scope crop + level pending |
 | `quoter-one-melody-six-modes/` | One melody across six modes | `4n-O95j05WM` | 0:00 to 2:16 | 2:04 | 0 dB | live, copy final, plays from 0:00, 5s fade-in under 5s card hold (no chrome), 7s fade-out to 2:16, 50% base vol, official channel source |
+| `quoter-spielberg-williams-jaws/` | Spielberg & Williams on Jaws | `YTKs0JRVlrQ` | 4:18 to 5:16 | 0:58 | 0 dB | live, copy final, one-section notes, 50% base vol, level + crop pending |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
@@ -103,6 +104,7 @@ Height 480 covers most instances in side-by-side layout. `quoter-2001-dawn-of-ma
 | `quoter-temp-track-fever/` | 355 | 338 | 563 |
 | `quoter-baby-driver/` | 355 | 294 | 501 |
 | `quoter-there-will-be-blood/` | 355 | 379 | 584 |
+| `quoter-spielberg-williams-jaws/` | 355 | 294 | 451 |
 
 ```html
 <iframe
@@ -122,4 +124,4 @@ Quoter clips depend on the source video staying up. An unofficial or fan upload 
 
 ## Last updated
 
-2026-08-13. Reworked `quoter-there-will-be-blood/` fade: smooth wall-clock ramp, no silent lead, sound and video both up by 1:10 with sound leading. Smooth-fade machinery is instance-local, a backport candidate. Scope crop still pending.
+2026-08-18. Added `quoter-spielberg-williams-jaws/`, first quoter built through the intake panel (one-section notes). Level and crop pending live tuning.
