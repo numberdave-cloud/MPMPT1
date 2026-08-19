@@ -45,6 +45,7 @@ shape rather than reworking a different one.
 | `audio-player-history-of-the-ring/` | History of the Ring | `GuiROE85RMQ` | fade-in+out | 0:23 | in to 0:28, out at 1:34 over 8s | live, confirmed working |
 | `audio-player-phat-planet/` | Phat Planet - Leftfield | `5GC_X_tI5kA` | fade-in+out | 0:40 | in to 0:45, out at 1:10 over 5s | live, confirmed working |
 | `audio-player-nosferatu-premonition/` | Premonition from Nosferatu - Robin Carolan | `tAnN8AgRkoQ` | fade-in+out | 0:05 | in to 0:10, out at 1:04 over 8s | live, playback unverified |
+| `audio-player-robocop-force-shoots-robo/` | Force Shoots Robo from Robocop - Basil Poledouris | `22da-7-q1D8` | fade-in+out | 1:04 | in to 1:10, out at 1:48 over 10s | live, playback unverified |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
