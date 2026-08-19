@@ -1,5 +1,41 @@
 # Dinner Engine — handoff
 
+## Session note - 19 Aug 2026 (Shop page: "In season now" quick-add)
+
+App change, no catalogue change. Catalogue untouched at 274 (r001-r274), all three copies still
+in sync. recipes.json not modified this session.
+
+### What was added
+
+- A collapsible **"In season now"** section on the Shop page, sitting just above the Add item
+  button. Header shows the current month name and a count. Defaults collapsed; tap to open (Dave's
+  choice, since winter lists run ~20 items).
+- Inside: a chip per produce key that is in season this month, read live from the existing
+  `inSeasonProduce` set (derived from SEASONALITY, month = today). Sorted alphabetically, labels
+  capitalised for display, stored lowercase so they merge with dish-derived items on the list.
+- Tap a chip to drop that item straight onto the shopping list (source "seasonal"). Chip fills ember
+  with a tick. Tap again to pull it off (undo a mis-tap). Only removes items this feature added.
+- If the same produce is already on the list from a dish or a manual add, the chip shows green with
+  a tick ("already on your list") and tapping does nothing, so a dish item can never be removed by
+  accident.
+
+### Code
+
+- New state `seasonalOpen` (plain useState, collapsed default) near the other shop states.
+- New helpers next to `addShopItem`: `seasonalItemState(name)` -> "none" | "added" | "covered", and
+  `toggleSeasonalItem(name)`.
+- Render block is an IIFE just before the "Add item + add store" block in the `view==="shop"`
+  section. Reuses `inSeasonProduce`, `monthName`, and the existing `rgba`, SLOTS, C, style tokens.
+- Built with esbuild (react/react-dom 18.3.1, lucide 0.383.0), spliced into index.html. ESM validate
+  clean, production IIFE minified, 274 recipes verified present in the deployed HTML by name.
+
+### Test on the Galaxy
+
+Shop tab -> scroll to "In season now" below the list -> tap to expand -> tap a few chips and check
+they land on the list, tap again to remove. Fully close and reopen the PWA first to clear the
+service worker cache.
+
+
 ## Session note - 12 Aug 2026 (1 recipe: steak, chimichurri + flatbread)
 
 Catalogue **273 -> 274**. Preserves untouched at 1 (p001).
