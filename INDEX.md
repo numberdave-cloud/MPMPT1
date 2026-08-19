@@ -66,6 +66,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Audio Player [Phat Planet - Leftfield] | `audio-player-phat-planet/` | Miscellaneous | live (v1.0) | YES |
 | Audio Player [Jaws: Main Title] | `audio-player-jaws-main-title/` | Miscellaneous | live (v1.0, playback unverified) | YES |
 | Audio Player [Vampire Hunters — Bram Stoker's Dracula] | `audio-player-vampire-hunters/` | Miscellaneous | live (v1.0, playback unverified) | YES |
+| Audio Player [Solange — Casino Royale] | `audio-player-solange/` | Miscellaneous | live (v1.0, playback unverified) | YES |
 | Audio Player [Premonition from Nosferatu] | `audio-player-nosferatu-premonition/` | Miscellaneous | live (v1.0, playback unverified) | YES |
 | Audio Player [Force Shoots Robo from Robocop] | `audio-player-robocop-force-shoots-robo/` | Miscellaneous | live (v1.0, playback unverified) | YES |
 

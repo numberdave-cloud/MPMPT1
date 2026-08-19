@@ -36,6 +36,7 @@ shape rather than reworking a different one.
 | `audio-player-solar-sailer/` | Solar Sailer | `f9cKyVJuV2Y` | plain | 0:00 | none | live, confirmed working |
 | `audio-player-jaws-main-title/` | Main Title from Jaws (1975), John Williams | `pwiqKSfnPp8` | plain | 0:00 | none | live, playback unverified |
 | `audio-player-vampire-hunters/` | Vampire Hunters from Bram Stoker's Dracula by Wojciech Kilar | `k_53LEwnGXU` | plain | 0:00 | none | live, playback unverified |
+| `audio-player-solange/` | Solange from Casino Royale - David Arnold | `f_NpqG0E1Tk` | plain | 0:00 | none | live, playback unverified |
 | `audio-player-under-the-skin/` | Under the Skin: Lonely Void | `7NIz94ILjxI` | fade-out | 0:00 | out at 1:30, 10s | live, confirmed working |
 | `audio-player-forbidden-planet/` | Forbidden Planet: Graveyard | `WR-MkDKWWW0` | fade-out | 0:00 | out at 1:00, 10s | live, confirmed working |
 | `audio-player-gone-with-the-wind/` | Gone with the Wind: Main Title | `EESHIpo4Lgk` | fade-out | 0:00 | out at 1:50, 10s | live, confirmed working |
@@ -137,6 +138,6 @@ unused for a while.
 
 ## Last updated
 
-2026-08-20. Added `audio-player-vampire-hunters/` (plain shape, video
-`k_53LEwnGXU`). Registry now catalogues thirteen players and the four fade shapes
-with their canonical source folders.
+2026-08-20. Added `audio-player-solange/` (plain shape, video `f_NpqG0E1Tk`).
+Registry now catalogues fourteen players and the four fade shapes with their
+canonical source folders.
