@@ -29,7 +29,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Vertical Remixing | `vertical-remixing/` | Arranging | live | YES |
 | Instrument Roles [Strings] | `orchestra-roles-strings/` | Arranging | live (v1.1) | YES |
 | Instrument Roles [Brass] | `orchestra-roles-brass/` | Arranging | live (v1.0) | YES |
-| Orchestra Soundboard | `orchestra-soundboard/` | Arranging | live (v1.1) | YES |
+| Orchestra Soundboard | `orchestra-soundboard/` | Arranging | live (v1.2) | YES |
 | YouTube Quoter [Korven — Apprehension Engine] | `youtube-quoter/` | Miscellaneous | live | YES |
 | YouTube Quoter [Mick Gordon — Doom brief] | `quoter-mick-gordon-doom-brief-1/` | Miscellaneous | live | YES |
 | YouTube Quoter [NIN — Ruiner instrumental] | `quoter-ruiner-instrumental-solo/` | Miscellaneous | live | YES |

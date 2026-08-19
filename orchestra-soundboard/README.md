@@ -26,7 +26,7 @@ Height 740: the card holds a constant ~718px at full width. The readout is fixed
 
 ## Build state
 
-v1.1, 2026-08-20. Category: Arranging. Copy final, twelve clips embedded and decode-verified.
+v1.2, 2026-08-20. Category: Arranging. Copy final, twelve clips embedded and decode-verified.
 
 ## Instruments (12, grid order)
 
@@ -50,15 +50,15 @@ Grouped Woodwind / Harp & keys / Percussion; family is shown in the readout, not
 ## Provenance and notes
 
 - Visual design (tiles, readout, glow ring, equaliser) came from Claude Design. The original delivery played audio with `new Audio(src)`; that was rewired to the base64 plus Web Audio path so it survives the Canvas sandbox, with the visuals unchanged.
-- Instrument copy is the user's, drawn from the orchestration texts used across this group (Pejrolo & DeRosa; Gilreath). No in-widget source line, by choice. Add one if the group is later standardised to carry credits.
+- Instrument copy is the user's, drawn from three texts credited in the idle readout panel: Acoustic and MIDI Orchestration for the Contemporary Composer (Pejrolo & DeRosa), The Guide to MIDI Orchestration (Gilreath), and Inside Music (Karl Haas). The source line shows when no tile is hovered and hides while a note is up. Note the roles boards credit only the first two, not Haas.
 - Readout height is fixed (170px) so the card stays a constant height across all twelve notes.
 
 ## Open TODOs
 
 - Verify audio playback and layout live in Canvas.
-- Optional: add a footer source line to match the roles boards.
+- Optional: add Karl Haas (Inside Music) to the strings and brass boards if the group should be fully consistent.
 - Optional: downmix to mono to roughly halve the page weight if load becomes an issue.
 
 ## Last updated
 
-2026-08-20. v1.1: body background set to transparent so the card floats on the Canvas page instead of sitting in a dark block. v1.0: initial build. Twelve-tile soundboard, hover notes, twelve embedded one-shot clips on Web Audio, glow and equaliser playing state. Design by Claude Design, playback rewired for Canvas. Shipped for the MMI3 movie scoring unit.
+2026-08-20. v1.2: three-source credit line added to the idle readout panel (Pejrolo & DeRosa, Gilreath, Karl Haas), hidden while a note shows. v1.1: body background set to transparent so the card floats on the Canvas page instead of sitting in a dark block. v1.0: initial build. Twelve-tile soundboard, hover notes, twelve embedded one-shot clips on Web Audio, glow and equaliser playing state. Design by Claude Design, playback rewired for Canvas. Shipped for the MMI3 movie scoring unit.
