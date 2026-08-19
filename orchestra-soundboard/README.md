@@ -26,7 +26,7 @@ Height 740: the card holds a constant ~718px at full width. The readout is fixed
 
 ## Build state
 
-v1.0, 2026-08-19. Category: Arranging. Copy final, twelve clips embedded and decode-verified.
+v1.1, 2026-08-20. Category: Arranging. Copy final, twelve clips embedded and decode-verified.
 
 ## Instruments (12, grid order)
 
@@ -61,4 +61,4 @@ Grouped Woodwind / Harp & keys / Percussion; family is shown in the readout, not
 
 ## Last updated
 
-2026-08-19. v1.0: initial build. Twelve-tile soundboard, hover notes, twelve embedded one-shot clips on Web Audio, glow and equaliser playing state. Design by Claude Design, playback rewired for Canvas. Shipped for the MMI3 movie scoring unit.
+2026-08-20. v1.1: body background set to transparent so the card floats on the Canvas page instead of sitting in a dark block. v1.0: initial build. Twelve-tile soundboard, hover notes, twelve embedded one-shot clips on Web Audio, glow and equaliser playing state. Design by Claude Design, playback rewired for Canvas. Shipped for the MMI3 movie scoring unit.
