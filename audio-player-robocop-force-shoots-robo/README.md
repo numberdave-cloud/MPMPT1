@@ -54,6 +54,10 @@ Window runs 1:04 to 1:58 (`FADE_OUT_START + FADE_OUT_DURATION`), then stops.
   `getCurrentTime` and calls `setVolume`. Fade-in eased (raised cosine),
   fade-out linear.
 - Fixed-window shape: progress runs `START_AT` to `SCALE` and calls `finish`.
+- Fade envelope runs on `smoothTime()`: getCurrentTime interpolated with a local
+  clock (30ms ticker) so the fade is smooth, not stepped by YouTube's coarse
+  clock. This is a shared-machinery change that currently lives only in this
+  folder, pending live confirmation before propagating to the family.
 - Fader default 70% (`userVol`). Level is only checkable live, so a default
   tweak may follow testing.
 
@@ -61,7 +65,10 @@ Window runs 1:04 to 1:58 (`FADE_OUT_START + FADE_OUT_DURATION`), then stops.
 
 - Playback and fade timing unverified in Canvas (ship-on-build; test live).
 - Level unverified against the other beds.
+- Fade-smoothing (smoothTime + 30ms ticker) not yet propagated to the other 11
+  players. Roll out across the family once confirmed smooth here.
 
 ## Last updated
 
-2026-08-19. Built from intake. New player, fade-in+out shape.
+2026-08-19. Built from intake, then added smoothTime() fade interpolation and a
+30ms ticker to fix a ragged fade-in. Family propagation pending confirmation.

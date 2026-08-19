@@ -276,6 +276,8 @@
   let finished = false;
   let started = false; // true once playback has entered at START_AT
   let userVol = 70;    // fader position, 0..100 (default 70%)
+  let clockT    = -1;  // last video time observed from getCurrentTime
+  let clockWall = 0;   // performance.now (seconds) when clockT was observed
   let dragging = false;
 
   // ─── DOM ─────────────────────────────────────────────────────────
@@ -352,18 +354,18 @@
         player.seekTo(START_AT, true);
         applyVolume(START_AT);
       } else {                         // resume from a pause, at current level
-        applyVolume(safeTime());
+        applyVolume(smoothTime());
       }
       player.playVideo();
     }
   });
 
-  function startTicker() { if (!ticker) ticker = setInterval(tick, 80); }
+  function startTicker() { if (!ticker) ticker = setInterval(tick, 30); }
   function stopTicker() { clearInterval(ticker); ticker = null; }
 
   function tick() {
     if (!ready) return;
-    const t = safeTime();
+    const t = smoothTime();
     applyVolume(t);
     updateProgress(t);
     $rack.classList.toggle('fading', (t >= START_AT && t < FADE_IN_END) || (t >= FADE_OUT_START && t < SCALE));
@@ -389,6 +391,20 @@
 
   function safeTime() {
     return (ready && player.getCurrentTime) ? (player.getCurrentTime() || 0) : 0;
+  }
+
+  // getCurrentTime updates in coarse, jittery jumps. smoothTime keeps it as the
+  // source of truth but interpolates between updates with a local clock, so the
+  // fade envelope runs on a smooth monotonic time. Re-anchors on every YouTube
+  // update or seek, and holds during a stall so buffering does not run it forward.
+  function smoothTime() {
+    if (!(ready && player.getCurrentTime)) return 0;
+    const raw = player.getCurrentTime() || 0;
+    const nowW = performance.now() / 1000;
+    if (Math.abs(raw - clockT) > 0.02) { clockT = raw; clockWall = nowW; return raw; }
+    const dt = nowW - clockWall;
+    if (dt > 0.5) return raw;   // getCurrentTime has stalled (buffering), hold
+    return raw + dt;
   }
 
   function finish() {
