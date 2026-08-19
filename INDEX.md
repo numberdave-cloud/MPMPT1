@@ -27,7 +27,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Video in Live: Skill Loops | `skill-loop-video-in-live/` | Miscellaneous | live (v1.0, playback unverified in Canvas) | YES |
 | EQ Explorer | `eq-explorer/` | Mixing | live (v0.1, single source) | YES |
 | Vertical Remixing | `vertical-remixing/` | Arranging | live | YES |
-| Instrument Roles [Strings] | `orchestra-roles-strings/` | Arranging | live (v1.0) | YES |
+| Instrument Roles [Strings] | `orchestra-roles-strings/` | Arranging | live (v1.1) | YES |
 | YouTube Quoter [Korven — Apprehension Engine] | `youtube-quoter/` | Miscellaneous | live | YES |
 | YouTube Quoter [Mick Gordon — Doom brief] | `quoter-mick-gordon-doom-brief-1/` | Miscellaneous | live | YES |
 | YouTube Quoter [NIN — Ruiner instrumental] | `quoter-ruiner-instrumental-solo/` | Miscellaneous | live | YES |
