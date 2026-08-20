@@ -31,6 +31,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Instrument Roles [Brass] | `orchestra-roles-brass/` | Arranging | live (v1.0) | YES |
 | Orchestra Soundboard | `orchestra-soundboard/` | Arranging | live (v1.2) | YES |
 | String Articulations | `string-articulations/` | Arranging | live (v1.0) | YES |
+| Expression and Dynamics | `expression-dynamics/` | Arranging | live (v1.0) | YES |
 | YouTube Quoter [Korven — Apprehension Engine] | `youtube-quoter/` | Miscellaneous | live | YES |
 | YouTube Quoter [Mick Gordon — Doom brief] | `quoter-mick-gordon-doom-brief-1/` | Miscellaneous | live | YES |
 | YouTube Quoter [NIN — Ruiner instrumental] | `quoter-ruiner-instrumental-solo/` | Miscellaneous | live | YES |
