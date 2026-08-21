@@ -43,6 +43,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | YouTube Quoter [History of the Ring Theme] | `quoter-lotr-history-of-the-ring/` | Miscellaneous | live (v1, level + crop pending) | YES |
 | YouTube Quoter [One Melody Across Six Modes] | `quoter-one-melody-six-modes/` | Miscellaneous | live (v1, level pending) | YES |
 | YouTube Quoter [Spielberg & Williams on Jaws] | `quoter-spielberg-williams-jaws/` | Miscellaneous | live (v1.0) | YES |
+| YouTube Quoter [Morricone Pan Pipe] | `quoter-morricone-pan-pipe/` | Miscellaneous | live (v1, level + crop pending) | YES |
 | Groove Maker | `groove-maker/` | Composition | live (v0.1, audibly unverified) | YES |
 | Orchestra Stems | `orchestra-stems/` | Miscellaneous | live | YES |
 | Compression | `compression-explorer/` | Mixing | live | YES |
