@@ -941,20 +941,16 @@ export default function KitchenApp() {
     setNewItemName(""); setAddingItem(false);
   };
   // One-tap add/remove of an in-season produce item from the seasonal chips.
-  // A chip added here (source "seasonal") toggles off on a second tap. If the same
-  // item is already on the list from a dish or manual entry, the chip shows as
-  // already covered and tapping does nothing, so a dish item is never removed by mistake.
-  const seasonalItemState = name => {
-    const key = name.toLowerCase();
-    const hit = shopItems.find(it=>it.name.toLowerCase()===key);
-    if(!hit) return "none";
-    return hit.source==="seasonal" ? "added" : "covered";
-  };
-  const toggleSeasonalItem = name => {
-    const key = name.toLowerCase();
+  // A seasonal buy lands as its own distinct line, capitalised and tagged
+  // "(seasonal buy)", so it never folds into a dish's version of the same item.
+  // Tapping a chip a second time removes that line.
+  const seasonalBuyName = key => key.charAt(0).toUpperCase()+key.slice(1)+" (seasonal buy)";
+  const seasonalItemState = key => shopItems.some(it=>it.name===seasonalBuyName(key)) ? "added" : "none";
+  const toggleSeasonalItem = key => {
+    const name = seasonalBuyName(key);
     setShopItems(items=>{
-      const hit = items.find(it=>it.name.toLowerCase()===key);
-      if(hit){ return hit.source==="seasonal" ? items.filter(it=>it.id!==hit.id) : items; }
+      const hit = items.find(it=>it.name===name);
+      if(hit) return items.filter(it=>it.id!==hit.id);
       const saved = bestStores[name]||null;
       return [...items,{id:`s${Date.now()}${Math.floor(Math.random()*1000)}`,name,store:saved,best:saved,done:false,source:"seasonal"}];
     });
@@ -1908,17 +1904,15 @@ export default function KitchenApp() {
                   {seasonalOpen && (
                     <div style={{ padding:"12px 14px 14px", display:"flex", flexWrap:"wrap", gap:8 }}>
                       {seasonalKeys.map(k=>{
-                        const st = seasonalItemState(k);
+                        const added = seasonalItemState(k)==="added";
                         const base = { display:"inline-flex", alignItems:"center", gap:6, borderRadius:99, padding:"7px 13px", fontSize:13.5, fontFamily:SANS, cursor:"pointer" };
-                        const style = st==="added"
+                        const style = added
                           ? { ...base, background:C.ember, color:C.ink, border:`1px solid ${C.ember}`, fontWeight:600 }
-                          : st==="covered"
-                          ? { ...base, background:"transparent", color:SLOTS.quick.color, border:`1px solid ${rgba(SLOTS.quick.color,0.5)}` }
                           : { ...base, background:"transparent", color:C.muted, border:`1px solid ${C.line}` };
                         return (
                           <button key={k} className="de-btn" onClick={()=>toggleSeasonalItem(k)} style={style}
-                            title={st==="covered"?"Already on your list":st==="added"?"Tap to remove":"Tap to add"}>
-                            {(st==="added"||st==="covered") && <Check size={13}/>}
+                            title={added?"Tap to remove":"Tap to add"}>
+                            {added && <Check size={13}/>}
                             {cap(k)}
                           </button>
                         );

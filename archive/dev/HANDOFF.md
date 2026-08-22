@@ -1,5 +1,37 @@
 # Dinner Engine — handoff
 
+## Session note - 19 Aug 2026 (Seasonal buys: capitalise + tag, no folding)
+
+Follow-up to the "In season now" section added earlier today. Catalogue untouched at 274, all three
+copies still in sync. recipes.json not modified.
+
+### Change
+
+- Seasonal chips now add a distinct list line named like **"Avocado (seasonal buy)"**: capitalised,
+  with the "(seasonal buy)" tag, so it is visibly separate from an ingredient a recipe needs.
+- They no longer fold into existing items. Tapping a chip always adds its own tagged line even if the
+  same produce is already on the list from a dish. Second tap removes that seasonal-buy line.
+- Dropped the earlier "covered/already on list" chip state, since folding no longer applies. Chips are
+  now just add (outline) / added (ember + tick).
+- Helpers: `seasonalBuyName(key)` builds the display name; `seasonalItemState`/`toggleSeasonalItem`
+  match on the exact tagged name.
+
+Rebuilt with esbuild, spliced into index.html, 274 recipes verified present by name.
+
+### Note on the earlier commit today
+
+The first "In season now" push (commit c1fc7ee) uploaded two blobs with empty SHAs because the base64
+payloads were passed on the curl command line and hit the argv length limit, which broke index.html
+and dinner-engine.jsx on main. Fixed immediately in commit 981f340 by writing blob payloads to files
+and posting with --data-binary @file. All commits since use the file-payload method. recipes.json was
+never touched, so the catalogue was never at risk.
+
+### Test on the Galaxy
+
+Shop tab -> "In season now" -> tap a chip -> list line should read e.g. "Avocado (seasonal buy)".
+Fully close and reopen the PWA first to clear the service worker cache.
+
+
 ## Session note - 19 Aug 2026 (Shop page: "In season now" quick-add)
 
 App change, no catalogue change. Catalogue untouched at 274 (r001-r274), all three copies still
