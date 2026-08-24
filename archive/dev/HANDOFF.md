@@ -1,5 +1,36 @@
 # Dinner Engine — handoff
 
+## Session note - 24 Aug 2026 (Use-up "Cook it as": stop colour words triggering the greens category)
+
+Catalogue untouched at 274, r001 to r274, all three copies verified in sync at session start and
+after. recipes.json not modified.
+
+### Problem
+
+Dave flagged "green curry paste" to use up and the "Cook it as" list returned every greens recipe
+(spinach, silverbeet, saag, etc). Cause, confirmed by reading the code path: the flagged name is
+split into content words, and "greens" normalises to "green" via cookSingular, which is the same
+token as the colour "green". So "green curry paste" hit CAT_TRIGGER["green"] and expanded to the whole
+greens category, matching any leafy-green ingredient by membership alone regardless of curry/paste.
+Affected every name with a colour "green" in it (green beans, green olives) and also biased the planner.
+
+### Fix
+
+One-line change in `ingMatchesUseUp` (dinner-engine.jsx): category members now match ONLY when the
+flagged name has no literal (non-trigger) content words. A bare "greens" or "pasta" flag still expands
+to its category; a name with specific words ("green curry paste") is driven by those words instead.
+
+Verified against the live catalogue before building:
+- "green curry paste" -> 3 real curry recipes (was ~all greens)
+- "greens" -> 31 greens dishes (unchanged)
+- "leftover pasta" -> 42 pasta dishes (unchanged)
+- "spinach" -> 16 (unchanged)
+
+Rebuilt with esbuild, spliced into index.html, 274 recipes verified present by name. jsx + index.html
++ HANDOFF committed together; recipes.json unchanged so still in sync.
+
+# Dinner Engine — handoff
+
 ## Session note - 19 Aug 2026 (Seasonal buys: capitalise + tag, no folding)
 
 Follow-up to the "In season now" section added earlier today. Catalogue untouched at 274, all three

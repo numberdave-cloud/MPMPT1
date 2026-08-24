@@ -198,10 +198,12 @@ const USEUP_CATEGORIES = {
 const CAT_TRIGGER = (() => { const o={}; for(const k in USEUP_CATEGORIES){ o[cookNorm(k)] = new Set(USEUP_CATEGORIES[k].map(m=>m.toLowerCase())); } return o; })();
 function useUpCatMembers(words){ const m=new Set(); for(const w of words){ const set=CAT_TRIGGER[w]; if(set) for(const x of set) m.add(x); } return m; }
 function cookLiteralWords(words){ return words.filter(w=>!CAT_TRIGGER[w]); }
-// Match an ingredient to a use-up item. Category members (pasta shapes, greens) match by exact name.
+// Match an ingredient to a use-up item. Category members (pasta shapes, greens) match by exact name
+// ONLY when the flagged name is a bare category word with no other content words, so "greens" still
+// finds every leafy green but "green curry paste" and "green beans" do not drag in the greens category.
 // Otherwise EVERY literal word of the use-up name must be present, so "white wine" no longer matches
 // "white rice" and "tomato puree" no longer matches fresh tomatoes on a single shared word.
-function ingMatchesUseUp(x, litWords, catMembers){ if(!x.i) return false; if(catMembers.has(x.i.toLowerCase())) return true; if(!litWords.length) return false; const toks=cookIngTokens(x.i); return litWords.every(w=>toks.has(w)); }
+function ingMatchesUseUp(x, litWords, catMembers){ if(!x.i) return false; if(!litWords.length) return catMembers.has(x.i.toLowerCase()); const toks=cookIngTokens(x.i); return litWords.every(w=>toks.has(w)); }
 function dishUsesUseUp(dish, useUpName){ const words=cookContentWords(useUpName); if(!words.length) return false; const cm=useUpCatMembers(words); const lit=cookLiteralWords(words); return dish.ings.some(x=>ingMatchesUseUp(x,lit,cm)); }
 /* ---------- preserves ---------- */
 // A flagged glut matches a preserve through its hero produce keys, using the same word
