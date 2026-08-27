@@ -1,5 +1,29 @@
 # Dinner Engine — handoff
 
+## Session note - 27 Aug 2026 (Liquid volumes: cup -> ml across the catalogue + new convention)
+
+Data-only change, no esbuild rebuild. All three catalogue copies edited and verified deep-equal
+(recipes.json, jsx CATALOGUE, index.html ct array), count unchanged at 275, r001 to r275.
+
+### What and why
+Dave spotted r234 Thai Pineapple Curry showing coconut milk as "1.5 cup". The app prints the unit
+verbatim from the data (confirmed: no unit-conversion code anywhere in the jsx). The recipe was
+transcribed in its source units (Hot Thai Kitchen, US-style cups).
+
+New standing convention Dave set: liquid ingredients are recorded in ml, not cups, unless the amount
+is under 45ml (small tsp/tbsp splashes stay as-is). Apply this to all future transcriptions. Cup used
+1 metric cup = 250ml for the conversions.
+
+### Converted (7 liquid lines, all were the only liquid-in-cup entries in the catalogue)
+- r234 coconut milk 1.5 cup -> 375ml; water 0.5 cup -> 125ml
+- r248 water 0.5 cup -> 125ml
+- r249 chicken stock 2.5 cup -> 625ml
+- r253 dry white wine 0.5 cup -> 125ml
+- r255 chicken stock 0.25 cup -> 62.5ml; fish sauce 0.25 cup -> 62.5ml
+
+Non-liquid "cup" entries (herbs, cashews, cheese, etc) left untouched. Tell Dave to fully close and
+reopen the Galaxy PWA to clear the service worker cache.
+
 ## Session note - 24 Aug 2026 (Use-up "Cook it as": stop colour words triggering the greens category)
 
 Catalogue untouched at 274, r001 to r274, all three copies verified in sync at session start and
