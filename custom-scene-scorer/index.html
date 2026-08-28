@@ -282,7 +282,7 @@
   // ─── CONFIG ──────────────────────────────────────────────────────
   // The scene is fixed and travels with the device. Students add music.
   const CONFIG = {
-    scene: { id: 'L_Cb1OepkY8', volume: 100, start: 37, end: 130, muted: true }
+    scene: { id: 'A_L75X96Wns', volume: 100, start: 48, end: 127, muted: true }
   };
 
   const PLAYER_VARS = { controls: 0, disablekb: 1, modestbranding: 1, rel: 0, playsinline: 1, fs: 0, iv_load_policy: 3, cc_load_policy: 0, origin: window.location.origin };
@@ -387,10 +387,10 @@
       if (CONFIG.scene.muted) scenePlayer.mute();
       else scenePlayer.setVolume(CONFIG.scene.volume);
     } catch (e) {}
-    // Seek to the 0:37 in-point so the scene shows that frame, not the generic
+    // Seek to the 0:48 in-point so the scene shows that frame, not the generic
     // poster. seekTo() on a not-yet-started player makes YouTube begin playback
     // (muted), so onSceneStateChange pauses it straight back on the first
-    // PLAYING event: the scene lands paused on the 0:37 frame after a brief
+    // PLAYING event: the scene lands paused on the 0:48 frame after a brief
     // jump, and never rolls on its own.
     try { scenePlayer.seekTo(CONFIG.scene.start || 0, true); } catch (e) {}
     sceneReady = true;
