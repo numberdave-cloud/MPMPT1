@@ -321,7 +321,7 @@ const MAINT_SEED = [
 
 /* ---------- freezer inventory ---------- */
 const FREEZER_SEED = [];
-const FREEZER_LOCATIONS = ["Drawer 1", "Drawer 2", "Drawer 3", "Drawer 4", "Shelf 1", "Shelf 2", "Low freezer"];
+const FREEZER_LOCATIONS = ["Shelf 1", "Shelf 2", "Drawer 1", "Drawer 2", "Drawer 3", "Drawer 4"];
 const SERVES_OPTIONS = [1, 2, 3, 4, 6, 8];
 const FREEZER_SOON_DAYS = 330;
 
@@ -451,6 +451,7 @@ export default function KitchenApp() {
     (arr) => arr.map(f => ({ ...f, frozen: f.frozen ? new Date(f.frozen) : null }))
   );
   const [addingFreezer, setAddingFreezer] = useState(false);
+  const [freezerSort, setFreezerSort] = useState("shelf"); // "shelf" = grouped by location, "age" = flat, oldest first
   const [fDraft, setFDraft] = useState({ name:"", serves:4, qty:1, loc:FREEZER_LOCATIONS[0], goodFor:6 });
   const [freezerPlaceFor, setFreezerPlaceFor] = useState(null); // freezer item whose "add to a day" picker is open
   const [restorePending, setRestorePending] = useState(null); // parsed backup file awaiting confirm
@@ -1024,6 +1025,46 @@ export default function KitchenApp() {
     patch(o,dayId,{ dish, type:"freezer", suggested:false });
     setHistory(h=>[f.name,...h.filter(x=>x.toLowerCase()!==f.name.toLowerCase())].slice(0,12));
     setFreezerPlaceFor(null);
+  };
+  // Oldest in the freezer first (most days in). Used for the "Longest in" sort and within each shelf group.
+  const byOldest = (a,b) => freezerAge(b.frozen).days - freezerAge(a.frozen).days;
+  // One freezer item card. showLoc adds the shelf to the meta line (used in the flat "Longest in" view, redundant under a shelf heading).
+  const freezerCard = (f, showLoc) => {
+    const age = freezerAge(f.frozen);
+    const gf = f.goodFor || 6;
+    const windowDays = Math.round(gf*30.44);
+    const past = age.days >= windowDays;
+    const soon = age.days >= windowDays - 30;
+    const placing = freezerPlaceFor===f.id;
+    const placeDays = [...weeks[0].filter(d=>!passedDay(d)).map(d=>({o:0,d})), ...weeks[1].map(d=>({o:1,d}))];
+    return (
+      <div key={f.id} style={{ background:C.card, border:`1px solid ${soon?rgba(SLOTS.freezer.color,0.5):C.line}`, borderRadius:12, padding:"11px 14px" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+          <span style={{ width:8, height:8, borderRadius:99, background:SLOTS.freezer.color, flexShrink:0 }} />
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontFamily:SANS, fontWeight:700, fontSize:15.5, color:C.cream }}>{f.name}</div>
+            <div style={{ fontSize:12.5, color:soon?SLOTS.freezer.color:C.muted, marginTop:3 }}>
+              {(f.qty||1) > 1 ? `${f.qty} × ${f.serves} serves` : `${f.serves} serve${f.serves!==1?"s":""}`}{showLoc&&f.loc?` · ${f.loc}`:""} · {age.label} · good for {gf}mo{past?" · past best":(soon?" · use soon":"")}
+            </div>
+          </div>
+          <button className="de-btn" onClick={()=>setFreezerPlaceFor(x=>x===f.id?null:f.id)} aria-label="add to a day" style={{ background:placing?rgba(C.ember,0.16):"transparent", border:`1px solid ${placing?rgba(C.ember,0.55):C.line}`, color:placing?C.ember:C.muted, borderRadius:9, padding:"6px 8px" }}><Plus size={15}/></button>
+          <button className="de-btn" onClick={()=>removeFreezer(f.id)} aria-label="remove from freezer" style={{ background:"transparent", border:"none", color:C.faint, padding:"6px 4px" }}><X size={15}/></button>
+        </div>
+        {placing && (
+          <div style={{ marginTop:11, background:C.cardEmpty, border:`1px solid ${C.line}`, borderRadius:10, padding:"10px 12px" }}>
+            <div style={{ fontSize:12, color:C.muted, marginBottom:8 }}>Add to which day? It leaves the freezer until you clear that day.</div>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+              {placeDays.map(x=>(
+                <button key={`${x.o}-${x.d.id}`} className="de-btn" onClick={()=>addFreezerToDay(f,x.o,x.d.id)} style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:1, background:C.card, border:`1px solid ${C.line}`, borderRadius:9, padding:"6px 10px", minWidth:62, color:C.cream }}>
+                  <span style={{ fontSize:13, fontWeight:600 }}>{x.d.weekday}</span>
+                  <span style={{ fontSize:10.5, color:C.muted, maxWidth:104, whiteSpace:"normal", lineHeight:1.2, wordBreak:"break-word" }}>{x.d.dish?x.d.dish.name:(x.o===1?"next wk":"free")}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
   /* ---- backup & restore (everything persists in localStorage under STORE_PREFIX) ---- */
   const exportBackup = () => {
@@ -2013,49 +2054,43 @@ export default function KitchenApp() {
 
             {storedTab==="freezer" && (
               <div>
-                <div style={{ ...eyebrow, marginBottom:10 }}>FREEZER · {freezer.filter(f=>(f.qty||0)>0).length} meal{freezer.filter(f=>(f.qty||0)>0).length!==1?"s":""}</div>
-                <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                  {freezer.filter(f=>(f.qty||0)>0).length===0 && (
-                    <div style={{ fontSize:14, color:C.faint, padding:"4px 0" }}>Nothing logged yet. Add a meal as you freeze it.</div>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:10 }}>
+                  <div style={eyebrow}>FREEZER · {freezer.filter(f=>(f.qty||0)>0).length} meal{freezer.filter(f=>(f.qty||0)>0).length!==1?"s":""}</div>
+                  {freezer.filter(f=>(f.qty||0)>0).length>0 && (
+                    <div style={{ display:"flex", gap:6 }}>
+                      {[["shelf","By shelf"],["age","Longest in"]].map(([k,label])=>(
+                        <button key={k} className="de-btn" onClick={()=>setFreezerSort(k)} style={{ background:freezerSort===k?rgba(C.ember,0.16):"transparent", border:`1px solid ${freezerSort===k?rgba(C.ember,0.55):C.line}`, color:freezerSort===k?C.ember:C.muted, borderRadius:99, padding:"5px 11px", fontSize:12, fontFamily:SANS }}>{label}</button>
+                      ))}
+                    </div>
                   )}
-                  {[...freezer].filter(f=>(f.qty||0)>0).sort((a,b)=>{ const A=Math.round((a.goodFor||6)*30.44)-freezerAge(a.frozen).days, B=Math.round((b.goodFor||6)*30.44)-freezerAge(b.frozen).days; return A-B; }).map(f=>{
-                    const age = freezerAge(f.frozen);
-                    const gf = f.goodFor || 6;
-                    const windowDays = Math.round(gf*30.44);
-                    const past = age.days >= windowDays;
-                    const soon = age.days >= windowDays - 30;
-                    const placing = freezerPlaceFor===f.id;
-                    const placeDays = [...weeks[0].filter(d=>!passedDay(d)).map(d=>({o:0,d})), ...weeks[1].map(d=>({o:1,d}))];
-                    return (
-                      <div key={f.id} style={{ background:C.card, border:`1px solid ${soon?rgba(SLOTS.freezer.color,0.5):C.line}`, borderRadius:12, padding:"11px 14px" }}>
-                        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                          <span style={{ width:8, height:8, borderRadius:99, background:SLOTS.freezer.color, flexShrink:0 }} />
-                          <div style={{ flex:1, minWidth:0 }}>
-                            <div style={{ fontFamily:SANS, fontWeight:700, fontSize:15.5, color:C.cream }}>{f.name}</div>
-                            <div style={{ fontSize:12.5, color:soon?SLOTS.freezer.color:C.muted, marginTop:3 }}>
-                              {(f.qty||1) > 1 ? `${f.qty} × ${f.serves} serves` : `${f.serves} serve${f.serves!==1?"s":""}`}{f.loc?` · ${f.loc}`:""} · {age.label} · good for {gf}mo{past?" · past best":(soon?" · use soon":"")}
-                            </div>
-                          </div>
-                          <button className="de-btn" onClick={()=>setFreezerPlaceFor(x=>x===f.id?null:f.id)} aria-label="add to a day" style={{ background:placing?rgba(C.ember,0.16):"transparent", border:`1px solid ${placing?rgba(C.ember,0.55):C.line}`, color:placing?C.ember:C.muted, borderRadius:9, padding:"6px 8px" }}><Plus size={15}/></button>
-                          <button className="de-btn" onClick={()=>removeFreezer(f.id)} aria-label="remove from freezer" style={{ background:"transparent", border:"none", color:C.faint, padding:"6px 4px" }}><X size={15}/></button>
-                        </div>
-                        {placing && (
-                          <div style={{ marginTop:11, background:C.cardEmpty, border:`1px solid ${C.line}`, borderRadius:10, padding:"10px 12px" }}>
-                            <div style={{ fontSize:12, color:C.muted, marginBottom:8 }}>Add to which day? It leaves the freezer until you clear that day.</div>
-                            <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
-                              {placeDays.map(x=>(
-                                <button key={`${x.o}-${x.d.id}`} className="de-btn" onClick={()=>addFreezerToDay(f,x.o,x.d.id)} style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:1, background:C.card, border:`1px solid ${C.line}`, borderRadius:9, padding:"6px 10px", minWidth:62, color:C.cream }}>
-                                  <span style={{ fontSize:13, fontWeight:600 }}>{x.d.weekday}</span>
-                                  <span style={{ fontSize:10.5, color:C.muted, maxWidth:104, whiteSpace:"normal", lineHeight:1.2, wordBreak:"break-word" }}>{x.d.dish?x.d.dish.name:(x.o===1?"next wk":"free")}</span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
                 </div>
+                {freezer.filter(f=>(f.qty||0)>0).length===0 && (
+                  <div style={{ fontSize:14, color:C.faint, padding:"4px 0" }}>Nothing logged yet. Add a meal as you freeze it.</div>
+                )}
+                {freezer.filter(f=>(f.qty||0)>0).length>0 && freezerSort==="age" && (
+                  <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                    {[...freezer].filter(f=>(f.qty||0)>0).sort(byOldest).map(f=>freezerCard(f,true))}
+                  </div>
+                )}
+                {freezer.filter(f=>(f.qty||0)>0).length>0 && freezerSort==="shelf" && (
+                  <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                    {(() => {
+                      const stocked = freezer.filter(f=>(f.qty||0)>0);
+                      const known = new Set(FREEZER_LOCATIONS);
+                      const groups = FREEZER_LOCATIONS.map(loc=>[loc, stocked.filter(f=>f.loc===loc).sort(byOldest)]);
+                      const elsewhere = stocked.filter(f=>!known.has(f.loc)).sort(byOldest);
+                      if(elsewhere.length) groups.push(["Elsewhere", elsewhere]);
+                      return groups.filter(([,items])=>items.length>0).map(([loc,items])=>(
+                        <div key={loc} style={{ border:`1px solid ${C.line}`, borderRadius:14, padding:"10px 11px", background:C.cardEmpty }}>
+                          <div style={{ ...eyebrow, marginBottom:8 }}>{loc.toUpperCase()} · {items.length}</div>
+                          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                            {items.map(f=>freezerCard(f,false))}
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                )}
                 <div style={{ marginTop:11 }}>
                   {addingFreezer?(
                     <div style={{ background:C.cardEmpty, border:`1px solid ${C.line}`, borderRadius:12, padding:14, display:"flex", flexDirection:"column", gap:12 }}>

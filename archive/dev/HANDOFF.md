@@ -1,5 +1,35 @@
 # Dinner Engine — handoff
 
+## Session note - 6 Sep 2026 (Freezer: group by shelf with borders + "Longest in" sort)
+
+App change (type B), esbuild rebuild + splice. Catalogue untouched at 275, r001 to r275; all three
+copies verified in sync at session start (recipes.json / jsx CATALOGUE / index.html ct all 275).
+Committed dev/dinner-engine.jsx, meal-planner/index.html, dev/HANDOFF.md together.
+
+### What and why
+Dave's Stored > Freezer tab was one flat list sorted by closest-to-past-best. He wanted to see at a
+glance where each meal physically sits, and a way to see what's been in there longest.
+
+- Reordered FREEZER_LOCATIONS to match his real freezer top-to-bottom: Shelf 1, Shelf 2, Drawer 1..4.
+  Dropped "Low freezer" from the add picker (he never mentioned it). Any existing item still tagged an
+  unknown/blank location falls into an "Elsewhere" box at the bottom, so nothing is lost.
+- New sort toggle at the top of the Freezer tab: "By shelf" (default) and "Longest in".
+  - By shelf: one bordered box per location (background cardEmpty, border C.line, heading = shelf name +
+    count), in physical order, only boxes with stock shown. Within each box, oldest first.
+  - Longest in: flattens to a single list across the whole freezer, oldest first, each card shows its
+    shelf. (Dave confirmed flatten rather than keeping the boxes.)
+- Extracted a shared freezerCard(f, showLoc) helper so both views render identical cards; showLoc adds
+  the shelf line only in the flat view (redundant under a heading). Added byOldest comparator
+  (freezerAge days, descending). freezerSort state defaults to "shelf".
+
+### Verified
+esbuild ESM validate clean; IIFE minified build clean. Spliced bundle: catalogue names sampled across
+r001/r138/r227/r275 all present, cookMin object-keys = 275 (+1 code ref), HTML well-formed
+(DOCTYPE, #root, single script block). Feature string markers present in index.html.
+
+Galaxy: tell Dave to fully close and reopen the PWA to clear the service worker cache. Test is the
+phone: check the shelf boxes read top-to-bottom and the toggle flips to the flat oldest-first list.
+
 ## Session note - 27 Aug 2026 (Liquid volumes: cup -> ml across the catalogue + new convention)
 
 Data-only change, no esbuild rebuild. All three catalogue copies edited and verified deep-equal
