@@ -454,6 +454,7 @@ export default function KitchenApp() {
   const [freezerSort, setFreezerSort] = useState("shelf"); // "shelf" = grouped by location, "age" = flat, oldest first
   const [fDraft, setFDraft] = useState({ name:"", serves:4, qty:1, loc:FREEZER_LOCATIONS[0], goodFor:6 });
   const [freezerPlaceFor, setFreezerPlaceFor] = useState(null); // freezer item whose "add to a day" picker is open
+  const [freezerMoveFor, setFreezerMoveFor] = useState(null); // freezer item whose "move to shelf" picker is open
   const [restorePending, setRestorePending] = useState(null); // parsed backup file awaiting confirm
   const [restoreErr, setRestoreErr] = useState("");
 
@@ -1019,6 +1020,7 @@ export default function KitchenApp() {
     setFDraft({ name:"", serves:4, qty:1, loc:FREEZER_LOCATIONS[0], goodFor:6 }); setAddingFreezer(false);
   };
   const removeFreezer = id => setFreezer(fz=>fz.filter(f=>f.id!==id));
+  const moveFreezer = (id,loc) => { setFreezer(fz=>fz.map(f=>f.id===id?{...f,loc}:f)); setFreezerMoveFor(null); };
   const addFreezerToDay = (f,o,dayId) => {
     const dish={name:f.name, ref:"", frozen:true, frozenId:f.id, frozenMeta:{serves:f.serves, loc:f.loc, frozen:f.frozen}};
     reconcileFreezer(o,dayId,dish);
@@ -1036,6 +1038,7 @@ export default function KitchenApp() {
     const past = age.days >= windowDays;
     const soon = age.days >= windowDays - 30;
     const placing = freezerPlaceFor===f.id;
+    const moving = freezerMoveFor===f.id;
     const placeDays = [...weeks[0].filter(d=>!passedDay(d)).map(d=>({o:0,d})), ...weeks[1].map(d=>({o:1,d}))];
     return (
       <div key={f.id} style={{ background:C.card, border:`1px solid ${soon?rgba(SLOTS.freezer.color,0.5):C.line}`, borderRadius:12, padding:"11px 14px" }}>
@@ -1047,7 +1050,8 @@ export default function KitchenApp() {
               {(f.qty||1) > 1 ? `${f.qty} × ${f.serves} serves` : `${f.serves} serve${f.serves!==1?"s":""}`}{showLoc&&f.loc?` · ${f.loc}`:""} · {age.label} · good for {gf}mo{past?" · past best":(soon?" · use soon":"")}
             </div>
           </div>
-          <button className="de-btn" onClick={()=>setFreezerPlaceFor(x=>x===f.id?null:f.id)} aria-label="add to a day" style={{ background:placing?rgba(C.ember,0.16):"transparent", border:`1px solid ${placing?rgba(C.ember,0.55):C.line}`, color:placing?C.ember:C.muted, borderRadius:9, padding:"6px 8px" }}><Plus size={15}/></button>
+          <button className="de-btn" onClick={()=>{ setFreezerPlaceFor(x=>x===f.id?null:f.id); setFreezerMoveFor(null); }} aria-label="add to a day" style={{ background:placing?rgba(C.ember,0.16):"transparent", border:`1px solid ${placing?rgba(C.ember,0.55):C.line}`, color:placing?C.ember:C.muted, borderRadius:9, padding:"6px 8px" }}><Plus size={15}/></button>
+          <button className="de-btn" onClick={()=>{ setFreezerMoveFor(x=>x===f.id?null:f.id); setFreezerPlaceFor(null); }} aria-label="move to another shelf" style={{ background:moving?rgba(C.ember,0.16):"transparent", border:`1px solid ${moving?rgba(C.ember,0.55):C.line}`, color:moving?C.ember:C.muted, borderRadius:9, padding:"6px 8px" }}><ArrowUpDown size={15}/></button>
           <button className="de-btn" onClick={()=>removeFreezer(f.id)} aria-label="remove from freezer" style={{ background:"transparent", border:"none", color:C.faint, padding:"6px 4px" }}><X size={15}/></button>
         </div>
         {placing && (
@@ -1059,6 +1063,16 @@ export default function KitchenApp() {
                   <span style={{ fontSize:13, fontWeight:600 }}>{x.d.weekday}</span>
                   <span style={{ fontSize:10.5, color:C.muted, maxWidth:104, whiteSpace:"normal", lineHeight:1.2, wordBreak:"break-word" }}>{x.d.dish?x.d.dish.name:(x.o===1?"next wk":"free")}</span>
                 </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {moving && (
+          <div style={{ marginTop:11, background:C.cardEmpty, border:`1px solid ${C.line}`, borderRadius:10, padding:"10px 12px" }}>
+            <div style={{ fontSize:12, color:C.muted, marginBottom:8 }}>Move to which shelf?</div>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+              {FREEZER_LOCATIONS.map(l=>(
+                <button key={l} className="de-btn" onClick={()=>moveFreezer(f.id,l)} style={{ background:f.loc===l?rgba(C.ember,0.16):C.card, border:`1px solid ${f.loc===l?rgba(C.ember,0.55):C.line}`, color:f.loc===l?C.ember:C.cream, borderRadius:99, padding:"6px 11px", fontSize:12.5, fontFamily:SANS }}>{l}</button>
               ))}
             </div>
           </div>

@@ -1,5 +1,31 @@
 # Dinner Engine — handoff
 
+## Session note - 6 Sep 2026 (Freezer: move-to-shelf button on each meal)
+
+App change (type B), esbuild rebuild + splice, same session as the shelf-grouping change above.
+Catalogue untouched at 275, r001 to r275. Committed dev/dinner-engine.jsx, meal-planner/index.html,
+dev/HANDOFF.md together. Base was 664198a (the shelf-grouping commit).
+
+### What and why
+Dave wanted to move a meal to a different shelf/drawer without deleting and re-adding it. Added a
+move button (ArrowUpDown icon, already imported) on each freezer card, sitting between the add-to-day
+(+) and remove (X) buttons. Tapping it opens a "Move to which shelf?" picker with a chip per location;
+the current shelf is highlighted; picking one updates the item's loc and closes the picker.
+
+- New state freezerMoveFor (item id whose move picker is open), mirrors freezerPlaceFor.
+- New handler moveFreezer(id, loc): setFreezer map, updates loc, closes picker.
+- The two pickers are mutually exclusive: opening move closes the day picker and vice versa.
+- Lives inside the shared freezerCard helper, so it works in both By shelf and Longest in views. In
+  By shelf, moving an item re-homes it into the target shelf's box on the next render.
+
+### Verified
+esbuild ESM + IIFE minified builds clean. Spliced index.html: markers "Move to which shelf" and
+"move to another shelf" present, catalogue names sampled r001/r138/r275 present, cookMin object-keys
+276 (275 recipes + 1 code ref), HTML well-formed.
+
+Galaxy: fully close and reopen the PWA. Test on the phone that the three buttons still fit the card row
+without crowding, and that moving a meal in By shelf view drops it into the right box.
+
 ## Session note - 6 Sep 2026 (Freezer: group by shelf with borders + "Longest in" sort)
 
 App change (type B), esbuild rebuild + splice. Catalogue untouched at 275, r001 to r275; all three
