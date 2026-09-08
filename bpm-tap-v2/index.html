@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BPM TAP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --panel: #241F1B;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --hot: #D8904A;
+    --accent-glow: #F0A860;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.38);
+    --frame: #0E0C0A;
+    --led-plate: #17130F;
+    --led-off: rgba(240, 168, 96, 0.13);
+    --glow-rgb: 240, 168, 96;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: transparent;
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    padding: 18px;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* rack card */
+  .rack {
+    position: relative;
+    width: 100%;
+    max-width: 760px;
+    background: var(--bg);
+    border: 2px solid var(--frame);
+    border-radius: 24px;
+    padding: 24px 28px 22px;
+  }
+  .rack::after {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border-radius: 18px;
+    border: 1px solid rgba(234, 224, 208, 0.10);
+    pointer-events: none;
+  }
+
+  /* header */
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .title {
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent-glow);
+  }
+  .subtitle {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* readout plate */
+  .led-bar {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: 8px;
+    background: var(--led-plate);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px 14px;
+    margin-bottom: 14px;
+  }
+  .led-cell { text-align: center; min-width: 0; overflow: hidden; }
+  .led-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .led-vwrap { position: relative; display: inline-block; }
+  .led-val, .led-ghost {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .led-val {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 2;
+    color: var(--accent-glow);
+    text-shadow: 0 0 9px rgba(var(--glow-rgb), 0.5), 0 0 2px rgba(var(--glow-rgb), 0.9);
+  }
+  .led-ghost {
+    position: relative;
+    z-index: 1;
+    color: var(--led-off);
+  }
+  .led-val.big, .led-ghost.big { font-size: 48px; }
+  .led-val.sm, .led-ghost.sm { font-size: 22px; }
+  .led-unit {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    margin-top: 8px;
+    min-height: 11px;
+  }
+
+  /* tap row */
+  .tap-row {
+    display: grid;
+    grid-template-columns: 148px 1fr;
+    gap: 14px;
+    align-items: stretch;
+    margin-bottom: 14px;
+  }
+
+  .tap-btn {
+    height: 100%;
+    min-height: 84px;
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.4em;
+    text-indent: 0.4em;
+    text-transform: uppercase;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      background-color 0.06s linear,
+      color 0.06s linear,
+      border-color 0.06s linear,
+      box-shadow 0.18s ease-out;
+  }
+  .tap-btn:hover { border-color: var(--accent-glow); }
+  .tap-btn:focus { outline: none; }
+  .tap-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+  .tap-btn.active {
+    background: var(--accent);
+    border-color: var(--hot);
+    color: var(--bg);
+    box-shadow: 0 0 24px rgba(var(--glow-rgb), 0.55);
+  }
+
+  .award {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+  }
+  .award-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .award-value {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--accent-glow);
+    text-shadow: 0 0 8px rgba(var(--glow-rgb), 0.35);
+    min-height: 17px;
+    line-height: 1.3;
+  }
+  .award-value:empty::before {
+    content: "Keep tapping. Awards land every 16 taps.";
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: var(--text-faint);
+    text-shadow: none;
+    font-style: italic;
+  }
+
+  /* examples */
+  .examples {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .ex {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px 12px;
+    min-width: 0;
+    min-height: 76px;
+  }
+  .ex-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .ex-value {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1.45;
+    min-height: 13px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .ex-value .sub {
+    display: block;
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+
+  /* footer */
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .hint {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-faint);
+    text-transform: uppercase;
+  }
+  .hint .key {
+    font-family: 'Courier New', monospace;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--text-dim);
+    margin-right: 2px;
+  }
+
+  .reset-btn {
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: border-color 0.08s, color 0.08s;
+    white-space: nowrap;
+  }
+  .reset-btn:hover { border-color: var(--accent-glow); color: var(--accent-glow); }
+  .reset-btn:focus { outline: none; }
+  .reset-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+
+  @media (max-width: 600px) {
+    body { padding: 10px; }
+    .rack { padding: 18px 16px 16px; border-radius: 18px; }
+    .rack::after { inset: 5px; border-radius: 13px; }
+    .led-val.big, .led-ghost.big { font-size: 38px; }
+    .led-val.sm, .led-ghost.sm { font-size: 18px; }
+    .tap-row { grid-template-columns: 1fr; }
+    .tap-btn { min-height: 84px; }
+    .examples { grid-template-columns: 1fr; }
+    .ex { min-height: 0; }
+    .foot { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rack">
+
+  <div class="head">
+    <div class="title">BPM Tap</div>
+    <div class="subtitle">Tap tempo · accuracy · reference points</div>
+  </div>
+
+  <div class="led-bar">
+    <div class="led-cell">
+      <div class="led-label">Tempo</div>
+      <div class="led-vwrap">
+        <div class="led-ghost big">888</div>
+        <div class="led-val big" id="bpmNumber"></div>
+      </div>
+      <div class="led-unit" id="bpmUnit"></div>
+    </div>
+    <div class="led-cell">
+      <div class="led-label">Accuracy</div>
+      <div class="led-vwrap">
+        <div class="led-ghost sm">888%</div>
+        <div class="led-val sm" id="accuracy"></div>
+      </div>
+      <div class="led-unit"></div>
+    </div>
+    <div class="led-cell">
+      <div class="led-label">Taps</div>
+      <div class="led-vwrap">
+        <div class="led-ghost sm">888</div>
+        <div class="led-val sm" id="tapCount"></div>
+      </div>
+      <div class="led-unit"></div>
+    </div>
+  </div>
+
+  <div class="tap-row">
+    <button class="tap-btn" id="tapBtn" type="button">Tap</button>
+    <div class="award">
+      <div class="award-label">Award</div>
+      <div class="award-value" id="score"></div>
+    </div>
+  </div>
+
+  <div class="examples">
+    <div class="ex">
+      <div class="ex-label">Musical example</div>
+      <div class="ex-value" id="musicalEx"></div>
+    </div>
+    <div class="ex">
+      <div class="ex-label">Genre</div>
+      <div class="ex-value" id="genreEx"></div>
+    </div>
+    <div class="ex">
+      <div class="ex-label">Real world</div>
+      <div class="ex-value" id="otherEx"></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="hint"><span class="key">Space</span> also taps · pause 2.5s to start again</div>
+    <button class="reset-btn" id="resetBtn" type="button">Reset</button>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+/* ── DATA ───────────────────────────────────────── */
+
+// Bracket-based song lookup. Each entry covers [min, max) BPM.
+const SONG_BRACKETS = [
+  { min: 65,  max: 70,  t: 'JEALOUS GUY',                  a: 'JOHN LENNON' },
+  { min: 70,  max: 75,  t: 'BOHEMIAN RHAPSODY',            a: 'QUEEN' },
+  { min: 75,  max: 80,  t: 'KARMA POLICE',                 a: 'RADIOHEAD' },
+  { min: 80,  max: 85,  t: 'BOULEVARD OF BROKEN DREAMS',   a: 'GREEN DAY' },
+  { min: 85,  max: 90,  t: 'WONDERWALL',                   a: 'OASIS' },
+  { min: 90,  max: 95,  t: 'BACK IN BLACK',                a: 'AC/DC' },
+  { min: 95,  max: 100, t: 'CALIFORNICATION',              a: 'RED HOT CHILI PEPPERS' },
+  { min: 100, max: 105, t: 'TAKE ME OUT',                  a: 'FRANZ FERDINAND' },
+  { min: 105, max: 110, t: 'EYE OF THE TIGER',             a: 'SURVIVOR' },
+  { min: 110, max: 115, t: 'SHOULD I STAY OR SHOULD I GO', a: 'THE CLASH' },
+  { min: 115, max: 120, t: 'SMELLS LIKE TEEN SPIRIT',      a: 'NIRVANA' },
+  { min: 120, max: 125, t: 'WELCOME TO THE JUNGLE',        a: "GUNS N' ROSES" },
+  { min: 125, max: 130, t: 'INSOMNIA',                     a: 'FAITHLESS' },
+  { min: 130, max: 135, t: 'SONG 2',                       a: 'BLUR' },
+  { min: 135, max: 140, t: 'SANDSTORM',                    a: 'DARUDE' },
+  { min: 140, max: 145, t: 'TOXIC',                        a: 'BRITNEY SPEARS' },
+  { min: 145, max: 150, t: 'MR. BRIGHTSIDE',               a: 'THE KILLERS' },
+  { min: 150, max: 155, t: 'SEX ON FIRE',                  a: 'KINGS OF LEON' },
+  { min: 155, max: 160, t: 'EVERLONG',                     a: 'FOO FIGHTERS' },
+  { min: 160, max: 165, t: 'PARANOID',                     a: 'BLACK SABBATH' },
+  { min: 165, max: 170, t: 'TAKE ON ME',                   a: 'A-HA' },
+  { min: 170, max: 175, t: 'RUN TO THE HILLS',             a: 'IRON MAIDEN' },
+  // 175–180 intentionally empty
+  { min: 180, max: 185, t: 'HOLIDAY IN CAMBODIA',          a: 'DEAD KENNEDYS' },
+  { min: 185, max: 190, t: "FIGHT 'EM TIL YOU CAN'T",      a: 'ANTHRAX' },
+  { min: 190, max: 195, t: 'BATTERY',                      a: 'METALLICA' },
+  { min: 195, max: 200, t: '199 FISH BALLOONS',            a: 'HELLFISH' }
+];
+
+const GENRES = [
+  { bpm: 65,  n: 'DOOM METAL' },
+  { bpm: 75,  n: 'TRIP-HOP' },
+  { bpm: 85,  n: 'LO-FI HIP-HOP' },
+  { bpm: 90,  n: 'BOOM-BAP HIP-HOP' },
+  { bpm: 95,  n: 'REGGAETON' },
+  { bpm: 105, n: 'NEO-SOUL' },
+  { bpm: 115, n: 'DISCO' },
+  { bpm: 122, n: 'DEEP HOUSE' },
+  { bpm: 126, n: 'TECH HOUSE' },
+  { bpm: 128, n: 'BIG ROOM / MAINSTAGE HOUSE' },
+  { bpm: 135, n: 'TRANCE' },
+  { bpm: 138, n: 'TECHNO' },
+  { bpm: 140, n: 'DUBSTEP' },
+  { bpm: 145, n: 'TRAP' },
+  { bpm: 155, n: 'HARDSTYLE' },
+  { bpm: 160, n: 'FOOTWORK' },
+  { bpm: 170, n: 'JUNGLE' },
+  { bpm: 174, n: 'DRUM & BASS' },
+  { bpm: 180, n: 'HAPPY HARDCORE' },
+  { bpm: 200, n: 'GABBER' },
+  { bpm: 220, n: 'FRENCHCORE' },
+  { bpm: 250, n: 'TERRORCORE' },
+  { bpm: 300, n: 'SPEEDCORE' },
+  { bpm: 600, n: 'SPLITTERCORE' }
+];
+
+const PHYSICAL = [
+  { bpm: 40,  n: 'CHURCH BELL TOLLING (FUNERAL)' },
+  { bpm: 50,  n: 'SLOW WINDSCREEN WIPER (INTERMITTENT)' },
+  { bpm: 60,  n: 'GRANDFATHER CLOCK PENDULUM' },
+  { bpm: 70,  n: 'MEDIUM WINDSCREEN WIPER' },
+  { bpm: 80,  n: 'CAR INDICATOR (STANDARD CLICK RATE)' },
+  { bpm: 90,  n: 'CASUAL WALKING PACE (FOOTSTEPS)' },
+  { bpm: 100, n: 'PEDESTRIAN CROSSING "WAIT" TONE' },
+  { bpm: 115, n: 'V/LINE TRAIN AT CRUISE (RAIL CLACKS)' },
+  { bpm: 120, n: 'COMMUTER CYCLING CADENCE' },
+  { bpm: 130, n: 'FAST CAR INDICATOR (SOME EUROPEAN MAKES)' },
+  { bpm: 140, n: 'SNOWY TREE CRICKET AT 25°C' },
+  { bpm: 150, n: 'TROTTING HORSE HOOVES' },
+  { bpm: 160, n: 'STEADY RUNNING CADENCE' },
+  { bpm: 180, n: 'SPRINT CADENCE' },
+  { bpm: 220, n: 'DOMESTIC SEWING MACHINE' },
+  { bpm: 250, n: 'INDUSTRIAL SEWING MACHINE' },
+  { bpm: 300, n: 'FAST TAP DANCER' },
+  { bpm: 400, n: 'GALLOPING HORSE HOOVES' },
+  { bpm: 500, n: 'HELICOPTER ROTOR (LIGHT AIRCRAFT)' },
+  { bpm: 600, n: 'PEDESTRIAN CROSSING "WALK NOW" TONE' }
+];
+
+const AWARDS = {
+  16:  { any: 'TAPPING ALONG',       good: 'IN TIME',            great: 'LOCKED IN' },
+  32:  { any: 'KEEPING TIME',        good: 'STEADY HAND',        great: 'POCKET FOUND' },
+  48:  { any: 'METRONOME APPRENTICE',good: 'CLICK TRACK FRIENDLY',great:'POCKET SURGEON' },
+  64:  { any: 'TIME KEEPER',         good: 'IN THE POCKET',      great: 'TEMPO WHISPERER' },
+  80:  { any: 'SESSION READY',       good: 'BACKLINE STEADY',    great: 'DRUM TECH IN TRAINING' },
+  96:  { any: 'POCKET VETERAN',      good: 'CLICK KILLER',       great: 'THE CLICK BOWS TO YOU' },
+  112: { any: 'RHYTHMIC ENDURANCE',  good: 'INHUMAN PRECISION',  great: 'SUSPICIOUSLY MECHANICAL' },
+  128: { ultimate: 'CERTIFIED CYBERNETIC DRUM MACHINE' }
+};
+
+const JOKE_AWARDS = [
+  'FREE JAZZ ENERGY',
+  'VIBING, NOT TIMING',
+  'RUBATO MASTER',
+  'EXPRESSIVE TIMING',
+  'TIME IS A CONSTRUCT',
+  'THE BEAT IS A SUGGESTION',
+  'POLYRHYTHMIC (AGAINST YOUR WILL)',
+  'TEMPO-CURIOUS',
+  'TIME IS A FLAT CIRCLE (BUT NOT A CLOCK IT SEEMS)'
+];
+
+/* ── CONFIG ─────────────────────────────────────── */
+
+const IDLE_RESET_MS = 2500;
+const BPM_WINDOW    = 8;     // last N taps for displayed BPM
+const MIN_BPM       = 40;
+const MAX_BPM       = 600;
+const GENRE_TOL     = 10;
+const PHYS_TOL      = 10;
+const LOW_ACC       = 65;    // below this → joke award
+const GOOD_ACC      = 85;
+const GREAT_ACC     = 95;
+
+/* ── STATE ──────────────────────────────────────── */
+
+let taps = [];                 // performance.now() timestamps
+let currentScore = '';         // sticky until reset or new milestone overwrites
+
+/* ── DOM ────────────────────────────────────────── */
+
+const bpmNumberEl = document.getElementById('bpmNumber');
+const bpmUnitEl   = document.getElementById('bpmUnit');
+const accuracyEl  = document.getElementById('accuracy');
+const scoreEl     = document.getElementById('score');
+const musicalEx   = document.getElementById('musicalEx');
+const genreEx     = document.getElementById('genreEx');
+const otherEx     = document.getElementById('otherEx');
+const tapBtn      = document.getElementById('tapBtn');
+const resetBtn    = document.getElementById('resetBtn');
+const tapCountEl  = document.getElementById('tapCount');
+
+/* ── HELPERS ────────────────────────────────────── */
+
+function findNearest(target, list, tolerance) {
+  let best = null;
+  let bestDiff = Infinity;
+  for (const item of list) {
+    const diff = Math.abs(item.bpm - target);
+    if (diff <= tolerance && diff < bestDiff) {
+      best = item;
+      bestDiff = diff;
+    }
+  }
+  return best;
+}
+
+function findSongBracket(bpm) {
+  for (const b of SONG_BRACKETS) {
+    if (bpm >= b.min && bpm < b.max) return b;
+  }
+  return null;
+}
+
+function intervalsFrom(arr) {
+  const out = [];
+  for (let i = 1; i < arr.length; i++) out.push(arr[i] - arr[i - 1]);
+  return out;
+}
+
+function calculateBPM() {
+  if (taps.length < 4) return null;
+  const recent = taps.slice(-BPM_WINDOW);
+  const ints = intervalsFrom(recent);
+  const avg = ints.reduce((a, b) => a + b, 0) / ints.length;
+  if (avg <= 0) return null;
+  return Math.round(60000 / avg);
+}
+
+function calculateAccuracy() {
+  if (taps.length < 4) return null;
+  const ints = intervalsFrom(taps);
+  const mean = ints.reduce((a, b) => a + b, 0) / ints.length;
+  if (mean <= 0) return 0;
+  const variance = ints.reduce((s, v) => s + (v - mean) ** 2, 0) / ints.length;
+  const stdDev = Math.sqrt(variance);
+  const cv = stdDev / mean;
+  return Math.max(0, Math.min(100, Math.round((1 - cv) * 100)));
+}
+
+function awardFor(milestone, accuracy, tapCount) {
+  // 128 ultimate gate
+  if (milestone === 128) {
+    if (accuracy >= GREAT_ACC) return AWARDS[128].ultimate;
+    milestone = 112; // fall back
+  }
+  const tier = AWARDS[milestone];
+  if (accuracy < LOW_ACC) {
+    return JOKE_AWARDS[Math.floor(Math.random() * JOKE_AWARDS.length)];
+  }
+  if (accuracy >= GREAT_ACC) return tier.great;
+  if (accuracy >= GOOD_ACC) return tier.good;
+  return tier.any;
+}
+
+function checkMilestone(tapCount, accuracy) {
+  // Only fire on exact milestone hits to keep score sticky between milestones
+  const milestones = [16, 32, 48, 64, 80, 96, 112, 128];
+  if (milestones.includes(tapCount)) {
+    currentScore = awardFor(tapCount, accuracy, tapCount);
+  }
+}
+
+/* ── RENDER ─────────────────────────────────────── */
+
+function render() {
+  const bpm = calculateBPM();
+  const acc = calculateAccuracy();
+  const inRange = bpm !== null && bpm >= MIN_BPM && bpm <= MAX_BPM;
+
+  if (inRange) {
+    bpmNumberEl.textContent = bpm;
+    bpmUnitEl.textContent   = 'BPM';
+
+    const song  = findSongBracket(bpm);
+    const genre = findNearest(bpm, GENRES,   GENRE_TOL);
+    const phys  = findNearest(bpm, PHYSICAL, PHYS_TOL);
+
+    musicalEx.innerHTML   = song  ? `${song.t}<span class="sub">${song.a}</span>` : '';
+    genreEx.textContent   = genre ? genre.n : '';
+    otherEx.textContent   = phys  ? phys.n  : '';
+  } else {
+    bpmNumberEl.textContent = '';
+    bpmUnitEl.textContent   = '';
+    musicalEx.textContent   = '';
+    genreEx.textContent     = '';
+    otherEx.textContent     = '';
+  }
+
+  accuracyEl.textContent = acc !== null ? `${acc}%` : '';
+  tapCountEl.textContent = taps.length > 0 ? String(taps.length) : '';
+  scoreEl.textContent    = currentScore;
+}
+
+function clearAll() {
+  taps = [];
+  currentScore = '';
+  bpmNumberEl.textContent = '';
+  bpmUnitEl.textContent   = '';
+  accuracyEl.textContent  = '';
+  scoreEl.textContent     = '';
+  musicalEx.textContent   = '';
+  genreEx.textContent     = '';
+  otherEx.textContent     = '';
+  tapCountEl.textContent  = '';
+}
+
+/* ── INPUT ──────────────────────────────────────── */
+
+let flashTimer = null;
+
+function handleTap() {
+  const now = performance.now();
+
+  // Idle auto-reset: if last tap was long ago, start fresh
+  if (taps.length > 0 && now - taps[taps.length - 1] > IDLE_RESET_MS) {
+    taps = [];
+    currentScore = '';
+  }
+
+  taps.push(now);
+
+  const acc = calculateAccuracy();
+  if (acc !== null) checkMilestone(taps.length, acc);
+
+  // Tap flash
+  tapBtn.classList.add('active');
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => tapBtn.classList.remove('active'), 90);
+
+  render();
+}
+
+tapBtn.addEventListener('click', handleTap);
+resetBtn.addEventListener('click', clearAll);
+
+// Spacebar = tap. Block repeat to avoid auto-fire on hold.
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !e.repeat) {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+    e.preventDefault();
+    handleTap();
+  }
+});
+
+// Prevent the button's own default space-activation (would double-fire)
+tapBtn.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'Enter') e.preventDefault();
+});
+</script>
+</body>
+</html>

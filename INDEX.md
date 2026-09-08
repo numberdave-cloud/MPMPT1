@@ -11,6 +11,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | --- | --- | --- | --- | --- |
 | MOTE-1 — What is a MOTE? | `mote-1/` | Miscellaneous | live | YES |
 | BPM Tap | `bpm-tap/` | Composition | live | YES |
+| BPM Tap v2 [rack-card reskin] | `bpm-tap-v2/` | Composition | live (v2.0, not yet verified in Canvas) | YES |
 | Chord Explorer | `chord-explorer/` | Composition | live | YES |
 | Step Sequencer — Drums | `step-sequencer/` | Composition | live | YES |
 | Melodic Step Sequencer | `melodic-sequencer/` | Composition | live | YES |
