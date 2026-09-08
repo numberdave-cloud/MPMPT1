@@ -14,6 +14,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | BPM Tap v2 [rack-card reskin] | `bpm-tap-v2/` | Composition | live (v2.2, not yet verified in Canvas) | YES |
 | Chord Explorer | `chord-explorer/` | Composition | live | YES |
 | Step Sequencer — Drums | `step-sequencer/` | Composition | live | YES |
+| Step Sequencer v2 [Drums, sampled, rack-card reskin] | `step-sequencer-v2/` | Composition | live (v2.0, not yet verified in Canvas) | YES |
 | Melodic Step Sequencer | `melodic-sequencer/` | Composition | live | YES |
 | Quantisation | `quantise/` | Composition | live | YES |
 | Mix Balance [Industrial] | `mix-balance-industrial/` | Mixing | live | YES |
