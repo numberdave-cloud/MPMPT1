@@ -45,7 +45,7 @@
   .rack {
     position: relative;
     width: 100%;
-    max-width: 760px;
+    max-width: 960px;
     background: var(--bg);
     border: 3px solid var(--frame);
     border-radius: 24px;
@@ -88,7 +88,7 @@
   /* readout plate */
   .led-bar {
     display: grid;
-    grid-template-columns: 1.6fr 1fr 1fr;
+    grid-template-columns: 1.3fr 1.4fr 1fr;
     gap: 8px;
     background: var(--led-plate);
     border: 2px solid var(--border);
@@ -130,18 +130,9 @@
   .led-val.big, .led-ghost.big { font-size: 62.4px; }
   .led-val.sm, .led-ghost.sm { font-size: 28.6px; }
 
-  /* tap row */
-  .tap-row {
-    display: grid;
-    grid-template-columns: 148px 1fr;
-    gap: 14px;
-    align-items: stretch;
-    margin-bottom: 14px;
-  }
-
   .tap-btn {
-    height: 100%;
-    min-height: 84px;
+    flex: 1;
+    min-height: 64px;
     background: transparent;
     border: 2px solid var(--border-bright);
     border-radius: 8px;
@@ -170,32 +161,16 @@
     box-shadow: 0 0 24px rgba(var(--glow-rgb), 0.55);
   }
 
-  .award {
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-width: 0;
-  }
-  .award-label {
-    font-size: 11.7px;
-    letter-spacing: 0.2em;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
   .award-value {
     font-family: 'Courier New', monospace;
-    font-size: 18.2px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.08em;
     color: var(--accent-glow);
     text-shadow: 0 0 8px rgba(var(--glow-rgb), 0.35);
-    min-height: 17px;
-    line-height: 1.3;
+    margin-top: 10px;
+    min-height: 16px;
+    line-height: 1.25;
   }
 
   /* examples */
@@ -243,8 +218,7 @@
   /* footer */
   .foot {
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
+    align-items: stretch;
     gap: 12px;
     padding-top: 12px;
     border-top: 2px solid var(--border);
@@ -274,7 +248,7 @@
     font-size: 13px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    padding: 8px 14px;
+    padding: 8px 22px;
     cursor: pointer;
     transition: border-color 0.08s, color 0.08s;
     white-space: nowrap;
@@ -289,11 +263,9 @@
     .rack::after { inset: 5px; border-radius: 13px; }
     .led-val.big, .led-ghost.big { font-size: 49.4px; }
     .led-val.sm, .led-ghost.sm { font-size: 23.4px; }
-    .tap-row { grid-template-columns: 1fr; }
-    .tap-btn { min-height: 84px; }
+    .tap-btn { min-height: 56px; }
     .examples { grid-template-columns: 1fr; }
     .ex { min-height: 0; }
-    .foot { flex-direction: column; align-items: flex-start; }
   }
 </style>
 </head>
@@ -320,6 +292,7 @@
         <div class="led-ghost sm">888%</div>
         <div class="led-val sm" id="accuracy"></div>
       </div>
+      <div class="award-value" id="score"></div>
     </div>
     <div class="led-cell">
       <div class="led-label">Taps</div>
@@ -327,14 +300,6 @@
         <div class="led-ghost sm">888</div>
         <div class="led-val sm" id="tapCount"></div>
       </div>
-    </div>
-  </div>
-
-  <div class="tap-row">
-    <button class="tap-btn" id="tapBtn" type="button">Tap</button>
-    <div class="award">
-      <div class="award-label">Award</div>
-      <div class="award-value" id="score"></div>
     </div>
   </div>
 
@@ -354,6 +319,7 @@
   </div>
 
   <div class="foot">
+    <button class="tap-btn" id="tapBtn" type="button">Tap</button>
     <button class="reset-btn" id="resetBtn" type="button">Reset</button>
   </div>
 
