@@ -25,6 +25,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Song Structure Analyser [Live Set Export + Detailed] | `song-structure-v4-als-export/` | Composition | live | YES |
 | Song Structure Navigator | `song-nav-nowhere/` | Composition | live | YES |
 | Bar Anatomy | `bar-anatomy/` | Composition | live (v1.0, not yet verified in Canvas) | YES |
+| Timbre Comparison | `timbre-comparison/` | Composition | live (v1.0, not yet verified in Canvas) | YES |
 | Vintage Sampler | `vintage-sampler/` | Composition | live | YES |
 | Character Generator | `character-generator/` | Composition | live | YES |
 | Skill Loop Player | `skill-loop-player/` | Miscellaneous | live | YES |
