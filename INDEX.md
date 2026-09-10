@@ -82,6 +82,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Audio Player [Hazmat Suit from 10 Cloverfield Lane] | `audio-player-hazmat-suit/` | Miscellaneous | live (v1.0, playback unverified) | YES |
 | Audio Player [Quest Begins / Main Theme from Bubble Bobble] | `audio-player-bubble-bobble/` | Miscellaneous | live (v1.0, playback unverified) | YES |
 | Audio Player [Spring Yard Zone from Sonic The Hedgehog] | `audio-player-spring-yard-zone/` | Miscellaneous | live (v1.0, playback unverified) | YES |
+| Audio Player [The Hall of Souls from Quake 1] | `audio-player-hall-of-souls/` | Miscellaneous | live (v1.0, playback unverified) | YES |
 
 ## Work in progress (not yet in repo)
 
