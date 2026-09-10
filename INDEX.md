@@ -78,6 +78,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Audio Player [Premonition from Nosferatu] | `audio-player-nosferatu-premonition/` | Miscellaneous | live (v1.0, playback unverified) | YES |
 | Audio Player [Force Shoots Robo from Robocop] | `audio-player-robocop-force-shoots-robo/` | Miscellaneous | live (v1.0, playback unverified) | YES |
 | Audio Player [Humanity (Pt. 2) from The Thing] | `audio-player-humanity-the-thing/` | Miscellaneous | live (v1.0, playback unverified) | YES |
+| Audio Player [Maximum Effort from Deadpool] | `audio-player-maximum-effort/` | Miscellaneous | live (v1.0, playback unverified) | YES |
 
 ## Work in progress (not yet in repo)
 

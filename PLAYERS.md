@@ -26,6 +26,7 @@ shape rather than reworking a different one.
 | Plain | `audio-player-order-in-chaos/` | plays to the track's natural end | `VIDEO_ID`, `START_AT` |
 | Fade-out | `audio-player-under-the-skin/` | fades to silence and stops | `VIDEO_ID`, `FADE_START`, `FADE_DURATION`, `STOP_AFTER_FADE` |
 | Fade-in | `audio-player-mausam-escape/` | plays to the track's natural end | `VIDEO_ID`, `START_AT`, `FADE_DURATION` |
+| `audio-player-maximum-effort/` | Maximum Effort from Deadpool - Tom Holkenborg | `4wD5tamhwXo` | fade-in | 0:35 | in over 5s | live, playback unverified |
 | Fade-in + out | `audio-player-history-of-the-ring/` | fades to silence and stops | `VIDEO_ID`, `START_AT`, `FADE_IN_END`, `FADE_OUT_START`, `FADE_OUT_DURATION`, `STOP_AFTER_FADE` |
 
 ## Instances
@@ -139,6 +140,6 @@ unused for a while.
 
 ## Last updated
 
-2026-09-10. Added `audio-player-humanity-the-thing/` (fade-in+out shape, video `I9Doo9ajCyQ`).
-Registry now catalogues seventeen players and the four fade shapes with their
+2026-09-10. Added `audio-player-maximum-effort/` (fade-in shape, video `4wD5tamhwXo`).
+Registry now catalogues eighteen players and the four fade shapes with their
 canonical source folders.
