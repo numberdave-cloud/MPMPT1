@@ -48,6 +48,7 @@ shape rather than reworking a different one.
 | `audio-player-phat-planet/` | Phat Planet - Leftfield | `5GC_X_tI5kA` | fade-in+out | 0:40 | in to 0:45, out at 1:10 over 5s | live, confirmed working |
 | `audio-player-nosferatu-premonition/` | Premonition from Nosferatu - Robin Carolan | `tAnN8AgRkoQ` | fade-in+out | 0:05 | in to 0:10, out at 1:04 over 8s | live, playback unverified |
 | `audio-player-robocop-force-shoots-robo/` | Force Shoots Robo from Robocop - Basil Poledouris | `22da-7-q1D8` | fade-in+out | 1:04 | in to 1:10, out at 1:48 over 10s | live, playback unverified |
+| `audio-player-humanity-the-thing/` | Ennio Morricone - Humanity (Pt. 2) from The Thing | `I9Doo9ajCyQ` | fade-in+out | 1:01 | in to 1:06, out at 3:05 over 10s | live, playback unverified |
 
 Live URL pattern: `https://numberdave-cloud.github.io/MPMPT1/<folder>/`
 
@@ -138,6 +139,6 @@ unused for a while.
 
 ## Last updated
 
-2026-08-20. Added `audio-player-solange/` (plain shape, video `f_NpqG0E1Tk`).
-Registry now catalogues fourteen players and the four fade shapes with their
+2026-09-10. Added `audio-player-humanity-the-thing/` (fade-in+out shape, video `I9Doo9ajCyQ`).
+Registry now catalogues seventeen players and the four fade shapes with their
 canonical source folders.
