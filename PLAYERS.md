@@ -47,6 +47,7 @@ shape rather than reworking a different one.
 | `audio-player-hazmat-suit/` | Hazmat Suit from 10 Cloverfield Lane by Bear McCreary | `ovwfmugWQhc` | fade-out | 0:00 | out at 0:55, 10s | live, playback unverified |
 | `audio-player-bubble-bobble/` | Quest Begins / Main Theme from Bubble Bobble - Tadashi Kimijima | `KOuVKxzW4Do` | fade-out | 0:00 | out at 0:52, 10s | live, playback unverified |
 | `audio-player-spring-yard-zone/` | Spring Yard Zone from Sonic The Hedgehog - Masato Nakamura | `Owc5NNYSLwY` | fade-out | 0:00 | out at 0:41, 10s | live, playback unverified |
+| `audio-player-altus-plateau/` | Altus Plateau from Elden Ring - Shoi Miyazawa | `fEyc_C1urHc` | fade-out | 0:00 | out at 1:30, 10s | live, playback unverified |
 | `audio-player-mausam-escape/` | Mausam & Escape | `_WOWIH41W4c` | fade-in | 0:36 | in over 4s | live, confirmed working |
 | `audio-player-history-of-the-ring/` | History of the Ring | `GuiROE85RMQ` | fade-in+out | 0:23 | in to 0:28, out at 1:34 over 8s | live, confirmed working |
 | `audio-player-phat-planet/` | Phat Planet - Leftfield | `5GC_X_tI5kA` | fade-in+out | 0:40 | in to 0:45, out at 1:10 over 5s | live, confirmed working |
@@ -144,6 +145,6 @@ unused for a while.
 
 ## Last updated
 
-2026-09-11. Added `audio-player-hall-of-souls/` (fade-in+out shape, video `gkktyOA06NQ`).
-Registry now catalogues twenty-two players and the four fade shapes with their
+2026-09-11. Added `audio-player-altus-plateau/` (fade-out shape, video `fEyc_C1urHc`).
+Registry now catalogues twenty-three players and the four fade shapes with their
 canonical source folders.
