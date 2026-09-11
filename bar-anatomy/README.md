@@ -18,13 +18,13 @@ Height 700, not the 600 default: the Grid divisions overlay stacks five division
 
 ## Build state
 
-v1.0, 2026-09-08. Copy approved. Voice, drum and voice-kit samples all supplied by Dave and inlined. Not yet verified in Canvas.
+v1.1, 2026-09-11. Copy approved. Voice, drum and voice-kit samples all supplied by Dave and inlined. Not yet verified in Canvas.
 
 ## Interaction
 
 - Play / Stop runs the loop at a fixed 90 BPM. Master fader (-36 to 0 dB, default -6) sits beside it.
-- Grid divisions: click a row to select it. A 1500 Hz tick plays at that division, the block under the playhead lights, and the drums duck by 12 dB while a row is selected. Click again, change overlay, or press Escape to clear.
-- Counting the bar: click a level (Quarters / Eighths / Sixteenths). Voice syllables fire as the playhead crosses each one. Each syllable is shaped to its slot with a short fade at the slot end rather than a hard stop.
+- Grid divisions: click a row to select it. A 1500 Hz tick plays at that division, the block under the playhead lights, and the drums duck by 18 dB while a row is selected. Click again, change overlay, or press Escape to clear.
+- Counting the bar: click a level (Quarters / Eighths / Sixteenths). Voice syllables fire as the playhead crosses each one, and the drums duck by 10 dB while a level is selected. Each syllable is shaped to its slot with a short fade at the slot end rather than a hard stop.
 - Elements of a bar: four buttons. Selecting one solos those step positions in the loop (Downbeat = step 1, Backbeats = 5 and 13, Offbeats = 3, 7, 11, 15, Upbeat = 13) and greys out the other hits on the grid.
 - Info panel shows the selected entry with the British note name in brackets.
 
@@ -49,4 +49,6 @@ Clicking the Counting the bar tab 16 times unlocks voice sequencer mode. The kic
 
 ## Last updated
 
-2026-09-08. v1.0: initial build and ship. Three overlays, sample-based loop, master fader, ducking on division select, hidden voice sequencer mode.
+2026-09-11. v1.1: ducking retuned. Grid divisions now drops the drums 18 dB (was 12) so the tick reads; Counting the bar now drops them 10 dB under the voice (was no duck). Ducks are set in `DUCK_DB` in the config block.
+
+2026-09-08. v1.0: initial build and ship.

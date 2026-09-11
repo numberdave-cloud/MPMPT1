@@ -238,13 +238,12 @@ const VOX = {"kick": "UklGRtw9AABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0Ybg9AA
   }
 
   const DRUM_BASE = 0.9;
-  const DUCK_DB = -12; // drums drop this much while a division row is selected
+  const DUCK_DB = { div: -18, count: -10 }; // drum drop while a row is selected in that overlay
   function dbToGain(db) { return Math.pow(10, db / 20); }
   function updateDuck() {
     if (!ctx) return;
-    const duck = state.overlay === 'div' && state.sel;
-    const target = DRUM_BASE * (duck ? dbToGain(DUCK_DB) : 1);
-    ctx._drums.gain.setTargetAtTime(target, ctx.currentTime, 0.04);
+    const db = state.sel && DUCK_DB[state.overlay] !== undefined ? DUCK_DB[state.overlay] : 0;
+    ctx._drums.gain.setTargetAtTime(DRUM_BASE * dbToGain(db), ctx.currentTime, 0.04);
   }
 
   function b64ToBuf(b64) {
