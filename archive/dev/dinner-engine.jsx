@@ -57,6 +57,11 @@ const CATALOGUE = [{"id":"r001","name":"Korean Chilli Sauce with Roasted Mushroo
 const PRESERVES = [{"id":"p001","name":"Cherry tomato bombs","ref":"River Cottage Fermentation, p.63","makes":"a 500g jar","type":"ferment","hero":["tomato"],"ings":[{"q":"300","u":"g","i":"cherry tomatoes","s":false,"sea":true,"p":"tomato"},{"q":"1","u":"","i":"chilli","s":false,"sea":true,"p":"chilli"},{"q":"2","u":"clove","i":"garlic","s":false,"sea":false,"p":""},{"q":"250","u":"ml","i":"water","s":true,"sea":false,"p":""},{"q":"10","u":"g","i":"salt","s":true,"sea":false,"p":""},{"q":"0.5","u":"tsp","i":"fennel seeds","s":false,"sea":false,"p":""}]}];
 const CAT_BY_ID = Object.fromEntries(CATALOGUE.map(c=>[c.id,c]));
 const SEASONALITY = {"asparagus":[9,10,11],"artichoke":[9,10,11],"green beans":[12,1,2,3,4],"broad beans":[9,10,11],"beetroot":[3,4,5,6,7,8],"broccoli":[6,7,8],"brussels sprouts":[4,5,6,7,8],"cabbage":[4,5,6,7,8],"capsicum":[1,2,3,4,5],"carrot":[3,4,5,6,7,8],"cauliflower":[4,5,6,7,8,9],"celery":[4,5,6,7,8],"celeriac":[6,7,8],"chilli":[1,2,3,4,5],"corn":[12,1,2,3],"cucumber":[12,1,2,3],"eggplant":[1,2,3,4,5],"fennel":[2,3,4,5,6,7,8],"kohlrabi":[3,4,5,6,7,8,9],"leek":[3,4,5,6,7,8,9],"lettuce":[3,4,5,9,10,11],"kale":[4,5,6,7,8],"silverbeet":[4,5,6,7,8],"spinach":[4,5,6,7,8,9],"rocket":[4,5,6,7,8,9],"parsnip":[5,6,7,8],"pea":[9,10,11],"snow pea":[9,10,11],"potato":[3,4,5,6,7,8],"pumpkin":[3,4,5,6,7,8],"radish":[3,4,5,6,7,8,9],"daikon":[3,4,5,6,7,8,9],"rhubarb":[9,10,11,12,1,2],"swede":[6,7,8],"turnip":[6,7,8],"tomato":[12,1,2,3,4],"zucchini":[12,1,2,3],"apple":[3,4,5],"pear":[3,4,5],"apricot":[12,1],"cherry":[11,12,1],"peach":[12,1,2],"nectarine":[12,1,2],"plum":[12,1,2,3],"strawberry":[10,11,12,1],"raspberry":[12,1,2],"blackberry":[12,1,2],"fig":[2,3,4,5],"grape":[2,3,4],"melon":[12,1,2,3],"orange":[6,7,8,9],"mandarin":[5,6,7,8,9],"lemon":[6,7,8],"lime":[3,4,5],"grapefruit":[6,7,8,9],"avocado":[3,4,5,6,7,8,9],"kiwifruit":[4,5,6,7],"persimmon":[4,5],"pomegranate":[4,5],"quince":[4,5],"feijoa":[4,5],"chestnut":[4,5],"mango":[11,12,1,2],"passionfruit":[12,1,2,3,4],"basil":[12,1,2,3,4],"coriander":[3,4,5,6,7,8,9],"mint":[9,10,11,12,1,2,3,4],"dill":[9,10,11,12,1,2,3,4]};
+// Fruit/veg split for the Shop "In season now" panel. Culinary, not botanical: tomato, capsicum,
+// chilli, cucumber, eggplant, zucchini, pumpkin and corn sit with the vegetables. Herbs are veg too.
+// Anything not listed here (a new SEASONALITY key added later) falls through to veg. Keep in step.
+const FRUIT_KEYS = new Set(["apple","pear","apricot","cherry","peach","nectarine","plum","strawberry","raspberry","blackberry","fig","grape","melon","orange","mandarin","lemon","lime","grapefruit","kiwifruit","persimmon","pomegranate","quince","feijoa","mango","passionfruit","rhubarb","chestnut"]);
+const produceKind = k => FRUIT_KEYS.has(k) ? "fruit" : "veg";
 // From-scratch catalogue fills seasonal/fresh/quick slots and blank (unset) days; freezer & off keep their own pools.
 function catCandidates(type){
   if(type==="quick")  return CATALOGUE.filter(c=>c.slot==="quick");
@@ -432,6 +437,7 @@ export default function KitchenApp() {
   const [addingItem, setAddingItem]   = useState(false);
   const [addingStore, setAddingStore] = useState(false);
   const [seasonalOpen, setSeasonalOpen] = useState(false); // "In season now" quick-add panel on the Shop page
+  const [seasonalSplit, setSeasonalSplit] = useState(false); // "In season now": group chips into Fruit / Vegetables
   const [newStoreName, setNewStoreName] = useState("");
 
   /* ---- maintenance state ---- */
@@ -1958,24 +1964,51 @@ export default function KitchenApp() {
                     </span>
                     <span style={{ fontFamily:MONO, fontSize:11, color:C.faint }}>{seasonalKeys.length}</span>
                   </button>
-                  {seasonalOpen && (
-                    <div style={{ padding:"12px 14px 14px", display:"flex", flexWrap:"wrap", gap:8 }}>
-                      {seasonalKeys.map(k=>{
-                        const added = seasonalItemState(k)==="added";
-                        const base = { display:"inline-flex", alignItems:"center", gap:6, borderRadius:99, padding:"7px 13px", fontSize:13.5, fontFamily:SANS, cursor:"pointer" };
-                        const style = added
-                          ? { ...base, background:C.ember, color:C.ink, border:`1px solid ${C.ember}`, fontWeight:600 }
-                          : { ...base, background:"transparent", color:C.muted, border:`1px solid ${C.line}` };
-                        return (
-                          <button key={k} className="de-btn" onClick={()=>toggleSeasonalItem(k)} style={style}
-                            title={added?"Tap to remove":"Tap to add"}>
-                            {added && <Check size={13}/>}
-                            {cap(k)}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
+                  {seasonalOpen && (() => {
+                    const renderChip = k => {
+                      const added = seasonalItemState(k)==="added";
+                      const base = { display:"inline-flex", alignItems:"center", gap:6, borderRadius:99, padding:"7px 13px", fontSize:13.5, fontFamily:SANS, cursor:"pointer" };
+                      const style = added
+                        ? { ...base, background:C.ember, color:C.ink, border:`1px solid ${C.ember}`, fontWeight:600 }
+                        : { ...base, background:"transparent", color:C.muted, border:`1px solid ${C.line}` };
+                      return (
+                        <button key={k} className="de-btn" onClick={()=>toggleSeasonalItem(k)} style={style}
+                          title={added?"Tap to remove":"Tap to add"}>
+                          {added && <Check size={13}/>}
+                          {cap(k)}
+                        </button>
+                      );
+                    };
+                    const veg = seasonalKeys.filter(k=>produceKind(k)==="veg");
+                    const fruit = seasonalKeys.filter(k=>produceKind(k)==="fruit");
+                    const groupHead = { fontFamily:MONO, fontSize:11, letterSpacing:"0.08em", textTransform:"uppercase", color:C.faint, marginBottom:7 };
+                    return (
+                      <div style={{ padding:"12px 14px 14px" }}>
+                        <button className="de-btn" onClick={()=>setSeasonalSplit(v=>!v)}
+                          style={{ display:"inline-flex", alignItems:"center", gap:6, background:"transparent", border:`1px solid ${C.line}`, borderRadius:99, padding:"5px 11px", fontFamily:SANS, fontSize:12.5, color:C.muted, cursor:"pointer", marginBottom:12 }}>
+                          {seasonalSplit ? "Combined list" : "Split fruit / veg"}
+                        </button>
+                        {seasonalSplit ? (
+                          <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+                            {veg.length>0 && (
+                              <div>
+                                <div style={groupHead}>Vegetables</div>
+                                <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>{veg.map(renderChip)}</div>
+                              </div>
+                            )}
+                            {fruit.length>0 && (
+                              <div>
+                                <div style={groupHead}>Fruit</div>
+                                <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>{fruit.map(renderChip)}</div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>{seasonalKeys.map(renderChip)}</div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })()}

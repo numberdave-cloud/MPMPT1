@@ -1,5 +1,43 @@
 # Dinner Engine — handoff
 
+## Session note - 15 Sep 2026 (Shop: split "In season now" into Fruit / Vegetables)
+
+App change (type B), esbuild rebuild + splice. Catalogue untouched at 275, r001 to r275; all three
+copies verified in sync at session start (recipes.json / jsx CATALOGUE / index.html ct all 275).
+Committed archive/dev/dinner-engine.jsx, archive/meal-planner/index.html, archive/dev/HANDOFF.md
+together. Base was 1f0286e.
+
+Path note for the next chat: the live app is under archive/ now (archive/meal-planner/ and
+archive/dev/), not the top-level meal-planner/ and dev/ paths the project doc still lists. The
+archive/ folder is actively maintained despite the name. Also the first GitHub token in the project
+doc is dead (401); the second one works. Worth Dave tidying both in the project instructions.
+
+### What and why
+Dave wanted the seasonal buys on the Shop tab to be separable into fruit and vegetables. Added a
+toggle inside the "In season now" panel: default is the combined alphabetical list as before; tapping
+"Split fruit / veg" regroups the chips under Vegetables then Fruit, and tapping "Combined list" goes
+back. Herbs sit under Vegetables per Dave.
+
+- New constant FRUIT_KEYS (a Set) + helper produceKind(k) next to SEASONALITY. Classification is
+  culinary, not botanical: tomato, capsicum, chilli, cucumber, eggplant, zucchini, pumpkin and corn
+  are vegetables; the four herbs (basil, coriander, mint, dill) are vegetables. Three judgement calls
+  Dave signed off: rhubarb -> Fruit, avocado -> Vegetables, chestnut -> Fruit.
+- Anything not in FRUIT_KEYS falls through to veg. So if a new produce key is added to SEASONALITY
+  later, it lands under Vegetables by default; add it to FRUIT_KEYS if it's a fruit. Keep the two in
+  step.
+- New state seasonalSplit (default false, ephemeral like seasonalOpen, resets on reload).
+- Chip rendering factored into a renderChip helper so combined and split views share identical chips
+  (same add/remove behaviour, ember when added).
+
+### Verified
+esbuild ESM validate clean; IIFE minified build clean. Spliced index.html: markers "Split fruit / veg"
+and "Combined list" present, catalogue ids 275 (r001 to r275) matching recipes.json, names sampled
+r001/r138/r275 present, tail after last </script> well-formed.
+
+Galaxy: fully close and reopen the PWA to clear the service worker cache. Test on the phone: open Shop,
+expand "In season now", tap the toggle, check Vegetables and Fruit read sensibly and the chips still
+add/remove to the list in both views.
+
 ## Session note - 6 Sep 2026 (Freezer: move-to-shelf button on each meal)
 
 App change (type B), esbuild rebuild + splice, same session as the shelf-grouping change above.
