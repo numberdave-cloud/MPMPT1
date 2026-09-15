@@ -1,5 +1,16 @@
 # Dinner Engine — handoff
 
+## Session note - 15 Sep 2026 (Recipe add: r276 Tartiflette)
+
+Recipe add (type A), no rebuild (pure data add). Added r276 Tartiflette from the RecipeTin Eats
+website. Catalogue 275 to 276, r001 to r276; next free r277. Spliced identical data into all three
+copies (recipes.json / jsx CATALOGUE / index.html ct) after the r275 object, and cross-checked r276
+deep-equal across all three. Committed archive/meal-planner/recipes.json, archive/dev/dinner-engine.jsx,
+archive/meal-planner/index.html and archive/dev/HANDOFF.md together. Base was c42b585.
+Decisions: cheese stored as generic "washed rind cheese" (Reblochon unavailable locally, Dave
+confirmed); white wine 3/4 cup stored as 187.5 ml; salt folded to a single staple line; cookMin 56
+(fresh). Potato tagged seasonal, onion correctly untagged. No new produce keys, no open flags.
+
 ## Session note - 15 Sep 2026 (Shop: split "In season now" into Fruit / Vegetables)
 
 App change (type B), esbuild rebuild + splice. Catalogue untouched at 275, r001 to r275; all three
