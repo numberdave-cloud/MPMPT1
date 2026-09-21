@@ -84,7 +84,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Audio Player [Spring Yard Zone from Sonic The Hedgehog] | `audio-player-spring-yard-zone/` | Miscellaneous | live (v1.0, playback unverified) | YES |
 | Audio Player [The Hall of Souls from Quake 1] | `audio-player-hall-of-souls/` | Miscellaneous | live (v1.0, playback unverified) | YES |
 | Audio Player [Altus Plateau from Elden Ring] | `audio-player-altus-plateau/` | Miscellaneous | live (v1.0, playback unverified) | YES |
-| Drum Circle [live collaborative grid] | `drum-circle/` | Composition | live (v1.0, live-class tool, not Canvas-embedded, unverified) | YES |
+| Drum Circle [live collaborative grid] | `drum-circle/` | Composition | live (v1.1, live-class tool, not Canvas-embedded, unverified) | YES |
 
 ## Work in progress (not yet in repo)
 
