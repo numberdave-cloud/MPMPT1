@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Drum grid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12151b; --panel:#1a1f27; --panel-2:#20262f;
+    --cell:#232a34; --cell-line:#2f3742; --group-tint:#1d232c;
+    --ink:#e7ecf2; --ink-dim:#8a94a1; --ink-faint:#5c6672;
+    --accent:#e8a13a; --danger:#c8564b; --ok:#4bbf87; --playhead:#f4f6fa;
+    --radius:9px; --gap:5px; --rowh:38px;
+    font-synthesis:none;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:calc(16px + env(safe-area-inset-top,0px)) clamp(12px,3vw,30px)
+        calc(24px + env(safe-area-inset-bottom,0px));}
+  .wrap{max-width:1180px;margin:0 auto}
+
+  .hostonly{display:none}
+  body.host .hostonly{display:flex}
+  body.host .hostonly.block{display:block}
+
+  header.top{align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  h1{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:20px;margin:0;letter-spacing:-.01em}
+  h1 .sub{color:var(--ink-faint);font-weight:500;font-size:13px;margin-left:9px}
+  .status{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-dim);margin-left:auto}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--ink-faint)}
+  .dot.ok{background:var(--ok);box-shadow:0 0 0 3px rgba(75,191,135,.16)}
+  .dot.warn{background:var(--accent);box-shadow:0 0 0 3px rgba(232,161,58,.16)}
+  .dot.err{background:var(--danger);box-shadow:0 0 0 3px rgba(200,86,75,.16)}
+
+  .bar{flex-wrap:wrap;align-items:center;gap:9px 12px;background:var(--panel);
+    border:1px solid var(--cell-line);border-radius:var(--radius);padding:11px 13px;margin-bottom:12px}
+  .grp{display:flex;align-items:center;gap:8px}
+  .sep{width:1px;align-self:stretch;background:var(--cell-line)}
+  button{font-family:inherit;font-size:14px;color:var(--ink);background:var(--panel-2);
+    border:1px solid var(--cell-line);border-radius:8px;padding:8px 13px;cursor:pointer;
+    transition:background .12s,border-color .12s,transform .04s}
+  button:hover{background:#28303a}
+  button:active{transform:translateY(1px)}
+  button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  button.primary{background:var(--accent);color:#20160a;border-color:var(--accent);font-weight:600;min-width:88px}
+  button.primary.playing{background:var(--danger);border-color:var(--danger);color:#fff}
+  button.ghost{background:transparent}
+  button.toggle[aria-pressed=true]{background:var(--ok);border-color:var(--ok);color:#08130d;font-weight:600}
+  label.fld{display:flex;align-items:center;gap:7px;color:var(--ink-dim);font-size:13px}
+  select,input[type=number]{font-family:inherit;font-size:14px;color:var(--ink);
+    background:var(--panel-2);border:1px solid var(--cell-line);border-radius:8px;padding:7px 8px}
+  input[type=number]{width:60px}
+  select{max-width:220px}
+  input[type=range]{accent-color:var(--accent)}
+  .step{display:inline-flex;align-items:center;border:1px solid var(--cell-line);border-radius:8px;overflow:hidden}
+  .step button{border:0;border-radius:0;background:var(--panel-2);padding:8px 12px;font-size:16px;line-height:1}
+  .step .val{min-width:30px;text-align:center;font-family:"Space Grotesk",sans-serif;font-weight:600}
+
+  .seq{background:var(--panel);border:1px solid var(--cell-line);border-radius:var(--radius);padding:12px;overflow-x:auto}
+  body:not(.host) .seq{background:transparent;border:0;padding:0}
+  .ruler{display:grid;grid-template-columns:repeat(16,1fr);gap:var(--gap);margin-bottom:8px;min-width:560px}
+  body:not(.host) .ruler{display:none}
+  .ruler .tick{font-family:"Space Grotesk",sans-serif;font-size:12px;color:var(--ink-faint);text-align:center;user-select:none}
+  .ruler .tick.beat{color:var(--ink-dim);font-weight:600}
+  .rows{display:grid;gap:var(--gap);min-width:560px}
+  body:not(.host) .rows{min-width:0}
+  .row{display:grid;grid-template-columns:repeat(16,1fr);gap:var(--gap)}
+  .cell{height:var(--rowh);border-radius:6px;background:var(--cell);border:1px solid var(--cell-line);
+    cursor:pointer;position:relative;transition:transform .04s,box-shadow .1s}
+  .cell:nth-child(8n+1),.cell:nth-child(8n+2),.cell:nth-child(8n+3),.cell:nth-child(8n+4){background:var(--group-tint)}
+  .cell:hover{box-shadow:inset 0 0 0 1px var(--ink-faint)}
+  .cell:active{transform:scale(.95)}
+  .cell:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .cell.on{border-color:transparent;background:var(--nc,#888)}
+  .cell.v65{opacity:.5}
+  .cell.mine::after{content:"";position:absolute;inset:0;border-radius:6px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.75)}
+  .cell.picked{box-shadow:0 0 0 2px var(--playhead);animation:pulse .9s ease-in-out infinite}
+  .cell.col-play{box-shadow:inset 0 0 0 2px rgba(244,246,250,.5)}
+  .cell.on.col-play{filter:brightness(1.2)}
+  .cell.reject{animation:shake .3s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 2px var(--playhead)}50%{box-shadow:0 0 0 4px rgba(244,246,250,.4)}}
+
+  .pfoot{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:13px;color:var(--ink-dim)}
+  body.host .pfoot{display:none}
+  .me-dot{width:14px;height:14px;border-radius:4px;background:#888}
+  .banner{margin-top:12px;background:var(--panel);border:1px solid var(--cell-line);
+    border-left:3px solid var(--accent);border-radius:8px;padding:10px 13px;font-size:13.5px;color:var(--ink);display:none}
+  .banner.show{display:block}
+
+  .panels{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
+  @media(min-width:820px){.panels{grid-template-columns:1.4fr 1fr}}
+  .card{background:var(--panel);border:1px solid var(--cell-line);border-radius:var(--radius);padding:14px}
+  .card h2{font-family:"Space Grotesk",sans-serif;font-size:13px;font-weight:600;color:var(--ink-dim);margin:0 0 11px}
+  .users{display:flex;flex-wrap:wrap;gap:8px}
+  .user-chip{display:flex;align-items:center;gap:7px;background:var(--panel-2);border:1px solid var(--cell-line);
+    border-radius:20px;padding:5px 11px 5px 8px;font-size:13px}
+  .user-chip .sw{width:12px;height:12px;border-radius:50%}
+  .user-empty{color:var(--ink-faint);font-size:13px}
+  .joinrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .link{flex:1;min-width:0;font-family:"Space Grotesk",sans-serif;font-size:13px;color:var(--ink);
+    background:var(--panel-2);border:1px solid var(--cell-line);border-radius:8px;padding:9px 11px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #qr{width:120px;height:120px;background:var(--ink);border-radius:8px;padding:6px;flex:0 0 auto}
+  #qr img,#qr canvas{display:block}
+
+  .overlay{position:fixed;inset:0;background:rgba(10,12,16,.92);display:none;align-items:center;justify-content:center;padding:24px;z-index:50}
+  .overlay.show{display:flex}
+  .overlay .box{max-width:560px;background:var(--panel);border:1px solid var(--cell-line);border-radius:12px;padding:22px 24px}
+  .overlay h3{font-family:"Space Grotesk",sans-serif;margin:0 0 10px;font-size:17px}
+  .overlay p{color:var(--ink-dim);font-size:14px;line-height:1.6}
+  .overlay code{font-family:"Space Grotesk",sans-serif;background:var(--panel-2);border:1px solid var(--cell-line);border-radius:5px;padding:1px 6px;font-size:12.5px;color:var(--ink)}
+  .overlay button{margin-top:14px}
+
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top hostonly">
+    <h1>Drum grid <span class="sub" id="roleSub">host</span></h1>
+    <div class="status"><span class="dot" id="midiDot"></span><span id="midiMsg">…</span></div>
+  </header>
+
+  <div class="bar hostonly">
+    <div class="grp"><button class="primary" id="play">Play</button></div>
+    <div class="sep"></div>
+    <div class="grp">
+      <label class="fld">BPM <input type="number" id="bpm" value="120" min="40" max="240"></label>
+      <label class="fld">Swing <input type="range" id="swing" min="0" max="60" value="0" style="width:96px"><span id="swingVal" style="font-family:'Space Grotesk';min-width:34px">0%</span></label>
+    </div>
+    <div class="sep"></div>
+    <div class="grp">
+      <label class="fld">MIDI out <select id="midiOut"><option value="">— none —</option></select></label>
+      <label class="fld">Ch <select id="chan"></select></label>
+    </div>
+    <div class="sep"></div>
+    <div class="grp">
+      <label class="fld">Notes each</label>
+      <span class="step"><button id="allowDown">−</button><span class="val" id="allowVal">4</span><button id="allowUp">+</button></span>
+    </div>
+    <div class="sep"></div>
+    <div class="grp">
+      <button class="toggle" id="tglDelete" aria-pressed="false">Let players delete others</button>
+      <button class="toggle" id="tglMove" aria-pressed="false">Let players move others</button>
+    </div>
+    <div class="sep"></div>
+    <div class="grp">
+      <button class="ghost" id="clear">Clear all</button>
+      <button class="ghost" id="download">Download .mid</button>
+    </div>
+  </div>
+
+  <div class="banner" id="localBanner"></div>
+
+  <div class="seq">
+    <div class="ruler" id="ruler"></div>
+    <div class="rows" id="rows"></div>
+  </div>
+
+  <div class="banner" id="playerBanner"></div>
+
+  <div class="pfoot">
+    <span class="me-dot" id="meDot"></span>
+    <span id="meMsg">Tap a square. Tap again for a softer hit, once more to clear.</span>
+  </div>
+
+  <div class="panels hostonly block">
+    <div class="card">
+      <h2>Player link</h2>
+      <div class="joinrow">
+        <div class="link" id="playerLink">…</div>
+        <button class="ghost" id="copyLink">Copy</button>
+        <div id="qr"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>In the room</h2>
+      <div class="users" id="users"><span class="user-empty">No one yet</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="setup">
+  <div class="box">
+    <h3>Add Firebase to go multiplayer</h3>
+    <p>Right now the page runs solo on this machine: the grid and MIDI work, but students can't join. To let anyone tap in from their own device, paste your Firebase config into the top of this file.</p>
+    <p>Create a free project at <code>console.firebase.google.com</code>, add a Realtime Database, then copy the web config object into the <code>FIREBASE</code> block near the top of the file.</p>
+    <button class="ghost" id="setupClose">Keep working solo</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ============================================================
+   1. FIREBASE CONFIG  — paste your own web config here.
+   Leave it as-is to run solo (single machine, no students).
+   ============================================================ */
+const FIREBASE = {
+  apiKey: "AIzaSyAtUb3mZh9NdJNt8GnkasXup-OnLXV9NLs",
+  authDomain: "drum-circle-database.firebaseapp.com",
+  databaseURL: "https://drum-circle-database-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "drum-circle-database",
+  appId: "1:831370076604:web:e9ec2b558198324e320bb9"
+};
+const ROOM_DEFAULT = "main";
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+(() => {
+  "use strict";
+
+  const STEPS = 16, ROWS = 8, BASE_NOTE = 36, VEL_HI = 100, VEL_LO = 65;
+  const PALETTE = ["#ef5d5d","#4aa3f0","#77d353","#f6c945","#a86ff0","#f0932b",
+                   "#4bd0c0","#e46fd0","#9cca3c","#6c7bf0","#f06fa0","#3fb0a0",
+                   "#c98b3c","#c0c6cf"];
+  const HOST_COLOR = "#e7ecf2";
+
+  const params = new URLSearchParams(location.search);
+  const HOST = params.has("host");
+  const room = params.get("room") || ROOM_DEFAULT;
+  document.body.classList.toggle("host", HOST);
+
+  let uid = localStorage.getItem("dc_uid");
+  if (!uid){ uid = "u" + Math.random().toString(36).slice(2,9); localStorage.setItem("dc_uid", uid); }
+  if (HOST) uid = "host";
+
+  const configured = FIREBASE.apiKey && !/^PASTE/.test(FIREBASE.apiKey);
+
+  let notes = {};          // "r_s" -> {uid, vel, t}
+  let users = {};          // uid -> {color, t}
+  let cfg = { allowance:4, canDeleteOthers:false, canMoveOthers:false };
+  let picked = null;
+  let store;
+
+  // ---------- stores ----------
+  function makeLocalStore(){
+    const cbs = { notes:[], users:[], config:[] };
+    users[uid] = { color: HOST ? HOST_COLOR : PALETTE[0], t:Date.now() };
+    const fire = k => cbs[k].forEach(fn => fn());
+    return {
+      live:false,
+      onNotes:f=>{cbs.notes.push(f);f();},
+      onUsers:f=>{cbs.users.push(f);f();},
+      onConfig:f=>{cbs.config.push(f);f();},
+      placeNote:(k,v)=>{notes[k]=v;fire("notes");},
+      removeNote:k=>{delete notes[k];fire("notes");},
+      moveNote:(from,to,v)=>{delete notes[from];notes[to]=v;fire("notes");},
+      clearNotes:()=>{notes={};fire("notes");},
+      setConfig:patch=>{Object.assign(cfg,patch);fire("config");},
+      seedConfigIfAbsent:()=>{},
+      trimToAllowance:()=>{}
+    };
+  }
+
+  function makeFireStore(){
+    firebase.initializeApp(FIREBASE);
+    const db = firebase.database();
+    const base = "rooms/" + room;
+    const notesRef  = db.ref(base + "/notes");
+    const usersRef  = db.ref(base + "/users");
+    const configRef = db.ref(base + "/config");
+
+    const meRef = usersRef.child(uid);
+    meRef.onDisconnect().remove();
+    usersRef.once("value").then(snap => {
+      const taken = new Set();
+      snap.forEach(c => { const v=c.val(); if(v&&v.color) taken.add(v.color); });
+      const color = HOST ? HOST_COLOR : (PALETTE.find(c=>!taken.has(c)) || PALETTE[Math.floor(Math.random()*PALETTE.length)]);
+      meRef.set({ color, t: firebase.database.ServerValue.TIMESTAMP });
+    });
+
+    return {
+      live:true,
+      onNotes:f=>notesRef.on("value",s=>{notes=s.val()||{};f();}),
+      onUsers:f=>usersRef.on("value",s=>{users=s.val()||{};f();}),
+      onConfig:f=>configRef.on("value",s=>{cfg=Object.assign({allowance:4,canDeleteOthers:false,canMoveOthers:false},s.val()||{});f();}),
+      placeNote:(k,v)=>notesRef.child(k).set(v),
+      removeNote:k=>notesRef.child(k).remove(),
+      moveNote:(from,to,v)=>{notesRef.child(from).remove();notesRef.child(to).set(v);},
+      clearNotes:()=>notesRef.remove(),
+      setConfig:patch=>configRef.update(patch),
+      seedConfigIfAbsent:()=>configRef.once("value").then(s=>{ if(!s.exists()) configRef.set({allowance:4,canDeleteOthers:false,canMoveOthers:false}); }),
+      trimToAllowance:(limit)=>{
+        const lim = (limit==null?cfg.allowance:limit);
+        notesRef.once("value").then(s=>{
+          const all=s.val()||{}, byUser={};
+          Object.entries(all).forEach(([k,v])=>{ if(v.uid&&v.uid!=="host"){(byUser[v.uid]=byUser[v.uid]||[]).push([k,v]);} });
+          Object.values(byUser).forEach(list=>{
+            list.sort((a,b)=>(b[1].t||0)-(a[1].t||0));
+            list.slice(lim).forEach(([k])=>notesRef.child(k).remove());
+          });
+        });
+      }
+    };
+  }
+
+  // ---------- grid DOM ----------
+  const ruler = document.getElementById("ruler");
+  for (let s=0;s<STEPS;s++){
+    const t=document.createElement("div");
+    t.className="tick"+(s%4===0?" beat":"");
+    t.textContent=s%4===0?String(s/4+1):"·";
+    ruler.appendChild(t);
+  }
+  const rowsEl = document.getElementById("rows");
+  const cellEls = [];
+  for (let r=0;r<ROWS;r++){
+    const row=document.createElement("div"); row.className="row";
+    const rc=[];
+    for (let s=0;s<STEPS;s++){
+      const c=document.createElement("button");
+      c.className="cell"; c.setAttribute("aria-label",`row ${r+1} step ${s+1}`);
+      c.addEventListener("click",()=>onTap(r,s));
+      row.appendChild(c); rc.push(c);
+    }
+    rowsEl.appendChild(row); cellEls.push(rc);
+  }
+
+  function colorFor(u){
+    if (users[u] && users[u].color) return users[u].color;
+    if (u==="host") return HOST_COLOR;
+    let h=0; for (const ch of u) h=(h*31+ch.charCodeAt(0))>>>0;
+    return PALETTE[h%PALETTE.length];
+  }
+  function renderNotes(){
+    for (let r=0;r<ROWS;r++) for (let s=0;s<STEPS;s++){
+      const c=cellEls[r][s], n=notes[r+"_"+s];
+      c.classList.toggle("on",!!n);
+      c.classList.toggle("v65",!!n && n.vel===VEL_LO);
+      c.classList.toggle("mine",!!n && n.uid===uid && !HOST);
+      c.classList.toggle("picked",picked===(r+"_"+s));
+      c.style.setProperty("--nc", n ? colorFor(n.uid) : "transparent");
+    }
+  }
+  function reject(r,s){
+    const c=cellEls[r][s]; c.classList.remove("reject"); void c.offsetWidth; c.classList.add("reject");
+  }
+  const myNoteCount = () => Object.values(notes).filter(n=>n.uid===uid).length;
+
+  // ---------- tap logic ----------
+  function onTap(r,s){
+    const key=r+"_"+s, n=notes[key];
+    if (picked){
+      if (key===picked){
+        if (cfg.canDeleteOthers) store.removeNote(picked);
+        picked=null; renderNotes(); return;
+      }
+      const [pr,ps]=picked.split("_").map(Number);
+      const adjacent=(Math.abs(pr-r)+Math.abs(ps-s))===1;
+      const src=notes[picked];
+      if (adjacent && !n && src){
+        store.moveNote(picked,key,{uid:src.uid,vel:src.vel,t:src.t||Date.now()});
+      }
+      picked=null; renderNotes(); return;
+    }
+    if (!n){
+      if (!HOST && myNoteCount()>=cfg.allowance){ reject(r,s); return; }
+      store.placeNote(key,{uid,vel:VEL_HI,t:Date.now()});
+      return;
+    }
+    if (n.uid===uid){
+      if (n.vel===VEL_HI) store.placeNote(key,{uid,vel:VEL_LO,t:n.t});
+      else store.removeNote(key);
+      return;
+    }
+    if (cfg.canMoveOthers){ picked=key; renderNotes(); return; }
+    if (cfg.canDeleteOthers){ store.removeNote(key); return; }
+    reject(r,s);
+  }
+
+  // ---------- player status ----------
+  const meDot=document.getElementById("meDot"), meMsg=document.getElementById("meMsg");
+  const pBanner=document.getElementById("playerBanner");
+  function renderPlayerStatus(){
+    if (HOST) return;
+    meDot.style.background=colorFor(uid);
+    const left=Math.max(0,cfg.allowance-myNoteCount());
+    meMsg.textContent = `${left} note${left===1?"":"s"} left. Tap for a softer hit, again to clear.`;
+    let msg="";
+    if (cfg.canMoveOthers && cfg.canDeleteOthers) msg="Unlocked: tap someone's note to lift and nudge it to a neighbour, or tap it twice to delete.";
+    else if (cfg.canMoveOthers) msg="Unlocked: tap someone's note, then a neighbouring square, to nudge it one step.";
+    else if (cfg.canDeleteOthers) msg="Unlocked: tap someone else's note to delete it.";
+    pBanner.textContent=msg; pBanner.classList.toggle("show",!!msg);
+  }
+
+  // ---------- host UI ----------
+  function renderUsers(){
+    if (!HOST) return;
+    const el=document.getElementById("users");
+    const list=Object.entries(users).filter(([u])=>u!=="host");
+    if (!list.length){ el.innerHTML='<span class="user-empty">No one yet</span>'; return; }
+    el.innerHTML="";
+    list.forEach(([u,v],i)=>{
+      const chip=document.createElement("div"); chip.className="user-chip";
+      chip.innerHTML=`<span class="sw" style="background:${(v&&v.color)||colorFor(u)}"></span>Player ${i+1}`;
+      el.appendChild(chip);
+    });
+  }
+
+  if (HOST){
+    const purl = location.origin + location.pathname + (room!==ROOM_DEFAULT ? ("?room="+room) : "");
+    document.getElementById("playerLink").textContent = purl;
+    document.getElementById("copyLink").addEventListener("click",()=>navigator.clipboard&&navigator.clipboard.writeText(purl));
+    if (window.QRCode){ try{ new QRCode(document.getElementById("qr"),{text:purl,width:120,height:120,colorDark:"#12151b",colorLight:"#e7ecf2"});}catch(e){} }
+
+    const allowVal=document.getElementById("allowVal");
+    const setAllow=v=>{ v=Math.max(0,Math.min(16,v)); cfg.allowance=v; store.setConfig({allowance:v}); store.trimToAllowance(v); };
+    document.getElementById("allowUp").addEventListener("click",()=>setAllow(cfg.allowance+1));
+    document.getElementById("allowDown").addEventListener("click",()=>setAllow(cfg.allowance-1));
+
+    const tD=document.getElementById("tglDelete"), tM=document.getElementById("tglMove");
+    tD.addEventListener("click",()=>store.setConfig({canDeleteOthers:!cfg.canDeleteOthers}));
+    tM.addEventListener("click",()=>store.setConfig({canMoveOthers:!cfg.canMoveOthers}));
+    document.getElementById("clear").addEventListener("click",()=>{picked=null;store.clearNotes();});
+
+    window.__renderHostConfig=function(){
+      allowVal.textContent=cfg.allowance;
+      tD.setAttribute("aria-pressed",cfg.canDeleteOthers);
+      tM.setAttribute("aria-pressed",cfg.canMoveOthers);
+    };
+  }
+
+  // ---------- Web MIDI + transport (host) ----------
+  if (HOST){
+    const midiDot=document.getElementById("midiDot"), midiMsg=document.getElementById("midiMsg");
+    const midiOutSel=document.getElementById("midiOut"), chanSel=document.getElementById("chan");
+    for (let i=1;i<=16;i++){const o=document.createElement("option");o.value=i;o.textContent=i;chanSel.appendChild(o);}
+    chanSel.value=1;
+    let midiAccess=null, out=null;
+    const setStat=(k,m)=>{midiDot.className="dot "+k;midiMsg.textContent=m;};
+    function refreshOut(){
+      const prev=midiOutSel.value; midiOutSel.innerHTML='<option value="">— none —</option>';
+      if(!midiAccess) return;
+      for(const o of midiAccess.outputs.values()){const opt=document.createElement("option");opt.value=o.id;opt.textContent=o.name;midiOutSel.appendChild(opt);}
+      let pick=prev;
+      if(!pick||!midiAccess.outputs.get(pick)){pick="";for(const o of midiAccess.outputs.values()){if(/iac/i.test(o.name)){pick=o.id;break;}}}
+      midiOutSel.value=pick; out=pick?midiAccess.outputs.get(pick):null; midiStat();
+    }
+    function midiStat(){
+      if(!midiAccess) return;
+      if(midiAccess.outputs.size===0){setStat("warn","No MIDI outputs. Turn on the IAC Driver, then reload.");return;}
+      if(!out){setStat("warn","Pick a MIDI output.");return;}
+      setStat("ok","MIDI ready → "+out.name);
+    }
+    midiOutSel.addEventListener("change",()=>{out=midiOutSel.value?midiAccess.outputs.get(midiOutSel.value):null;midiStat();});
+    if(navigator.requestMIDIAccess){
+      navigator.requestMIDIAccess({sysex:false}).then(a=>{midiAccess=a;refreshOut();a.onstatechange=refreshOut;})
+        .catch(()=>setStat("err","MIDI blocked. Allow MIDI in Chrome and reload."));
+    } else setStat("err","No Web MIDI here. Open in Chrome.");
+
+    const chan=()=>(parseInt(chanSel.value,10)||1)-1;
+    const playBtn=document.getElementById("play"), bpmInput=document.getElementById("bpm");
+    const swingInput=document.getElementById("swing"), swingVal=document.getElementById("swingVal");
+    swingInput.addEventListener("input",()=>swingVal.textContent=swingInput.value+"%");
+    const bpm=()=>Math.min(240,Math.max(40,parseInt(bpmInput.value,10)||120));
+    const stepMs=()=>(60000/bpm())/4;
+    const swing=()=>(parseInt(swingInput.value,10)||0)/100;
+
+    let playing=false, schedStep=0, nextTime=0, timerId=null, curLit=-1;
+    const visQ=[];
+    function scheduleStep(step,time){
+      if(out){
+        const off=(step%2===1)?stepMs()*swing():0;
+        const g=Math.min(stepMs()*0.9,60);
+        for(let r=0;r<ROWS;r++){
+          const n=notes[r+"_"+step];
+          if(n){ const note=BASE_NOTE+r;
+            out.send([0x90|chan(),note,n.vel||VEL_HI],time+off);
+            out.send([0x80|chan(),note,0],time+off+g);
+          }
+        }
+      }
+      visQ.push({step,time});
+    }
+    function scheduler(){
+      const now=performance.now();
+      while(nextTime<now+120){ scheduleStep(schedStep,nextTime); nextTime+=stepMs(); schedStep=(schedStep+1)%STEPS; }
+    }
+    function draw(){
+      if(!playing) return;
+      const now=performance.now();
+      while(visQ.length&&visQ[0].time<=now){
+        const {step}=visQ.shift();
+        if(step!==curLit){
+          if(curLit>=0) for(let r=0;r<ROWS;r++) cellEls[r][curLit].classList.remove("col-play");
+          for(let r=0;r<ROWS;r++) cellEls[r][step].classList.add("col-play");
+          curLit=step;
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+    function allOff(){ if(!out)return; for(let r=0;r<ROWS;r++) out.send([0x80|chan(),BASE_NOTE+r,0]); out.send([0xB0|chan(),123,0]); }
+    function start(){ playing=true;schedStep=0;curLit=-1;visQ.length=0;nextTime=performance.now()+60;
+      timerId=setInterval(scheduler,25);requestAnimationFrame(draw);playBtn.textContent="Stop";playBtn.classList.add("playing"); }
+    function stop(){ playing=false;clearInterval(timerId);allOff();
+      if(curLit>=0){for(let r=0;r<ROWS;r++)cellEls[r][curLit].classList.remove("col-play");curLit=-1;}
+      playBtn.textContent="Play";playBtn.classList.remove("playing"); }
+    playBtn.addEventListener("click",()=>playing?stop():start());
+    document.addEventListener("keydown",e=>{if(e.code==="Space"&&e.target.tagName!=="INPUT"){e.preventDefault();playing?stop():start();}});
+    window.addEventListener("beforeunload",()=>{if(playing)allOff();});
+
+    const PPQ=96, stepTicks=PPQ/4;
+    const vlq=n=>{const b=[n&0x7f];n>>=7;while(n>0){b.unshift((n&0x7f)|0x80);n>>=7;}return b;};
+    function buildMidi(){
+      const ev=[];
+      for(let s=0;s<STEPS;s++) for(let r=0;r<ROWS;r++){
+        const n=notes[r+"_"+s]; if(!n) continue;
+        const on=s*stepTicks, note=BASE_NOTE+r;
+        ev.push({tick:on,order:1,msg:[0x90,note,n.vel||VEL_HI]});
+        ev.push({tick:on+Math.floor(stepTicks*0.9),order:0,msg:[0x80,note,0]});
+      }
+      ev.sort((a,b)=>a.tick-b.tick||a.order-b.order);
+      const trk=[]; const mpq=Math.round(60000000/bpm());
+      trk.push(0x00,0xFF,0x51,0x03,(mpq>>16)&255,(mpq>>8)&255,mpq&255);
+      let last=0; for(const e of ev){trk.push(...vlq(e.tick-last),...e.msg);last=e.tick;}
+      trk.push(...vlq(Math.max(0,PPQ*4-last)),0xFF,0x2F,0x00);
+      const head=[0x4D,0x54,0x68,0x64,0,0,0,6,0,0,0,1,(PPQ>>8)&255,PPQ&255];
+      const th=[0x4D,0x54,0x72,0x6B,(trk.length>>24)&255,(trk.length>>16)&255,(trk.length>>8)&255,trk.length&255];
+      return new Uint8Array([...head,...th,...trk]);
+    }
+    document.getElementById("download").addEventListener("click",()=>{
+      const blob=new Blob([buildMidi()],{type:"audio/midi"});
+      const url=URL.createObjectURL(blob);const a=document.createElement("a");
+      a.href=url;a.download="drum-grid.mid";document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });
+  }
+
+  // ---------- boot ----------
+  function boot(){
+    store = (configured && window.firebase) ? makeFireStore() : makeLocalStore();
+
+    store.onConfig(()=>{ if(HOST&&window.__renderHostConfig) window.__renderHostConfig(); renderPlayerStatus(); renderNotes(); });
+    store.onUsers(()=>{ renderUsers(); renderNotes(); renderPlayerStatus(); });
+    store.onNotes(()=>{ renderNotes(); renderPlayerStatus(); });
+
+    if (HOST) store.seedConfigIfAbsent();
+
+    if (!store.live){
+      const b=document.getElementById("localBanner");
+      b.textContent = HOST
+        ? "Running solo — grid and MIDI work, but students can't join yet. Add your Firebase config to switch on multiplayer."
+        : "This page isn't connected to a room yet.";
+      b.classList.add("show");
+      if (!HOST) document.getElementById("setup").classList.add("show");
+    }
+  }
+  document.getElementById("setupClose")?.addEventListener("click",()=>document.getElementById("setup").classList.remove("show"));
+  boot();
+
+})();
+</script>
+</body>
+</html>
