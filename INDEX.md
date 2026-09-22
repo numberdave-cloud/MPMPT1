@@ -57,6 +57,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Scene Scorer — Drive [Temp Track] | `scene-scorer-drive/` | Miscellaneous | live (levels untested) | YES |
 | Score Switcher [Shawshank] | `scene-scorer/` | Miscellaneous | live | YES |
 | Custom Scene Scorer | `custom-scene-scorer/` | Miscellaneous | live (phantom error-150 fix applied, pending live verification) | YES |
+| Scene Scorer: The Matrix | `custom-scene-scorer-matrix/` | Miscellaneous | live (v1.0, embed + crop unverified) | YES |
 | Batman Across the Decades | `batman-decades/` | Miscellaneous | live (v0.2, playback unverified) | YES |
 | Energy Dial | `energy-dial/` | Miscellaneous | live (v1.0, untested) | YES |
 | Case Study Search Helper | `case-study-search-helper/` | Miscellaneous | live (v1.0, not yet verified in Canvas) | YES |
