@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Scene Scorer: The Matrix</title>
+<script>
+  // Set locked mode before paint to avoid a flash of the edit controls.
+  if (new URLSearchParams(location.search).has('m')) {
+    document.documentElement.classList.add('locked');
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1E1A17;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --accent-glow: #D8904A;
+    --clip: #C04838;
+    --border: rgba(234, 224, 208, 0.15);
+    --border-bright: rgba(234, 224, 208, 0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: transparent;
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    padding: 14px;
+    max-width: 768px;
+    margin: 0 auto;
+  }
+
+  /* rack-hardware card: outer dark frame + inner light stroke inset from the edge */
+  .device {
+    position: relative;
+    background: var(--bg);
+    border-radius: 24px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+    padding: 24px 26px 28px;
+  }
+  .device::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1px solid var(--border);
+    border-radius: 17px;
+    pointer-events: none;
+  }
+
+  /* mode visibility */
+  html.locked .edit-only { display: none !important; }
+  html:not(.locked) .locked-only { display: none !important; }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .title { font-size: 13px; letter-spacing: 0.2em; font-weight: 600; }
+  .badge {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--accent);
+    padding: 4px 9px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  /* The visible window is a cropped strip of the 16:9 players. YouTube's top
+     title/channel bar and bottom "More videos" bar sit at the edges of each
+     player, so enlarging the players and clipping to a shorter, slightly
+     narrower window pushes that chrome out of view. Both players are cropped
+     identically. The music player stays a large, viewport-intersecting element
+     (its visible strip is well over 200px), so the sole-audio halt stays away.
+     Tune against the LIVE embed. These are the only two knobs worth touching:
+       --frame-aspect : shape of the window. 1.778 = full 16:9 (no crop).
+                        Higher = wider / more letterboxed. 2.0 is a gentle crop.
+       --scene-zoom   : enlarge the video to push the top and bottom YouTube
+                        bars out of frame and pull the sides in. 1.0 = none.
+                        Raise it until the title bar and the bottom bar are gone.
+       --scene-shift  : optional vertical nudge (% of player height) if the
+                        cropped band needs recentring on the action. */
+  .video-wrap {
+    --frame-aspect: 2.15;
+    --scene-zoom: 1.18;
+    --scene-shift: 0%;
+    position: relative;
+    width: 100%;
+    aspect-ratio: var(--frame-aspect);
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .video-wrap > div,
+  .video-wrap iframe {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border: none;
+    transform: translate(-50%, -50%) translateY(var(--scene-shift)) scale(var(--scene-zoom));
+    transform-origin: center center;
+  }
+  /* Music player sits full-size BEHIND the scene. YouTube halts playback on a
+     player under 200x200 or not genuinely visible, so it must stay a compliant
+     visible player (its cropped strip is well over 200px). Here the scene plays
+     its own audio too, so both players sound at once: the scene's SFX plus the
+     student's music, which is the whole point. The opaque scene on top hides
+     the music player from view. */
+  #musicPlayer { z-index: 1; }
+  #scenePlayer { z-index: 2; }
+  .click-shield {
+    position: absolute; inset: 0; z-index: 3; cursor: pointer; background: transparent;
+  }
+
+  /* ─── INPUT ROW ─── */
+  .input-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .link-input {
+    flex: 1;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+  .link-input::placeholder { color: var(--text-faint); }
+  .link-input:focus { outline: none; border-color: var(--accent); }
+
+  .btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: border-color 0.08s, background 0.08s;
+    white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--border-bright); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn.primary {
+    background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600;
+  }
+  .btn.primary:hover:not(:disabled) { background: var(--accent-glow); border-color: var(--accent-glow); }
+
+  .status {
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    margin: -8px 0 16px;
+    min-height: 15px;
+    color: var(--text-dim);
+  }
+  .status.error { color: var(--clip); }
+
+  /* ─── TRANSPORT ─── */
+  .transport {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .transport .btn.primary { min-width: 116px; }
+
+  /* ─── MUSIC LEVEL FADER ─── */
+  .level-block { margin-bottom: 20px; }
+  .level-label {
+    font-size: 10px; letter-spacing: 0.18em; color: var(--text-dim);
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .fader {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; max-width: 340px; height: 24px;
+    background: transparent; cursor: pointer; display: block;
+  }
+  .fader:focus { outline: none; }
+  .fader:disabled { opacity: 0.35; cursor: not-allowed; }
+  .fader::-webkit-slider-runnable-track { height: 2px; background: var(--border-bright); border: none; }
+  .fader::-moz-range-track { height: 2px; background: var(--border-bright); border: none; }
+  .fader::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 12px; height: 24px; margin-top: -11px;
+    background: var(--text) linear-gradient(var(--bg), var(--bg)) center/1px 100% no-repeat;
+    border: none; border-radius: 1px;
+  }
+  .fader::-moz-range-thumb {
+    width: 12px; height: 24px;
+    background: var(--text) linear-gradient(var(--bg), var(--bg)) center/1px 100% no-repeat;
+    border: none; border-radius: 1px;
+  }
+
+  /* ─── SHARE ─── */
+  .share-block { margin-top: 4px; }
+  .share-url {
+    width: 100%;
+    background: rgba(234, 224, 208, 0.04);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    margin-top: 8px;
+    display: none;
+  }
+  .share-url.show { display: block; }
+  .btn.copied { background: #6F8A50; color: var(--bg); border-color: #6F8A50; }
+
+  @media (max-width: 600px) {
+    body { padding: 16px; }
+    .btn { padding: 11px 14px; }
+  }
+</style>
+</head>
+<body>
+  <div class="device">
+  <div class="header">
+    <div class="title">SCENE SCORER: THE MATRIX</div>
+    <div class="badge locked-only">EXAMPLE</div>
+  </div>
+
+  <div class="video-wrap">
+    <div id="musicPlayer"></div>
+    <div id="scenePlayer"></div>
+    <div class="click-shield" id="clickShield"></div>
+  </div>
+
+  <div class="input-row edit-only">
+    <input type="text" class="link-input" id="linkInput" placeholder="Paste a YouTube link" autocomplete="off" spellcheck="false">
+    <button class="btn primary" id="loadBtn">LOAD</button>
+  </div>
+
+  <div class="status edit-only" id="status"></div>
+
+  <div class="transport">
+    <button class="btn primary" id="playBtn" disabled>LOADING</button>
+    <button class="btn" id="restartBtn" disabled>RESTART</button>
+  </div>
+
+  <div class="level-block">
+    <div class="level-label">Scene Level</div>
+    <input type="range" class="fader" id="sceneFader" min="0" max="100" value="80" disabled aria-label="Scene level">
+  </div>
+
+  <div class="level-block">
+    <div class="level-label">Music Level</div>
+    <input type="range" class="fader" id="levelFader" min="0" max="100" value="70" disabled aria-label="Music level">
+  </div>
+
+  <div class="share-block edit-only">
+    <button class="btn" id="copyBtn" disabled>COPY LINK</button>
+    <input type="text" class="share-url" id="shareUrl" readonly>
+  </div>
+  </div><!-- /device -->
+
+<script>
+  // ─── CONFIG ──────────────────────────────────────────────────────
+  // The scene is fixed and travels with the device. Students add music.
+  const CONFIG = {
+    // The Matrix clip. Whole thing, start to end, playing its own audio
+    // (sound effects, no music), so muted is false. end is null: the real
+    // out-point is computed from the clip's own duration on ready (see
+    // computeSceneEnd), so playback pauses a hair before YouTube's natural
+    // end and its "More videos" end-screen never lands in frame.
+    scene: { id: 'm8J7vtr2qIM', volume: 80, start: 0, end: null, muted: false }
+  };
+
+  const PLAYER_VARS = { controls: 0, disablekb: 1, modestbranding: 1, rel: 0, playsinline: 1, fs: 0, iv_load_policy: 3, cc_load_policy: 0, origin: window.location.origin };
+
+  // ─── MODE + PARAMS ───────────────────────────────────────────────
+  const params = new URLSearchParams(location.search);
+  const lockedMode = params.has('m');
+
+  // ─── STATE ───────────────────────────────────────────────────────
+  let scenePlayer = null;
+  let musicPlayer = null;
+  let sceneReady = false;
+  let musicReady = false;
+  let isPlaying = false;
+  let currentMusic = null;         // { id, start }
+  let musicLevel = 70;
+  let sceneLevel = 80;             // scene (picture) audio 0-100
+  let sceneEnd = null;             // out-point, computed from clip duration
+  let ccKilledOnce = false;
+  let endPoll = null;
+  let pending150 = null;           // grace-window handle for phantom error 150
+  let playAfterLoad = false;       // a student LOAD starts scene + music together
+
+  // ─── DOM ─────────────────────────────────────────────────────────
+  const $linkInput = document.getElementById('linkInput');
+  const $loadBtn = document.getElementById('loadBtn');
+  const $status = document.getElementById('status');
+  const $playBtn = document.getElementById('playBtn');
+  const $restartBtn = document.getElementById('restartBtn');
+  const $sceneFader = document.getElementById('sceneFader');
+  const $levelFader = document.getElementById('levelFader');
+  const $copyBtn = document.getElementById('copyBtn');
+  const $shareUrl = document.getElementById('shareUrl');
+  const $shield = document.getElementById('clickShield');
+
+  // ─── LINK PARSING ────────────────────────────────────────────────
+  function parseTime(t) {
+    t = String(t).trim();
+    if (/^\d+$/.test(t)) return parseInt(t, 10);
+    let sec = 0;
+    const h = t.match(/(\d+)\s*h/), m = t.match(/(\d+)\s*m/), s = t.match(/(\d+)\s*s/);
+    if (h) sec += parseInt(h[1], 10) * 3600;
+    if (m) sec += parseInt(m[1], 10) * 60;
+    if (s) sec += parseInt(s[1], 10);
+    if (!h && !m && !s) { const n = parseInt(t, 10); if (!isNaN(n)) sec = n; }
+    return sec;
+  }
+
+  function parseYouTube(input) {
+    if (!input) return null;
+    input = input.trim();
+    let id = null, start = 0, url = null;
+    try { url = new URL(input); } catch (e) { url = null; }
+    if (url) {
+      const host = url.hostname.replace(/^www\./, '');
+      if (host === 'youtu.be') {
+        id = url.pathname.split('/').filter(Boolean)[0] || null;
+      } else if (host.endsWith('youtube.com')) {
+        if (url.searchParams.get('v')) {
+          id = url.searchParams.get('v');
+        } else {
+          const parts = url.pathname.split('/').filter(Boolean);
+          const ei = parts.indexOf('embed'); if (ei >= 0) id = parts[ei + 1];
+          const si = parts.indexOf('shorts'); if (si >= 0) id = parts[si + 1];
+        }
+      }
+      const t = url.searchParams.get('t') || url.searchParams.get('start') || url.searchParams.get('time_continue');
+      if (t) start = parseTime(t);
+    }
+    if (!id) {
+      const mm = input.match(/[a-zA-Z0-9_-]{11}/);
+      if (mm) id = mm[0];
+    }
+    if (id && !/^[a-zA-Z0-9_-]{11}$/.test(id)) {
+      const mm = id.match(/[a-zA-Z0-9_-]{11}/);
+      id = mm ? mm[0] : null;
+    }
+    if (!id) return null;
+    return { id: id, start: Math.max(0, Math.floor(start)) };
+  }
+
+  // ─── YT SETUP ────────────────────────────────────────────────────
+  function onYouTubeIframeAPIReady() {
+    scenePlayer = new YT.Player('scenePlayer', {
+      videoId: CONFIG.scene.id,
+      playerVars: Object.assign({}, PLAYER_VARS, { start: CONFIG.scene.start }),
+      events: { onReady: onSceneReady, onStateChange: onSceneStateChange, onError: function (e) { console.warn('Scene player error code:', e && e.data); } }
+    });
+
+    if (lockedMode) {
+      musicLevel = clampLevel(params.get('vol'));
+      $levelFader.value = musicLevel;
+      sceneLevel = clampLevel(params.get('svol') !== null ? params.get('svol') : 80);
+      $sceneFader.value = sceneLevel;
+      $sceneFader.disabled = true;
+      loadMusic(params.get('m'), parseInt(params.get('t') || '0', 10) || 0);
+    }
+  }
+
+  function clampLevel(v) {
+    let n = parseInt(v, 10);
+    if (isNaN(n)) n = 70;
+    return Math.max(0, Math.min(100, n));
+  }
+
+  function onSceneReady() {
+    // The scene plays its own audio, but we mute it for the load-time seek so
+    // there's no audio blip before the student presses PLAY. play() unmutes and
+    // sets the scene level; a paused player is silent, so pause/stop need no
+    // re-mute. (If a scene were ever configured muted, it just stays muted.)
+    try {
+      scenePlayer.mute();
+      if (!CONFIG.scene.muted) scenePlayer.setVolume(sceneLevel);
+    } catch (e) {}
+    // Seek to the in-point so the scene shows that frame, not the generic
+    // poster. seekTo() on a not-yet-started player makes YouTube begin playback
+    // (muted), so onSceneStateChange pauses it straight back on the first
+    // PLAYING event: the scene lands paused on the in-point after a brief jump,
+    // and never rolls on its own.
+    try { scenePlayer.seekTo(CONFIG.scene.start || 0, true); } catch (e) {}
+    computeSceneEnd();
+    sceneReady = true;
+    $playBtn.textContent = 'PLAY';
+    $playBtn.disabled = false;
+    $restartBtn.disabled = false;
+    if (!lockedMode) $sceneFader.disabled = false;
+  }
+
+  // Whole-clip out-point. CONFIG.scene.end null means "use the clip's own
+  // length": pause a hair before the true end so the end-screen overlay never
+  // shows. getDuration() can read 0 before the video has buffered, so this is
+  // also retried from the end-poll until a real duration appears.
+  function computeSceneEnd() {
+    if (CONFIG.scene.end != null) { sceneEnd = CONFIG.scene.end; return; }
+    let dur = 0;
+    try { dur = scenePlayer.getDuration(); } catch (e) {}
+    if (dur && dur > 1) sceneEnd = dur - 0.4;
+  }
+
+  function killCaptions() {
+    try { scenePlayer.unloadModule('captions'); } catch (e) {}
+    try { scenePlayer.unloadModule('cc'); } catch (e) {}
+  }
+
+  function onSceneStateChange(e) {
+    // Safety net: if the scene reaches PLAYING without the student pressing PLAY
+    // (isPlaying stays false until play() runs), pause it straight back. Catches
+    // any stray autoplay so the scene never rolls on its own.
+    if (e.data === YT.PlayerState.PLAYING && !isPlaying) {
+      try { scenePlayer.pauseVideo(); } catch (err) {}
+      return;
+    }
+    if (e.data === YT.PlayerState.PLAYING) {
+      killCaptions();
+      if (!ccKilledOnce) { setTimeout(killCaptions, 800); ccKilledOnce = true; }
+    }
+    if (e.data === YT.PlayerState.ENDED) {
+      stopToTop();
+    }
+  }
+
+  // ─── MUSIC LOAD ──────────────────────────────────────────────────
+  function loadMusic(id, start) {
+    if (!id) return;
+    clearPending150();
+    currentMusic = { id: id, start: start || 0 };
+    setStatus('', false);
+
+    // Build the player once and reuse it, exactly like the curated device.
+    // Destroying and recreating it made YouTube reject even embeddable videos
+    // with a false error 150.
+    if (!musicPlayer) {
+      musicPlayer = new YT.Player('musicPlayer', {
+        videoId: id,
+        playerVars: Object.assign({}, PLAYER_VARS, { start: currentMusic.start }),
+        events: { onReady: onMusicReady, onStateChange: onMusicStateChange, onError: onMusicError }
+      });
+    } else {
+      try {
+        musicPlayer.cueVideoById({ videoId: id, startSeconds: currentMusic.start });
+        musicPlayer.setVolume(musicLevel);
+      } catch (e) {}
+      afterMusicLoaded();
+    }
+  }
+
+  function onMusicReady() {
+    musicReady = true;
+    try { musicPlayer.setVolume(musicLevel); } catch (e) {}
+    afterMusicLoaded();
+  }
+
+  function afterMusicLoaded() {
+    // Scene fader is governed by scene readiness (onSceneReady / locked init),
+    // not by music load, so it is not touched here.
+    $levelFader.disabled = lockedMode ? true : false;
+    if (!lockedMode) { $copyBtn.disabled = false; }
+    if (playAfterLoad) {
+      // Student pressed LOAD: seek both to the top and start scene and music
+      // together. play() sets isPlaying before the state event, so the scene
+      // autoplay guard leaves this intentional play alone.
+      playAfterLoad = false;
+      restart();
+    } else {
+      // Locked/example open: sit synced at the top, paused, until PLAY.
+      stopToTop();
+    }
+  }
+
+  // YouTube throws a phantom error 150 (or 101) DURING a cueVideoById swap: it
+  // fires the code, then cues and plays the video fine a fraction of a second
+  // later. Confirmed on the repro bench: 150 at +114 ms, CUED at +159 ms, then
+  // PLAYING. The old handler reacted to that phantom by nulling the track and
+  // calling stopVideo(), which killed a video that was about to load fine.
+  // So on a 150/101 we open a short grace window instead of tearing down. If
+  // the player reaches a healthy state within it (caught in onMusicStateChange
+  // or by the deadline poll), the 150 was false and we carry on. Only if the
+  // player is still dead at the deadline do we surface the real error. Codes
+  // 100 (private) and 2 (bad link) are genuinely fatal and still fail instantly.
+  var GRACE_MS = 1800;
+
+  function clearPending150() {
+    if (pending150) { clearTimeout(pending150.timer); pending150 = null; }
+  }
+
+  function musicHealthy(s) {
+    return s === YT.PlayerState.CUED || s === YT.PlayerState.PLAYING ||
+           s === YT.PlayerState.BUFFERING || s === YT.PlayerState.PAUSED;
+  }
+
+  function recoverMusic() {
+    clearPending150();
+    setStatus('', false);
+    try { musicPlayer.setVolume(musicLevel); } catch (err) {}
+    $levelFader.disabled = lockedMode ? true : false;
+    if (!lockedMode) { $copyBtn.disabled = false; }
+  }
+
+  function onMusicStateChange(e) {
+    // A healthy state while a 150 is pending means the 150 was a phantom.
+    if (pending150 && musicHealthy(e.data)) { recoverMusic(); }
+  }
+
+  function pending150Expired() {
+    pending150 = null;
+    var s = null;
+    try { s = musicPlayer && musicPlayer.getPlayerState ? musicPlayer.getPlayerState() : null; } catch (e) {}
+    if (musicHealthy(s)) { recoverMusic(); return; }   // loaded despite the 150
+    failMusic(150);                                     // genuinely dead
+  }
+
+  function onMusicError(e) {
+    var code = e && e.data;   // 2 bad id, 5 html5, 100 not found/private, 101/150 embedding disabled
+    console.warn('Music player error code:', code);
+    if (code === 150 || code === 101) {
+      clearPending150();
+      if (!lockedMode) { $copyBtn.disabled = true; }   // hold sharing until the track is verified
+      setStatus('Loading track...', false);
+      pending150 = { id: currentMusic ? currentMusic.id : null, timer: setTimeout(pending150Expired, GRACE_MS) };
+      return;
+    }
+    failMusic(code);
+  }
+
+  function failMusic(code) {
+    clearPending150();
+    playAfterLoad = false;
+    currentMusic = null;
+    if (musicPlayer) { try { musicPlayer.stopVideo(); } catch (err) {} }
+    $levelFader.disabled = true;
+    var msg;
+    if (code === 101 || code === 150) {
+      msg = "This upload has embedding switched off by its owner. Try an 'audio', 'lyrics', or 'Topic' version of the track.";
+    } else if (code === 100) {
+      msg = "That video is private or no longer available.";
+    } else if (code === 2) {
+      msg = "That doesn't look like a valid YouTube link.";
+    } else {
+      msg = "Couldn't play that one. Try again, or a different upload.";
+    }
+    if (!lockedMode) {
+      $copyBtn.disabled = true;
+      setStatus(msg, true);
+    } else {
+      setStatus("This example's music won't play here.", true);
+    }
+  }
+
+  function setStatus(msg, isError) {
+    $status.textContent = msg;
+    $status.classList.toggle('error', !!isError);
+  }
+
+  // ─── TRANSPORT ───────────────────────────────────────────────────
+  function startEndPoll() {
+    stopEndPoll();
+    endPoll = setInterval(() => {
+      if (!scenePlayer) return;
+      if (sceneEnd == null) { computeSceneEnd(); return; }   // wait for a real duration
+      let t = 0;
+      try { t = scenePlayer.getCurrentTime(); } catch (e) {}
+      if (t >= sceneEnd) { stopToTop(); }
+    }, 200);
+  }
+  function stopEndPoll() {
+    if (endPoll) { clearInterval(endPoll); endPoll = null; }
+  }
+
+  function stopToTop() {
+    stopEndPoll();
+    if (scenePlayer) { try { scenePlayer.pauseVideo(); scenePlayer.seekTo(CONFIG.scene.start || 0, true); } catch (e) {} }
+    if (musicPlayer && currentMusic) { try { musicPlayer.pauseVideo(); musicPlayer.seekTo(currentMusic.start, true); } catch (e) {} }
+    isPlaying = false;
+    updateTransportUI();
+  }
+
+  function play() {
+    if (!sceneReady) return;
+    try {
+      if (!CONFIG.scene.muted) { scenePlayer.unMute(); scenePlayer.setVolume(sceneLevel); }
+    } catch (e) {}
+    scenePlayer.playVideo();
+    if (musicPlayer && currentMusic) {
+      try { musicPlayer.setVolume(musicLevel); musicPlayer.playVideo(); } catch (e) {}
+    }
+    isPlaying = true;
+    startEndPoll();
+    updateTransportUI();
+  }
+
+  function pause() {
+    if (scenePlayer) { try { scenePlayer.pauseVideo(); } catch (e) {} }
+    if (musicPlayer) { try { musicPlayer.pauseVideo(); } catch (e) {} }
+    stopEndPoll();
+    isPlaying = false;
+    updateTransportUI();
+  }
+
+  function togglePlay() { isPlaying ? pause() : play(); }
+
+  function restart() {
+    if (!sceneReady) return;
+    scenePlayer.seekTo(CONFIG.scene.start || 0, true);
+    if (musicPlayer && currentMusic) { try { musicPlayer.seekTo(currentMusic.start, true); } catch (e) {} }
+    play();
+  }
+
+  function updateTransportUI() {
+    $playBtn.textContent = isPlaying ? 'PAUSE' : 'PLAY';
+  }
+
+  // ─── SHARE LINK ──────────────────────────────────────────────────
+  function buildShareUrl() {
+    const base = location.origin + location.pathname;
+    const p = new URLSearchParams();
+    p.set('m', currentMusic.id);
+    if (currentMusic.start) p.set('t', String(currentMusic.start));
+    p.set('vol', String(musicLevel));
+    p.set('svol', String(sceneLevel));
+    return base + '?' + p.toString();
+  }
+
+  async function copyLink() {
+    if (!currentMusic) return;
+    const url = buildShareUrl();
+    $shareUrl.value = url;
+    $shareUrl.classList.add('show');
+    $shareUrl.focus();
+    $shareUrl.select();
+    let ok = false;
+    try { await navigator.clipboard.writeText(url); ok = true; } catch (e) {
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    }
+    if (ok) {
+      $copyBtn.textContent = 'COPIED';
+      $copyBtn.classList.add('copied');
+      setTimeout(() => { $copyBtn.textContent = 'COPY LINK'; $copyBtn.classList.remove('copied'); }, 2000);
+    } else {
+      $copyBtn.textContent = 'COPY MANUALLY';
+      setTimeout(() => { $copyBtn.textContent = 'COPY LINK'; }, 2500);
+    }
+  }
+
+  // ─── WIRE UP ─────────────────────────────────────────────────────
+  function handleLoad() {
+    const parsed = parseYouTube($linkInput.value);
+    if (!parsed) { setStatus("Couldn't read that link. Paste a YouTube URL.", true); return; }
+    // Stop whatever is currently rolling (no seek, so no autoplay quirk), then
+    // flag that once the new bed is loaded, scene and music should start
+    // together from the top. afterMusicLoaded picks this up.
+    if (isPlaying) pause();
+    playAfterLoad = true;
+    loadMusic(parsed.id, parsed.start);
+  }
+
+  $loadBtn.addEventListener('click', handleLoad);
+  $linkInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLoad(); });
+  $playBtn.addEventListener('click', togglePlay);
+  $restartBtn.addEventListener('click', restart);
+  $shield.addEventListener('click', togglePlay);
+  $copyBtn.addEventListener('click', copyLink);
+  $levelFader.addEventListener('input', () => {
+    musicLevel = parseInt($levelFader.value, 10);
+    if (musicPlayer && currentMusic) { try { musicPlayer.setVolume(musicLevel); } catch (e) {} }
+  });
+  $sceneFader.addEventListener('input', () => {
+    sceneLevel = parseInt($sceneFader.value, 10);
+    if (scenePlayer && !CONFIG.scene.muted) { try { scenePlayer.setVolume(sceneLevel); } catch (e) {} }
+  });
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
