@@ -1,5 +1,32 @@
 # Dinner Engine — handoff
 
+## Session note - 27 Sep 2026 (Freezer: X decrements one box instead of removing the whole item)
+
+App change (type B), esbuild rebuild + splice. Catalogue untouched at 276, r001 to r276; three copies
+verified in sync at session start. Base was 965b744126fe. Committed dev/dinner-engine.jsx,
+meal-planner/index.html, dev/HANDOFF.md together.
+
+### What and why
+The X on a freezer card used to delete the whole item regardless of quantity. Dave stocks multiples
+(e.g. 2 boxes of ragu) and wanted X to drop the count by one box, only removing the row when it hits
+zero. He also wanted a temporary undo.
+
+- Rewrote removeFreezer(id): reads the item and its qty. If qty > 1, decrements qty by one. If qty is
+  1 (or unset), removes the row.
+- Undo reuses the app's existing offerTaskUndo toast (the same bottom-centre "... Undo" toast used by
+  the to-do and shop actions, 6s auto-dismiss, one level). On a decrement, undo adds the box back; on
+  a full removal, undo re-inserts the item at its old index. Toast text: "Removed 1 <name> (<n> left)"
+  or "Removed <name>".
+- No change to the meal-count eyebrow (still counts rows with qty > 0) or to the shelf grouping.
+
+### Verified
+esbuild ESM + IIFE minified clean. Spliced index.html: undo wording present, catalogue names sampled
+r001/r151/r276 present, cookMin object-keys 277 (276 recipes + 1 code ref), HTML well-formed, prior
+freezer features (By shelf, Longest in, Move to which shelf) intact.
+
+Galaxy: fully close and reopen the PWA. Test on the phone: X on a 2-box item drops it to 1 and shows
+the undo toast; X on a 1-box item removes it and undo brings it back.
+
 ## Session note - 15 Sep 2026 (Recipe add: r276 Tartiflette)
 
 Recipe add (type A), no rebuild (pure data add). Added r276 Tartiflette from the RecipeTin Eats

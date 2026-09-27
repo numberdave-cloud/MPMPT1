@@ -1025,7 +1025,19 @@ export default function KitchenApp() {
     setFreezer(fz=>[...fz, { id:`f${Date.now()}`, name, serves:fDraft.serves, qty:fDraft.qty, loc:fDraft.loc, goodFor:fDraft.goodFor||6, frozen:new Date() }]);
     setFDraft({ name:"", serves:4, qty:1, loc:FREEZER_LOCATIONS[0], goodFor:6 }); setAddingFreezer(false);
   };
-  const removeFreezer = id => setFreezer(fz=>fz.filter(f=>f.id!==id));
+  const removeFreezer = id => {
+    const idx = freezer.findIndex(x=>x.id===id);
+    if(idx<0) return;
+    const f = freezer[idx];
+    const q = f.qty||1;
+    if(q>1){
+      setFreezer(fz=>fz.map(x=>x.id===id?{...x, qty:(x.qty||1)-1}:x));
+      offerTaskUndo(`Removed 1 ${f.name} (${q-1} left)`, ()=>setFreezer(fz=>fz.map(x=>x.id===id?{...x, qty:(x.qty||1)+1}:x)));
+    } else {
+      setFreezer(fz=>fz.filter(x=>x.id!==id));
+      offerTaskUndo(`Removed ${f.name}`, ()=>setFreezer(fz=>{ const n=[...fz]; n.splice(Math.min(idx,n.length),0,f); return n; }));
+    }
+  };
   const moveFreezer = (id,loc) => { setFreezer(fz=>fz.map(f=>f.id===id?{...f,loc}:f)); setFreezerMoveFor(null); };
   const addFreezerToDay = (f,o,dayId) => {
     const dish={name:f.name, ref:"", frozen:true, frozenId:f.id, frozenMeta:{serves:f.serves, loc:f.loc, frozen:f.frozen}};
