@@ -1,5 +1,26 @@
 # Dinner Engine — handoff
 
+## Session note - 27 Sep 2026 (Home screen icon: knife and fork, installable PWA)
+
+HTML shell only, no esbuild rebuild, catalogue untouched. Committed archive/meal-planner/index.html,
+the new manifest and icon files, and this note together.
+
+### What and why
+The home screen shortcut showed Chrome's fallback letter "G" with a Chrome badge because the app had
+no manifest or icons. Added:
+- archive/meal-planner/manifest.webmanifest (name/short_name Kitchen, display standalone,
+  start_url and scope "./", background and theme #171210).
+- Icons: icon-any-192/512.png, icon-maskable-192/512.png (smaller art inside the safe zone),
+  apple-touch-icon.png. Cream (#F3E8DF) knife and fork on #171210.
+- Three lines in the index.html head after <title>: manifest link, icon link, apple-touch-icon.
+The build splices only between <script> and </script>, so these head lines survive future builds.
+
+### Paths
+The app lives under archive/ (archive/meal-planner/, archive/dev/), not meal-planner/ and dev/ as the
+project instructions say. Live URL: https://numberdave-cloud.github.io/MPMPT1/archive/meal-planner/
+
+Galaxy: remove the old Kitchen shortcut, open the URL in Chrome, three-dot menu, Install app.
+
 ## Session note - 27 Sep 2026 (Freezer: X decrements one box instead of removing the whole item)
 
 App change (type B), esbuild rebuild + splice. Catalogue untouched at 276, r001 to r276; three copies
