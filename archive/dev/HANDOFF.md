@@ -1,5 +1,12 @@
 # Dinner Engine — handoff
 
+## Session note - 28 Sep 2026 (r254 serves corrected to 8)
+
+Pure data edit, no esbuild rebuild. r254 Massi's Ossobuco Ragu w/ Pappardelle (DJ's Recipe Book)
+serves changed from "4" to "8" after Dave cooked it and confirmed it makes 8 serves. Changed in
+archive/meal-planner/recipes.json, archive/dev/dinner-engine.jsx CATALOGUE and the minified catalogue in
+archive/meal-planner/index.html, committed together with this note. Catalogue still 276, r001 to r276.
+
 ## Session note - 27 Sep 2026 (Home screen icon: knife and fork, installable PWA)
 
 HTML shell only, no esbuild rebuild, catalogue untouched. Committed archive/meal-planner/index.html,
