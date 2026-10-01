@@ -9,13 +9,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #1E1A17;
-    --text: #EAE0D0;
-    --accent: #C07838;
-    --glow: #D8904A;
-    --dim: #8A7F6E;
-    --faint: #4A4239;
-    --green: #7BA968;
+    --bg: #2B374D;      /* session background */
+    --well: #0F1A22;    /* dark wells: meter, stop squares */
+    --ink: #161F35;     /* dark text on light fills */
+    --text: #DAD7D2;
+    --accent: #F6C86B;  /* Ableton yellow */
+    --glow: #FFDA8C;
+    --dim: #B8B8B7;
+    --faint: #8D94B1;   /* divider lines */
+    --seg: #6B7596;
+    --green: #BFDFD3;   /* playing-clip mint */
     --red: #C04838;
   }
 
@@ -23,8 +26,7 @@
 
   html, body {
     width: 100%;
-    min-height: 100vh;
-    background: var(--bg);
+    background: transparent;
     color: var(--text);
     font-family: 'Inter', system-ui, sans-serif;
     font-weight: 400;
@@ -35,17 +37,18 @@
 
   body {
     display: flex;
-    align-items: center;
     justify-content: center;
-    padding: 24px 16px;
+    padding: 12px;
     user-select: none;
     -webkit-user-select: none;
   }
 
   .widget {
+    position: relative;
     width: 100%;
-    max-width: 640px;
-    border: 1px solid var(--faint);
+    border: 2px solid var(--faint);
+    border-radius: 12px;
+    overflow: hidden;
     background: var(--bg);
     padding: 28px 32px 24px;
   }
@@ -55,7 +58,7 @@
     justify-content: space-between;
     align-items: baseline;
     padding-bottom: 18px;
-    border-bottom: 1px solid var(--faint);
+    border-bottom: 2px solid var(--faint);
     margin-bottom: 28px;
   }
 
@@ -130,7 +133,8 @@
     bottom: 6px;
     left: 50%;
     transform: translateX(-50%);
-    width: 2px;
+    width: 4px;
+    border-radius: 2px;
     background: var(--faint);
   }
 
@@ -138,8 +142,9 @@
 
   .fader-handle {
     position: absolute;
-    width: 28px;
-    height: 12px;
+    width: 34px;
+    height: 16px;
+    border-radius: 3px;
     left: 50%;
     transform: translate(-50%, 50%);
     background: var(--dim);
@@ -153,10 +158,11 @@
     content: '';
     position: absolute;
     top: 50%;
-    left: 2px;
-    right: 2px;
-    height: 1px;
-    background: var(--bg);
+    left: 6px;
+    right: 6px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--ink);
     transform: translateY(-50%);
   }
 
@@ -167,7 +173,7 @@
 
   .fader-handle.balanced {
     background: var(--green);
-    box-shadow: 0 0 0 1px rgba(123,169,104,0.35), 0 0 10px 2px rgba(123,169,104,0.45);
+    box-shadow: 0 0 0 1px rgba(191,223,211,0.35), 0 0 10px 2px rgba(191,223,211,0.45);
   }
 
   .fader-handle.locked {
@@ -206,20 +212,22 @@
   }
 
   .meter-bar {
-    width: 22px;
+    width: 26px;
     height: 240px;
-    border: 1px solid var(--faint);
+    border: 2px solid var(--faint);
+    border-radius: 3px;
     display: flex;
     flex-direction: column-reverse; /* segments stack from bottom up */
-    padding: 2px;
-    gap: 2px;
-    background: rgba(0,0,0,0.18);
+    padding: 3px;
+    gap: 3px;
+    background: var(--well);
   }
 
   .meter-seg {
     flex: 1;
     background: transparent;
-    border: 1px solid var(--faint);
+    border: 2px solid var(--seg);
+    border-radius: 2px;
     transition: background 0.04s linear;
   }
 
@@ -261,17 +269,20 @@
   .transport {
     display: flex;
     justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
     gap: 10px;
     padding-top: 22px;
     margin-top: 18px;
-    border-top: 1px solid var(--faint);
+    border-top: 2px solid var(--faint);
   }
 
   .btn {
     appearance: none;
     background: transparent;
     color: var(--text);
-    border: 1px solid var(--faint);
+    border: 2px solid var(--faint);
+    border-radius: 3px;
     font-family: 'Inter', system-ui, sans-serif;
     font-size: 10.5px;
     font-weight: 500;
@@ -289,7 +300,7 @@
   }
 
   .btn:active {
-    background: rgba(192,120,56,0.06);
+    background: rgba(246,200,107,0.08);
   }
 
   .btn.play.playing {
@@ -300,6 +311,69 @@
   .btn.assist.on {
     border-color: var(--accent);
     color: var(--accent);
+  }
+
+  /* ---------- Master volume knob ---------- */
+  .vol {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-left: 8px;
+  }
+
+  .knob {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: ns-resize;
+    touch-action: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .knob svg {
+    display: block;
+    transition: filter 0.18s ease;
+  }
+
+  .knob-track { fill: none; stroke: var(--faint); stroke-width: 3.5; stroke-linecap: round; }
+  .knob-arc   { fill: none; stroke: var(--text);  stroke-width: 3.5; stroke-linecap: round; }
+  .knob-cap   { fill: none; stroke: var(--faint); stroke-width: 2;   transition: stroke 0.15s ease; }
+  .knob-ind   { stroke: var(--text); stroke-width: 3; stroke-linecap: round; transition: stroke 0.15s ease; }
+
+  .knob:hover .knob-cap { stroke: var(--dim); }
+
+  /* keyboard focus: brighten the cap, no outline */
+  .knob:focus-visible .knob-cap { stroke: var(--text); }
+
+  .knob.dragging .knob-cap { stroke: var(--accent); }
+  .knob.dragging .knob-arc { stroke: var(--glow); }
+  .knob.dragging .knob-ind { stroke: var(--glow); }
+  .knob.dragging svg { filter: drop-shadow(0 0 4px rgba(246,200,107,0.55)); }
+
+  .vol-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+  }
+
+  .vol-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+    line-height: 11px;
+  }
+
+  .vol-readout {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    line-height: 14px;
+    min-width: 44px;
   }
 
   /* Disable focus ring (we manage focus visibility) */
@@ -320,14 +394,23 @@
     font-size: 10px;
     letter-spacing: 0.12em;
     color: var(--dim);
-    background: rgba(30,26,23,0.92);
+    background: rgba(43,55,77,0.92);
     pointer-events: auto; /* block clicks while loading */
     opacity: 1;
     transition: opacity 0.25s ease;
   }
   .loading.hidden { opacity: 0; pointer-events: none; }
 
-  .widget-shell { position: relative; width: 100%; max-width: 640px; }
+  /* rounded dark bumper, same treatment as the Interval Trainer */
+  .widget-shell {
+    position: relative;
+    width: 100%;
+    max-width: 666px;
+    background: linear-gradient(158deg, #161F35 0%, #0F1A22 55%, #081219 100%);
+    border-radius: 26px;
+    padding: 13px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.055), inset 0 0 0 1px rgba(0,0,0,0.55);
+  }
 </style>
 </head>
 <body>
@@ -356,10 +439,25 @@
     <footer class="transport">
       <button class="btn" id="reset" type="button">RESET</button>
       <button class="btn play" id="play" type="button">&#9654; PLAY</button>
-      <button class="btn assist on" id="assist" type="button">ASSIST: ON</button>
+      <button class="btn assist" id="assist" type="button">ASSIST: OFF</button>
+      <div class="vol" title="Master volume: drag, scroll or use arrow keys. Double-click to reset.">
+        <div class="knob" id="vol-knob" role="slider" tabindex="0"
+             aria-label="Master volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="75">
+          <svg viewBox="0 0 36 36" width="38" height="38" aria-hidden="true">
+            <path class="knob-track" id="vol-track"/>
+            <path class="knob-arc" id="vol-arc"/>
+            <circle class="knob-cap" cx="18" cy="18" r="10.5"/>
+            <line class="knob-ind" id="vol-ind" x1="20" y1="18" x2="25.5" y2="18"/>
+          </svg>
+        </div>
+        <div class="vol-text">
+          <div class="vol-label">VOL</div>
+          <div class="vol-readout" id="vol-readout">-10 dB</div>
+        </div>
+      </div>
     </footer>
+    <div class="loading" id="loading">DECODING AUDIO&hellip;</div>
   </div>
-  <div class="loading" id="loading">DECODING AUDIO&hellip;</div>
 </div>
 
 <script>
@@ -410,6 +508,9 @@ const PEAK_DECAY_DB_PER_S = 26;
  * =========================================================== */
 let audioCtx = null;
 let masterGain = null;
+let monitorGain = null;              // listening volume, post-analyser
+const VOL_DEFAULT = 0.75;            // -10 dB on the knob taper
+let volPos = VOL_DEFAULT;            // knob position 0..1 (1 = 0 dB)
 let analyser = null;
 let analyserBuf = null;
 let channelGain = [];                // per-track post-fader gain
@@ -417,7 +518,7 @@ let channelPreGain = [];             // per-track pre-fader gain (e.g. drums -3 
 let buffers = {};                    // decoded AudioBuffers, keyed by track.key
 
 let playing = false;
-let assistOn = true;
+let assistOn = false;
 let positions = TRACKS.map(t => t.initialPos);
 
 let scheduler = null;
@@ -496,7 +597,10 @@ async function initAudio() {
   analyserBuf = new Float32Array(analyser.fftSize);
 
   masterGain.connect(analyser);
-  analyser.connect(audioCtx.destination);
+  monitorGain = audioCtx.createGain();
+  monitorGain.gain.value = volPosToGain(volPos);
+  analyser.connect(monitorGain);
+  monitorGain.connect(audioCtx.destination);
 
   channelGain = [];
   channelPreGain = [];
@@ -869,6 +973,122 @@ function attachFaderHandlers(fader, i) {
 }
 
 /* ===========================================================
+ * Master volume knob
+ * Sits AFTER the analyser (monitorGain -> destination), so it only changes
+ * how loud the student hears the mix. The OUT meter and clip latch keep
+ * reading the mix itself, so turning the knob down never hides a clip.
+ * =========================================================== */
+const VOL_DB_FLOOR = -40;            // bottom of the dB taper (knob fully down = silence)
+const VOL_RAMP_TC = 0.02;            // smoothing for gain changes (no zipper noise)
+const KNOB_START_DEG = 135;          // bottom-left, sweeping clockwise
+const KNOB_SWEEP_DEG = 270;
+const KNOB_DRAG_PX = 160;            // pixels of drag for full travel
+
+function volPosToGain(p) { return p <= 0.001 ? 0 : dbToGain(VOL_DB_FLOOR * (1 - p)); }
+function volPosToDb(p)   { return p <= 0.001 ? -Infinity : VOL_DB_FLOOR * (1 - p); }
+
+function applyMonitorGain() {
+  if (!audioCtx || !monitorGain) return;
+  monitorGain.gain.setTargetAtTime(volPosToGain(volPos), audioCtx.currentTime, VOL_RAMP_TC);
+}
+
+function knobPolar(cx, cy, r, deg) {
+  const a = deg * Math.PI / 180;
+  return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+}
+
+function knobArcPath(cx, cy, r, startDeg, sweepDeg) {
+  const [x1, y1] = knobPolar(cx, cy, r, startDeg);
+  const [x2, y2] = knobPolar(cx, cy, r, startDeg + sweepDeg);
+  const large = sweepDeg > 180 ? 1 : 0;
+  return 'M ' + x1.toFixed(2) + ' ' + y1.toFixed(2) +
+         ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x2.toFixed(2) + ' ' + y2.toFixed(2);
+}
+
+function updateVolumeKnob() {
+  const knob = document.getElementById('vol-knob');
+  const arc = document.getElementById('vol-arc');
+  const ind = document.getElementById('vol-ind');
+  const readout = document.getElementById('vol-readout');
+  const sweep = KNOB_SWEEP_DEG * volPos;
+
+  if (sweep > 0.5) arc.setAttribute('d', knobArcPath(18, 18, 15.5, KNOB_START_DEG, sweep));
+  else arc.removeAttribute('d');
+  ind.setAttribute('transform', 'rotate(' + (KNOB_START_DEG + sweep).toFixed(2) + ' 18 18)');
+
+  const db = volPosToDb(volPos);
+  const text = isFinite(db) ? Math.round(db) + ' dB' : '-\u221E';
+  readout.textContent = text;
+  knob.setAttribute('aria-valuenow', String(Math.round(volPos * 100)));
+  knob.setAttribute('aria-valuetext', text);
+}
+
+function setVolume(pos) {
+  volPos = clamp(pos, 0, 1);
+  applyMonitorGain();
+  updateVolumeKnob();
+}
+
+function setupVolumeKnob() {
+  const knob = document.getElementById('vol-knob');
+  document.getElementById('vol-track').setAttribute(
+    'd', knobArcPath(18, 18, 15.5, KNOB_START_DEG, KNOB_SWEEP_DEG));
+  updateVolumeKnob();
+
+  let dragging = false;
+  let pointerId = null;
+  let startY = 0;
+  let startPos = 0;
+
+  knob.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    knob.setPointerCapture(e.pointerId);
+    pointerId = e.pointerId;
+    dragging = true;
+    startY = e.clientY;
+    startPos = volPos;
+    knob.classList.add('dragging');
+  });
+
+  knob.addEventListener('pointermove', (e) => {
+    if (!dragging || e.pointerId !== pointerId) return;
+    setVolume(startPos + (startY - e.clientY) / KNOB_DRAG_PX);
+  });
+
+  const endDrag = (e) => {
+    if (e.pointerId !== pointerId) return;
+    dragging = false;
+    pointerId = null;
+    knob.classList.remove('dragging');
+    try { knob.releasePointerCapture(e.pointerId); } catch (err) {}
+  };
+  knob.addEventListener('pointerup', endDrag);
+  knob.addEventListener('pointercancel', endDrag);
+
+  knob.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = clamp(-e.deltaY / 600, -WHEEL_STEP_CLAMP, WHEEL_STEP_CLAMP);
+    setVolume(volPos + delta);
+  }, { passive: false });
+
+  knob.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    setVolume(VOL_DEFAULT);
+  });
+
+  knob.addEventListener('keydown', (e) => {
+    let next = null;
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') next = volPos + 0.05;
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') next = volPos - 0.05;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = 1;
+    if (next === null) return;
+    e.preventDefault();
+    setVolume(next);
+  });
+}
+
+/* ===========================================================
  * Init
  * =========================================================== */
 async function bootstrap() {
@@ -878,6 +1098,7 @@ async function bootstrap() {
   document.getElementById('reset').addEventListener('click', resetMix);
   document.getElementById('play').addEventListener('click', togglePlay);
   document.getElementById('assist').addEventListener('click', toggleAssist);
+  setupVolumeKnob();
 
   // Decode audio in the background so first Play is instant
   try {

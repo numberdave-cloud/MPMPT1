@@ -14,20 +14,32 @@ https://numberdave-cloud.github.io/MPMPT1/mix-balance-reggae/
 <iframe src="https://numberdave-cloud.github.io/MPMPT1/mix-balance-reggae/" width="100%" height="600" title="Mix Balance [Reggae]" style="border: none;" allow="autoplay" loading="lazy"></iframe>
 ```
 
-Height 600 (default). Adjust if clipped in Canvas.
+Height 600 (default). Measured at 584px rendered for Canvas columns 700px wide and up. Near 480px wide the transport row wraps and the content reaches about 628px, so use height 640 if the column is narrow.
 
 ## Build state
 
-Live.
+v1.1, live. Not yet verified in Canvas.
+
+- Assist starts OFF.
+- Master volume knob beside the Assist button (see technical notes).
+- Reskinned to match the Interval Trainer frame: rounded bumper (26px) around a 12px-radius screen, transparent page behind it.
+- Ableton session palette sampled from a Live screenshot, with heavier lines (2px borders, 4px fader tracks).
 
 ## Technical notes
 
-Single self-contained HTML, ~2.0 MB. Base64-embedded OGG stems decoded via `atob()`, gapless looping via precision scheduler (no `loop=true`), pako present. **Verify stem count, sample rate, loop period.** File size is heavy; watch the base64 payload if adding stems.
+Single self-contained HTML, ~2.1 MB. Base64-embedded OGG stems (drum, bass, bubble, chop, horn) decoded via `atob()`. All stems stereo, 44.1 kHz (read from the Vorbis headers). Master loop period 12.509773 s (chop.ogg duration). Gapless looping via precision scheduler (no `loop=true`), pako present. File size is heavy; watch the base64 payload if adding stems.
+
+Audio graph: stem source, pre-fader gain, fader gain, `masterGain` (play and stop fades), analyser (OUT meter and clip latch), `monitorGain` (volume knob), destination.
+
+Volume knob: sits after the analyser, so it changes only how loud the student hears the mix. The OUT meter and clip latch keep reading the mix itself. Range is -40 dB to 0 dB with silence at the bottom of travel. Default is 75% of travel, which is -10 dB (`VOL_DEFAULT = 0.75`). Drag, scroll wheel, arrow keys, Home and End all work, and double-click resets to the default. No focus outline (keyboard focus brightens the knob's inner circle instead).
+
+Palette tokens in `:root`: bg `#2B374D`, well `#0F1A22`, ink `#161F35`, text `#DAD7D2`, accent `#F6C86B`, glow `#FFDA8C`, dim `#B8B8B7`, faint (lines) `#8D94B1`, seg `#6B7596`, green (balanced) `#BFDFD3`. Clip red stays `#C04838` because the source screenshot had no red.
 
 ## Open TODOs
 
-None tracked.
+- Verify the frame, knob and narrow-column wrap in a real Canvas page.
+- Confirm -10 dB feels right as the default listening level in a classroom.
 
 ## Last updated
 
-2026-07-14 — README backfilled from repo inspection. Audio specs marked "verify" were inferred, not read from a spec sheet; confirm at next edit.
+2026-10-01: assist off by default, master volume knob (default -10 dB), Interval Trainer frame, Ableton palette.
