@@ -1,5 +1,14 @@
 # Dinner Engine — handoff
 
+## Session note - 1 Oct 2026 (Task rows: dot and title stay on one line)
+
+UI fix only, no catalogue change (still 276, r001 to r276, all three copies checked in sync before the build).
+In taskShell (task and upkeep rows) the dot and title sat in a wrapping flex row, so a long title such as
+"Clean front of fridge and cabinets" pushed the dot onto its own line above the text. Now the row does not
+wrap: the dot is pinned to the first line of the title (alignItems flex-start, small top margin), the title
+wraps within its own column, and the right-hand button (Snooze) sits in a flexShrink:0 wrapper so it never
+squeezes or drops. Check on the Galaxy: Upkeep due-now list and To-do rows with long titles.
+
 ## Session note - 28 Sep 2026 (r254 serves corrected to 8)
 
 Pure data edit, no esbuild rebuild. r254 Massi's Ossobuco Ragu w/ Pappardelle (DJ's Recipe Book)

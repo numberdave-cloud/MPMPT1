@@ -1189,14 +1189,14 @@ export default function KitchenApp() {
     <div key={key} style={{ display:"flex", alignItems:"center", gap:12, background:C.card, border:`1px solid ${C.line}`, borderRadius:12, padding:"12px 14px", opacity:dim?0.6:1 }}>
       {left}
       <div style={{ minWidth:0, flex:1 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
-          {dotColor && <span style={{ width:8, height:8, borderRadius:99, background:dotColor, flexShrink:0 }} />}
-          <span style={{ fontFamily:SERIF, fontWeight:600, fontSize:15, color:C.cream, textDecoration:strike?"line-through":"none" }}>{title}</span>
+        <div style={{ display:"flex", alignItems:"flex-start", gap:8 }}>
+          {dotColor && <span style={{ width:8, height:8, borderRadius:99, background:dotColor, flexShrink:0, marginTop:7 }} />}
+          <span style={{ minWidth:0, fontFamily:SERIF, fontWeight:600, fontSize:15, color:C.cream, textDecoration:strike?"line-through":"none" }}>{title}</span>
         </div>
         {meta && <div style={{ fontSize:12.5, color:C.muted, marginTop:3 }}>{meta}</div>}
         {sub && <div style={{ fontSize:12, color:C.faint, marginTop:2 }}>{sub}</div>}
       </div>
-      {right}
+      {right && <div style={{ flexShrink:0 }}>{right}</div>}
     </div>
   );
 
