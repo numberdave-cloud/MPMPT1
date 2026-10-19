@@ -1,5 +1,33 @@
 # Dinner Engine — handoff
 
+## Session note - 19 Oct 2026 (Recipe add: r277 Saganaki with Watermelon & Cucumber Salad)
+
+Recipe add (type A), no rebuild (pure data add). Added r277 Saganaki with Watermelon & Cucumber Salad
+from the Gourmet Traveller website (recipe by Jessica Brook). Catalogue 276 to 277, r001 to r277;
+next free r278. All three copies verified in sync at session start (recipes.json / jsx CATALOGUE /
+index.html ct all 276, identical id-sets). Spliced identical data into all three copies after the r276
+object and cross-checked r277 deep-equal across all three. Committed archive/meal-planner/recipes.json,
+archive/dev/dinner-engine.jsx, archive/meal-planner/index.html and archive/dev/HANDOFF.md together.
+
+Decisions:
+- serves "2" as given. cookMin 7 (quick): active sequential cook only, bake pita 3 min + fry cheese
+  2 min each side = 4 min. Prep (10 min) and the site's 5-min "cook" ignored per our raw-cost convention.
+- ref stored as "Gourmet Traveller (gourmettraveller.com.au)" (web source, matching r276 Tartiflette style).
+- extra-virgin olive-oil kept as its own non-staple line "extra-virgin olive oil" (s:false), matching
+  the live catalogue's established convention (41 existing recipes store EVOO separately, never folded
+  to the "olive oil" staple), rather than the project doc's fold-to-olive-oil rule. Flag for Dave if he
+  would rather fold it.
+- baby cucumbers -> "cucumber" (sea:true), baby mint leaves -> "mint" (sea:true, 0.25 cup), red onion ->
+  existing item "red onion" (onion is not a seasonal key, sea:false). pita bread, sherry vinegar, sumac,
+  honey folded to existing/plain items. kefalograviera cheese stored as its own item (substitutes
+  kefalotiri/haloumi noted on the page, not stored).
+
+OPEN PRODUCE FLAG: "watermelon" is not a SEASONALITY key (the keys include "melon" but not watermelon),
+so r277's watermelon is stored sea:false, p:"". Candidate to add to SEASONALITY (Victorian watermelon
+season is summer, roughly Dec to Mar) in a future type-B chat; decide whether it is its own key or folds
+into "melon".
+
+
 ## Session note - 1 Oct 2026 (Task rows: dot and title stay on one line)
 
 UI fix only, no catalogue change (still 276, r001 to r276, all three copies checked in sync before the build).
