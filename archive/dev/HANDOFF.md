@@ -1,5 +1,39 @@
 # Dinner Engine — handoff
 
+## Session note - 19 Oct 2026 (Recipe add: r278-r288, 11 HelloFresh recipes)
+
+Recipe add (type A), no rebuild (pure data add). Added 11 HelloFresh AU recipe cards (2018) from Dave's
+photos: r278 Cheesy Pesto Hasselback Chicken, r279 Spiced Chicken & Roast Veggie Salad, r280 Chinese Salt
+& Pepper Chicken, r281 Chermoula & Garlic Chicken, r282 Aussie Beef Rissoles & Rainbow Fries, r283 Mexican
+Beef Enchiladas, r284 Easy Bacon & Mushroom Pie, r285 Pulled Mexican Chicken & Rice Bowl, r286 Greek-Style
+Fetta & Oregano Steak, r287 Cheat's Beef Stroganoff, r288 Five-Spice Sesame Beef Tacos. Catalogue 277 to
+288, r001 to r288; next free r289. All three copies verified in sync at start (277 each) and after the add
+(288 each; id/name/cookMin/ings-count deep-checked identical across recipes.json / jsx CATALOGUE / index.html
+ct, and the html ct array eval'd in node). Committed the four files together.
+
+Decisions:
+- serves "4" for all (Dave uses the 4-person column). cookMin = Ready-in upper bound from the card, per Dave's
+  instruction for this batch (not derived from the steps). r280 and r288 are "quick" (30, 25); the rest "fresh".
+- The original screenshot PDF was lost mid-task. Times and several amounts were recovered from HelloFresh's
+  archived recipe cards online. The ref (cook book) field holds the HelloFresh recipe-page URL for each of
+  r278-r288 (a web link, like the Gourmet Traveller and RecipeTin web refs).
+- Quantities: grams where the card prints them, otherwise count plus container word. New units introduced:
+  packet, sachet, bag, cube, head. "large/medium packet" recorded as "1 packet" since serves is fixed at 4.
+- Name folds: brown onion to onion, mini flour tortillas to tortillas, basil pesto to pesto, garlic aioli to
+  aioli, Greek yoghurt to Greek-style yoghurt, fetta to feta, Dijon to dijon mustard, diced bacon to bacon,
+  sliced mushrooms to mushrooms, fine breadcrumbs to breadcrumbs, rice wine vinegar to rice vinegar, mixed
+  salad leaves to leafy greens, roma tomato to roma tomatoes, chicken thigh to chicken thighs.
+- New items (non-produce, no SEASONALITY impact): Aussie spice blend, Mexican Fiesta spice blend, chermoula
+  spice blend, taco spice blend, five spice sesame blend, garlic & herb seasoning, pepitas, slaw mix, soffritto
+  mix, enchilada sauce, sweetcorn, garlic sauce, light cooking cream, beef strips, slivered almonds, flaked almonds.
+- Version notes: for r280, r282, r283 and r285 the archived online card is a later or different printing than
+  Dave's 2018 card (swapped protein or veg), so Dave's card amounts were kept and only the time and link were
+  taken from the archive. r279 gained a carrot present on the online card (Dave confirmed keep). r280 Ready-in
+  was cut off on the photo (ends in 0); set to 30 from the HelloFresh site (Dave confirmed).
+
+No new produce keys required (all produce used are existing SEASONALITY keys). No open produce flags from this add.
+
+
 ## Session note - 19 Oct 2026 (Recipe add: r277 Saganaki with Watermelon & Cucumber Salad)
 
 Recipe add (type A), no rebuild (pure data add). Added r277 Saganaki with Watermelon & Cucumber Salad
