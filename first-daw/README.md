@@ -17,7 +17,7 @@ Height 800 (non-default). The page measures 728 px at full width, about 780 px a
 
 ## Build state
 
-v1.0, shipped 2026-10-21. Not yet verified in Canvas.
+v1.1, shipped 2026-10-21. Not yet verified in Canvas.
 
 ## What works and what doesn't
 
@@ -27,13 +27,14 @@ Dummy: record (flashes red), record arm (toggles red), loop toggle (playback alw
 
 ## Technical notes
 
-- Four OGG Vorbis stems, 44.1 kHz stereo, each exactly 8 bars at 260 BPM (7.3846 s). Embedded as base64, decoded with atob() and decodeAudioData.
-- Bass and drums are labelled MIDI but play audio stems. Vocal clip is drawn at bar 7; its reverb tail plays through the following bars as rendered.
+- Four OGG Vorbis stems, 44.1 kHz stereo, each 7.3846 s. Rendered as 8 bars at 260 BPM; the MOTE displays them as 4 bars at 130 BPM (same audio, same speed). Embedded as base64, decoded with atob() and decodeAudioData.
+- Bass and drums are labelled MIDI but play audio stems. Vocal clip is drawn at bar 3, beats 1 to 2; its reverb tail plays through the following bars as rendered.
 - Loop period 7.3846 s. Precision scheduler fires all four sources at exact multiples of the loop length (no loop=true).
 - Signal chain per track: source, mute/solo gain, fader gain, StereoPanner, Analyser, master gain.
 - Meters: -48 to +6 dB scale, green below -6, amber to 0, red at clipping. Stems peak between -10 and -19 dBFS.
-- MIDI clip note blocks in `src/notes.json` were traced from Dave's Ableton screenshot. Audio clip waveforms are drawn from the decoded buffers.
+- MIDI clip note blocks in `src/notes.json` were traced from Dave's Ableton screenshot and halved to fit 4 bars. Audio clip waveforms are drawn from the decoded buffers.
 - Terminology table lives in the TERMS object; info copy (Dave's, approved) in the INFO object.
+- Tempo display and metronome run at 130 BPM, accent on each downbeat.
 - Spacebar toggles play/stop. Double-click a fader or knob to reset.
 - Source in `src/`: edit template.html, then run `python3 build.py` to regenerate index.html.
 - Colour scheme departs from the suite: black background (#0B0B0C) at Dave's request, accent orange kept.
@@ -44,4 +45,4 @@ Dummy: record (flashes red), record arm (toggles red), loop toggle (playback alw
 - Info panel placeholder "Hover over or tap anything" is Claude's wording, not yet confirmed by Dave.
 - Safari/iOS OGG decoding untested.
 
-Last updated 2026-10-21: first ship (v1.0).
+Last updated 2026-10-21: v1.1, ruler changed to 4 bars at 130 BPM (tempo and metronome), audio unchanged.
