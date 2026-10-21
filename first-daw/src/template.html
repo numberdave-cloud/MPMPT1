@@ -531,6 +531,8 @@
     cursor: default;
   }
   .folder:hover { background: var(--panel-3); }
+  .folder.playing { background: var(--accent); color: var(--ink); }
+  .folder.playing svg { color: var(--ink); }
   .folder svg { width: 16px; height: 14px; flex: none; color: var(--accent); }
 
   /* info panel */
@@ -742,6 +744,44 @@
     '803 Kick Drums that all sound the same', 'Nicolas Cage quotes'
   ];
 
+  // easter egg: these folders play a file when clicked
+  var EGGS = {
+    '1980s Anime Sound Effects': '__B64_EGG_ANIME__',
+    'Jungle Jungle Sample Pack': '__B64_EGG_JUNGLE__',
+    '803 Kick Drums that all sound the same': '__B64_EGG_KICKS__',
+    'Nicolas Cage quotes': '__B64_EGG_CAGE__'
+  };
+  var eggBuffers = {};
+  var eggSrc = null, eggRow = null;
+
+  function stopEgg() {
+    if (eggSrc) { eggSrc.onended = null; try { eggSrc.stop(); } catch (e) {} }
+    if (eggRow) eggRow.classList.remove('playing');
+    eggSrc = null; eggRow = null;
+  }
+
+  function playEgg(name, row) {
+    if (!ctx) return;
+    var same = eggRow === row;
+    stopEgg();
+    if (same) return;
+    ctx.resume();
+    var go = function (buf) {
+      var src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(masterGain);
+      src.onended = function () { if (eggSrc === src) stopEgg(); };
+      src.start();
+      eggSrc = src; eggRow = row;
+      row.classList.add('playing');
+    };
+    if (eggBuffers[name]) { go(eggBuffers[name]); return; }
+    ctx.decodeAudioData(b64ToArrayBuffer(EGGS[name]), function (b) {
+      eggBuffers[name] = b;
+      go(b);
+    }, function () {});
+  }
+
   // ---- state ----
   var daw = 'ableton';
   var infoKey = null;
@@ -920,6 +960,7 @@
       row.dataset.info = 'browser';
       row.innerHTML = '<svg viewBox="0 0 16 14"><path d="M1 2 h5 l2 2 h7 v9 H1 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
       row.appendChild(el('span', null, f));
+      if (EGGS[f]) row.addEventListener('click', function () { playEgg(f, row); });
       folders.appendChild(row);
     });
   }
