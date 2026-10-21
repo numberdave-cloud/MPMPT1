@@ -346,7 +346,7 @@
 
   /* lanes */
   .lane { position: relative; background:
-      repeating-linear-gradient(to right, transparent 0, transparent calc(12.5% - 1px), var(--border-soft) calc(12.5% - 1px), var(--border-soft) 12.5%); }
+      repeating-linear-gradient(to right, transparent 0, transparent calc(25% - 1px), var(--border-soft) calc(25% - 1px), var(--border-soft) 25%); }
   .clip {
     position: absolute;
     top: 5px;
@@ -628,7 +628,7 @@
     </div>
     <div class="t-group" data-info="tempo">
       <span class="t-label">Tempo</span>
-      <div class="readout"><span class="ghost">888.88</span><span class="live">260.00</span></div>
+      <div class="readout"><span class="ghost">888.88</span><span class="live">130.00</span></div>
       <span class="readout-unit">BPM</span>
     </div>
     <div class="t-group" data-info="position">
@@ -681,8 +681,8 @@
   'use strict';
 
   // ---- config ----
-  var BPM = 260;
-  var BARS = 8;
+  var BPM = 130;
+  var BARS = 4;
   var BEATS = BARS * 4;
   var LOOP = BEATS * 60 / BPM;
 
@@ -695,10 +695,10 @@
   var NOTES = __NOTES__;
 
   var TRACKS = [
-    { id: 'bass',   name: 'Bass',   type: 'midi',  colour: '#C07838', instrument: 'Synth',    clips: [{ name: 'synth bass', start: 0, end: 8 }] },
-    { id: 'drums',  name: 'Drums',  type: 'midi',  colour: '#5C8A8A', instrument: 'Drum Kit', clips: [{ name: 'not bad drum kit', start: 0, end: 8 }] },
-    { id: 'guitar', name: 'Guitar', type: 'audio', colour: '#8A8540', clips: [{ name: 'pauls guitar', start: 0, end: 8 }] },
-    { id: 'vocal',  name: 'Vocal',  type: 'audio', colour: '#8B6A8B', clips: [{ name: 'gang chorus vocals', start: 6, end: 7 }] }
+    { id: 'bass',   name: 'Bass',   type: 'midi',  colour: '#C07838', instrument: 'Synth',    clips: [{ name: 'synth bass', start: 0, end: 4 }] },
+    { id: 'drums',  name: 'Drums',  type: 'midi',  colour: '#5C8A8A', instrument: 'Drum Kit', clips: [{ name: 'not bad drum kit', start: 0, end: 4 }] },
+    { id: 'guitar', name: 'Guitar', type: 'audio', colour: '#8A8540', clips: [{ name: 'pauls guitar', start: 0, end: 4 }] },
+    { id: 'vocal',  name: 'Vocal',  type: 'audio', colour: '#8B6A8B', clips: [{ name: 'gang chorus vocals', start: 3, end: 3.5 }] }
   ];
 
   var TERMS = {
