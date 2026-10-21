@@ -17,13 +17,13 @@ Height 800 (non-default). The page measures 728 px at full width, about 780 px a
 
 ## Build state
 
-v1.1, shipped 2026-10-21. Not yet verified in Canvas.
+v1.2, shipped 2026-10-22. Not yet verified in Canvas.
 
 ## What works and what doesn't
 
 Working: play, stop (returns to bar 1), position counter, playhead, metronome (accent on beat 1), mute, solo, pan knobs, track faders with level meters, master fader, browser panel open/close, save dialog, DAW terms toggle, loop marker show/hide.
 
-Dummy: record (flashes red), record arm (toggles red), loop toggle (playback always loops), instrument slot (shows info), browser folders (display only), tempo (fixed display).
+Dummy: record (flashes red), record arm (toggles red), loop toggle (playback always loops), instrument slot (shows info), browser folders (display only, apart from the four easter egg folders below), tempo (fixed display).
 
 ## Technical notes
 
@@ -35,6 +35,7 @@ Dummy: record (flashes red), record arm (toggles red), loop toggle (playback alw
 - MIDI clip note blocks in `src/notes.json` were traced from Dave's Ableton screenshot and halved to fit 4 bars. Audio clip waveforms are drawn from the decoded buffers.
 - Terminology table lives in the TERMS object; info copy (Dave's, approved) in the INFO object.
 - Tempo display and metronome run at 130 BPM, accent on each downbeat.
+- Easter egg: clicking 1980s Anime Sound Effects, Jungle Jungle Sample Pack, 803 Kick Drums or Nicolas Cage quotes plays a one-shot through the master fader. The folder lights while it plays; clicking it again stops it, and clicking another folder swaps. Sources are Dave's 32-bit float WAVs, converted to OGG Vorbis q6 (`src/egg_*.ogg`) to keep the page around 1.9 MB. Decoded lazily on first click.
 - Spacebar toggles play/stop. Double-click a fader or knob to reset.
 - Source in `src/`: edit template.html, then run `python3 build.py` to regenerate index.html.
 - Colour scheme departs from the suite: black background (#0B0B0C) at Dave's request, accent orange kept.
@@ -45,4 +46,4 @@ Dummy: record (flashes red), record arm (toggles red), loop toggle (playback alw
 - Info panel placeholder "Hover over or tap anything" is Claude's wording, not yet confirmed by Dave.
 - Safari/iOS OGG decoding untested.
 
-Last updated 2026-10-21: v1.1, ruler changed to 4 bars at 130 BPM (tempo and metronome), audio unchanged.
+Last updated 2026-10-22: v1.2, bass and drum clip note images swapped to the correct tracks; browser folder easter eggs added.
