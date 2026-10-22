@@ -1,5 +1,24 @@
 # Dinner Engine — handoff
 
+## Session note - 22 Oct 2026 (Recipe add: r289 Beef Stroganoff Stew, Instant Pot)
+
+Recipe add (type A), no rebuild (pure data add). Added r289 Beef Stroganoff Stew (Instant Pot) from the
+RecipeTin Eats website (Slow Cooker Beef Stroganoff Stew, Nagi Maehashi); ref holds the page URL. Catalogue
+288 to 289, r001 to r289; next free r290. Three copies verified in sync before (288) and after (289), deep-checked.
+
+Decisions:
+- Dave will cook the Instant Pot method, so the record follows the page's IP variant: plain flour dropped,
+  3 tbsp cornflour slurry added at the end (page Note 3/5). Name changed from the slow cooker title to say so.
+- serves "6-8" as printed. cookMin 75, derived for the IP method (page prints only slow cooker times):
+  brown beef in batches ~15, onion/garlic 3, stock to simmer ~5, come to pressure ~10, 40 min high pressure,
+  thicken on saute 5. Garlic butter mushrooms run concurrently and are not added.
+- Combined across the stew and the mushrooms: salt 2 tsp, black pepper 2 tsp, butter 65 g, garlic 7 cloves.
+  Sour cream 1.5 cups recorded as 375 ml. Serving starch recorded as egg noodles (unquantified); chives unquantified.
+- New item: beef chuck (no existing chuck name; not folded into gravy beef).
+
+No new produce keys required. No open produce flags from this add.
+
+
 ## Session note - 19 Oct 2026 (Recipe add: r278-r288, 11 HelloFresh recipes)
 
 Recipe add (type A), no rebuild (pure data add). Added 11 HelloFresh AU recipe cards (2018) from Dave's
