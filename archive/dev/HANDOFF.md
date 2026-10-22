@@ -13,7 +13,7 @@ Decisions:
   brown beef in batches ~15, onion/garlic 3, stock to simmer ~5, come to pressure ~10, 40 min high pressure,
   thicken on saute 5. Garlic butter mushrooms run concurrently and are not added.
 - Combined across the stew and the mushrooms: salt 2 tsp, black pepper 2 tsp, butter 65 g, garlic 7 cloves.
-  Sour cream 1.5 cups recorded as 375 ml. Serving starch recorded as egg noodles (unquantified); chives unquantified.
+  Sour cream 1.5 cups recorded as 375 ml. Chives unquantified. Egg noodles removed at Dave's request (serving starch left off).
 - New item: beef chuck (no existing chuck name; not folded into gravy beef).
 
 No new produce keys required. No open produce flags from this add.
