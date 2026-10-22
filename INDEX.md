@@ -55,7 +55,8 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Compression | `compression-explorer/` | Mixing | live | YES |
 | Interval Trainer | `interval-trainer/` | Trainers | live (v0.9) | YES |
 | Tuning Practice | `tuning-practice/` | Trainers | live (v1.0) | YES |
-| RackMat Timer [Ableton drill stopwatch, runs while away from Canvas] | `rackmat-timer/` | Trainers | live (v1.0, not yet verified in Canvas) | YES |
+| RackMat Timer [Ableton drill stopwatch, superseded by Speedrun Timer] | `rackmat-timer/` | Trainers | live (v1.0, kept until Canvas moves to speedrun-timer) | YES |
+| Speedrun Timer [drill stopwatch with alarm, supersedes RackMat Timer] | `speedrun-timer/` | Trainers | live (v1.0, not yet verified in Canvas) | YES |
 | Scene Scorer — Drive [Temp Track] | `scene-scorer-drive/` | Miscellaneous | live (levels untested) | YES |
 | Score Switcher [Shawshank] | `scene-scorer/` | Miscellaneous | live | YES |
 | Custom Scene Scorer | `custom-scene-scorer/` | Miscellaneous | live (phantom error-150 fix applied, pending live verification) | YES |
