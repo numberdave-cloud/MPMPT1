@@ -1,4 +1,6 @@
-# Baby's First DAW
+# Basic DAW Interface
+
+Formerly titled Baby's First DAW (renamed in v1.3).
 
 Directory: `first-daw/`
 Category: Composition
@@ -12,12 +14,12 @@ Live URL: https://numberdave-cloud.github.io/MPMPT1/first-daw/
 Height 800 (non-default). The page measures 728 px at full width, about 780 px at typical Canvas content widths and about 825 px on a phone, so 600 would crop the info panel.
 
 ```html
-<iframe src="https://numberdave-cloud.github.io/MPMPT1/first-daw/" title="Baby's First DAW" width="100%" height="800" style="border: none;" allow="autoplay" loading="lazy"></iframe>
+<iframe src="https://numberdave-cloud.github.io/MPMPT1/first-daw/" title="Basic DAW Interface" width="100%" height="800" style="border: none;" allow="autoplay" loading="lazy"></iframe>
 ```
 
 ## Build state
 
-v1.2, shipped 2026-10-22. Not yet verified in Canvas.
+v1.3, shipped 2026-10-26. Not yet verified in Canvas.
 
 ## What works and what doesn't
 
@@ -46,4 +48,4 @@ Dummy: record (flashes red), record arm (toggles red), loop toggle (playback alw
 - Info panel placeholder "Hover over or tap anything" is Claude's wording, not yet confirmed by Dave.
 - Safari/iOS OGG decoding untested.
 
-Last updated 2026-10-22: v1.2, bass and drum clip note images swapped to the correct tracks; browser folder easter eggs added.
+Last updated 2026-10-26: v1.3, renamed from Baby's First DAW to Basic DAW Interface (folder unchanged).

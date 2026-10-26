@@ -25,7 +25,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Song Structure Analyser [Live Set Export + Detailed] | `song-structure-v4-als-export/` | Composition | live | YES |
 | Song Structure Navigator | `song-nav-nowhere/` | Composition | live | YES |
 | Bar Anatomy | `bar-anatomy/` | Composition | live (v1.1, not yet verified in Canvas) | YES |
-| Baby's First DAW | `first-daw/` | Composition | live (v1.2, not yet verified in Canvas) | YES |
+| Basic DAW Interface | `first-daw/` | Composition | live (v1.3, not yet verified in Canvas) | YES |
 | Timbre Comparison | `timbre-comparison/` | Composition | live (v1.0, not yet verified in Canvas) | YES |
 | Vintage Sampler | `vintage-sampler/` | Composition | live | YES |
 | Character Generator | `character-generator/` | Composition | live | YES |
