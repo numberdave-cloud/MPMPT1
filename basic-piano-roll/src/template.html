@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basic Piano Roll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0B0B0C;
+    --ink: #0B0B0C;
+    --panel: #151617;
+    --panel-2: #1D1E20;
+    --panel-3: #2A2B2E;
+    --text: #EAE0D0;
+    --text-dim: rgba(234, 224, 208, 0.55);
+    --text-faint: rgba(234, 224, 208, 0.3);
+    --accent: #C07838;
+    --hot: #D8904A;
+    --accent-glow: #F0A860;
+    --success: #7BA968;
+    --error: #C04838;
+    --border: rgba(234, 224, 208, 0.32);
+    --border-soft: rgba(234, 224, 208, 0.14);
+    --border-bright: rgba(234, 224, 208, 0.6);
+    --frame: #000000;
+    --led-plate: #050506;
+    --glow-rgb: 240, 168, 96;
+    --natural: #17181A;
+    --accidental: #101113;
+    --kb-w: 58px;
+    --ruler-h: 30px;
+    --row-h: 19px;
+    --rows: 16;
+    --vel-h: 86px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: transparent;
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body { padding: 18px; display: flex; justify-content: center; }
+
+  /* rack card */
+  .rack {
+    position: relative;
+    width: 100%;
+    max-width: 1040px;
+    background: var(--bg);
+    border: 3px solid var(--frame);
+    border-radius: 24px;
+    padding: 24px 28px 22px;
+  }
+  .rack::after {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border-radius: 18px;
+    border: 1px solid rgba(234, 224, 208, 0.22);
+    pointer-events: none;
+  }
+
+  /* header */
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+  }
+  .title {
+    font-size: 28.6px;
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent-glow);
+  }
+  .head-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .toggle { display: flex; border: 2px solid var(--border-bright); border-radius: 6px; overflow: hidden; }
+  .toggle button {
+    background: transparent; color: var(--text-dim); border: none;
+    border-right: 2px solid var(--border); padding: 0 14px; height: 40px;
+    font-family: inherit; font-size: 11.7px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; cursor: pointer; white-space: nowrap;
+  }
+  .toggle button:last-child { border-right: none; }
+  .toggle button:hover { color: var(--accent-glow); }
+  .toggle button.active { background: var(--accent); color: var(--ink); }
+
+  /* buttons */
+  .btn {
+    background: transparent; color: var(--text); border: 2px solid var(--border-bright);
+    border-radius: 6px; padding: 0 12px; height: 40px; min-width: 40px;
+    font-family: inherit; font-size: 11.7px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center;
+    justify-content: center; gap: 8px; line-height: 1; white-space: nowrap;
+    transition: border-color 0.1s, color 0.1s, background 0.1s, box-shadow 0.15s;
+  }
+  .btn:hover { border-color: var(--accent-glow); color: var(--accent-glow); }
+  .btn:active { transform: translateY(1px); }
+  .btn.active { background: var(--accent); border-color: var(--hot); color: var(--ink); box-shadow: 0 0 14px rgba(var(--glow-rgb), 0.4); }
+  .btn.active:hover { background: var(--hot); color: var(--ink); }
+  .btn svg { width: 18px; height: 18px; display: block; }
+
+  /* transport */
+  .transport {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    border: 2px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px;
+  }
+  .t-group { display: flex; align-items: center; gap: 6px; }
+  .t-group.push { margin-left: auto; }
+  .t-label { font-size: 9.1px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); margin-right: 2px; }
+
+  .readout {
+    position: relative; font-family: 'Courier New', monospace; font-size: 22px; font-weight: 700;
+    letter-spacing: 0.06em; background: var(--led-plate); border: 2px solid var(--border);
+    border-radius: 6px; height: 40px; padding: 0 12px; display: inline-flex; align-items: center;
+    justify-content: center; cursor: default; min-width: 86px;
+  }
+  .readout .ghost { position: absolute; color: rgba(var(--glow-rgb), 0.08); }
+  .readout .live { position: relative; color: var(--accent-glow); text-shadow: 0 0 9px rgba(var(--glow-rgb), 0.5), 0 0 2px rgba(var(--glow-rgb), 0.9); }
+  .readout-unit { font-family: 'Courier New', monospace; font-size: 11.7px; font-weight: 700; letter-spacing: 0.16em; color: var(--text-dim); margin-left: 4px; }
+
+  /* piano roll */
+  .pr { border: 2px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+
+  .pr-head {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 8px 12px; border-bottom: 2px solid var(--border); background: var(--panel);
+  }
+  .pr-name {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--ink);
+    background: var(--accent); border-radius: 4px; padding: 4px 10px; cursor: default;
+  }
+  .chip {
+    font-size: 9.6px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-bright);
+    color: var(--text-dim); cursor: default; white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--accent-glow); color: var(--accent-glow); }
+  .chip b { color: var(--text); font-weight: 700; }
+  .pr-head .push { margin-left: auto; }
+
+  .pr-body { display: flex; position: relative; }
+
+  /* keyboard column */
+  .kb-col { width: var(--kb-w); flex: none; border-right: 2px solid var(--border); background: var(--led-plate); }
+  .kb-spacer { height: var(--ruler-h); border-bottom: 2px solid var(--border); }
+  .kb-keys { position: relative; }
+  .kb-key {
+    height: var(--row-h); display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 7px; font-family: 'Courier New', monospace; font-size: 9.5px; font-weight: 700;
+    color: var(--text-dim); border-bottom: 1px solid rgba(0,0,0,0.4); cursor: pointer;
+  }
+  .kb-key.white { background: #D8CFBE; color: #2A2620; }
+  .kb-key.black { background: #1A1714; color: var(--text-faint); }
+  .kb-key.cmark { color: #000; }
+  .kb-key:hover { background: var(--hot); color: var(--ink); }
+  .kb-key.lit { background: var(--accent-glow); color: var(--ink); }
+
+  .kb-vel {
+    height: var(--vel-h); border-top: 2px solid var(--border);
+    display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;
+    padding: 6px 7px 6px 0;
+  }
+  .kb-vel .vtag { font-size: 8px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); writing-mode: vertical-rl; transform: rotate(180deg); align-self: center; margin: auto 0; }
+  .kb-vel .vnum { font-family: 'Courier New', monospace; font-size: 9px; font-weight: 700; color: var(--text-faint); }
+
+  /* lanes */
+  .lanes { flex: 1; min-width: 0; position: relative; }
+
+  .ruler { height: var(--ruler-h); position: relative; border-bottom: 2px solid var(--border); background: var(--panel); cursor: default; }
+  .ruler .bt { position: absolute; bottom: 0; width: 1px; background: var(--border-soft); top: 0; }
+  .ruler .bt.beat { background: var(--border); }
+  .ruler .lbl {
+    position: absolute; bottom: 5px; transform: translateX(5px);
+    font-family: 'Courier New', monospace; font-size: 11px; font-weight: 700; color: var(--text-dim);
+  }
+
+  .grid { position: relative; height: calc(var(--rows) * var(--row-h)); overflow: hidden; }
+  .grow { position: absolute; left: 0; right: 0; height: var(--row-h); }
+  .grow.white { background: var(--natural); }
+  .grow.black { background: var(--accidental); }
+  .grow.cline { box-shadow: inset 0 1px 0 rgba(234,224,208,0.18); }
+  .gline { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border-soft); }
+  .gline.beat { background: var(--border); }
+
+  .note {
+    position: absolute; height: calc(var(--row-h) - 3px); border-radius: 3px;
+    background: var(--accent); border: 1px solid rgba(0,0,0,0.45);
+    box-shadow: inset 0 0 0 1px rgba(240,168,96,0.25); cursor: pointer; overflow: hidden;
+  }
+  .note:hover { background: var(--hot); }
+  .note.lit { background: var(--accent-glow); box-shadow: 0 0 10px rgba(var(--glow-rgb),0.6); }
+
+  .vel-lane { position: relative; height: var(--vel-h); border-top: 2px solid var(--border); background: var(--panel-2); }
+  .vstalk { position: absolute; bottom: 0; width: 2px; margin-left: -1px; background: var(--accent); cursor: pointer; }
+  .vstalk:hover { background: var(--hot); }
+  .vstalk.lit { background: var(--accent-glow); }
+  .vhead { position: absolute; width: 7px; height: 7px; border-radius: 50%; margin-left: -3.5px; background: var(--accent-glow); border: 1px solid var(--ink); cursor: pointer; }
+  .vbase { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--border-soft); }
+
+  .playhead {
+    position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px;
+    background: var(--accent-glow); box-shadow: 0 0 8px rgba(var(--glow-rgb), 0.8);
+    pointer-events: none; z-index: 4; left: 0;
+  }
+
+  .loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11.7px; letter-spacing: 0.2em; color: var(--text-faint); text-transform: uppercase; pointer-events: none; background: rgba(11,11,12,0.6); z-index: 6; }
+
+  /* info panel */
+  .info { border: 2px solid var(--border); border-radius: 8px; padding: 12px 16px; min-height: 90px; }
+  .info-name { font-size: 12.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent-glow); margin-bottom: 6px; }
+  .info-body { font-size: 15px; line-height: 1.5; color: var(--text); max-width: 820px; }
+  .info-meta { font-family: 'Courier New', monospace; font-size: 12.5px; color: var(--text-dim); margin-top: 8px; }
+  .info-meta b { color: var(--accent-glow); font-weight: 700; }
+  .info-empty { font-size: 11.7px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-faint); padding-top: 22px; text-align: center; }
+
+  @media (max-width: 820px) {
+    .title { font-size: 22px; }
+    .t-group.push { margin-left: 0; }
+  }
+  @media (max-width: 600px) {
+    :root { --kb-w: 46px; --row-h: 18px; --vel-h: 72px; }
+    body { padding: 8px; }
+    .rack { padding: 18px 12px 16px; }
+    .title { font-size: 17px; letter-spacing: 0.14em; }
+    .readout { font-size: 18px; min-width: 70px; }
+    .t-label { display: none; }
+    .info-body { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="rack" id="rack">
+  <div class="head">
+    <div class="title">Basic Piano Roll</div>
+    <div class="head-right">
+      <div class="toggle" id="dawToggle" data-info="daw">
+        <button data-daw="logic">Logic</button>
+        <button data-daw="protools">Pro Tools</button>
+        <button data-daw="ableton" class="active">Ableton</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="transport">
+    <div class="t-group">
+      <button class="btn" id="playBtn" data-info="play" aria-label="Play"><svg viewBox="0 0 20 20"><path d="M5 3 L17 10 L5 17 Z" fill="currentColor"/></svg></button>
+      <button class="btn" id="stopBtn" data-info="stop" aria-label="Stop"><svg viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12" fill="currentColor"/></svg></button>
+      <button class="btn active" id="loopBtn" data-info="loop" aria-label="Loop"><svg viewBox="0 0 20 20"><path d="M5 8 a4 4 0 0 1 4-4 h6 M13 2 l2 2 -2 2 M15 12 a4 4 0 0 1-4 4 H5 M7 18 l-2-2 2-2" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+    </div>
+    <div class="t-group" data-info="tempo">
+      <span class="t-label">Tempo</span>
+      <div class="readout"><span class="ghost">888.88</span><span class="live">72.00</span></div>
+      <span class="readout-unit">BPM</span>
+    </div>
+    <div class="t-group push" data-info="position">
+      <span class="t-label">Position</span>
+      <div class="readout"><span class="ghost">8.8.8</span><span class="live" id="posLive">1.1.1</span></div>
+    </div>
+  </div>
+
+  <div class="pr">
+    <div class="pr-head">
+      <div class="pr-name" data-info="clip">1-Contemporary Bass</div>
+      <div class="chip" data-info="editor"><span data-term="editor"></span></div>
+      <div class="chip" data-info="signature">4/4</div>
+      <div class="chip" data-info="grid"><span data-term="grid"></span> <b>1/16</b></div>
+      <div class="chip push" data-info="swing"><span data-term="swing"></span></div>
+    </div>
+    <div class="pr-body">
+      <div class="kb-col">
+        <div class="kb-spacer"></div>
+        <div class="kb-keys" id="kbKeys" data-info="keyboard"></div>
+        <div class="kb-vel" data-info="velocity">
+          <span class="vnum">127</span>
+          <span class="vtag">Velocity</span>
+          <span class="vnum">1</span>
+        </div>
+      </div>
+      <div class="lanes" id="lanes">
+        <div class="ruler" id="ruler" data-info="ruler"></div>
+        <div class="grid" id="grid"></div>
+        <div class="vel-lane" id="velLane" data-info="velocity"><div class="vbase"></div></div>
+        <div class="playhead" id="playhead" data-info="playhead"></div>
+        <div class="loading" id="loading">Loading audio</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info" id="info"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- clip config ----
+  var BPM = 72;
+  var BEATS = 4;                 // one bar of 4/4
+  var LOOP = BEATS * 60 / BPM;   // 3.3333 s
+  var LOW = 45;                  // A1 (lowest row shown)
+  var HIGH = 60;                 // C3 (highest row shown)
+  var ROWS = HIGH - LOW + 1;     // 16
+
+  // notes: [midiPitch, startBeat, lengthBeats, velocity] — traced from Dave's MIDI file
+  var NOTES = __NOTES__;
+
+  var LOOP_B64 = '__B64_LOOP__';
+
+  var TERMS = {
+    logic:    { editor: 'Piano Roll',  clip: 'Region', grid: 'Division', swing: 'Swing',  loop: 'Cycle',         ph: 'Playhead',        posName: 'LCD' },
+    protools: { editor: 'MIDI Editor', clip: 'Clip',   grid: 'Grid',     swing: 'Swing',  loop: 'Loop Playback', ph: 'Playback Cursor', posName: 'Main Counter' },
+    ableton:  { editor: 'Note Editor', clip: 'Clip',   grid: 'Grid',     swing: 'Groove', loop: 'Loop',          ph: 'Playhead',        posName: 'Arrangement Position' }
+  };
+
+  // DRAFT copy (Claude's, pending Dave's approval). A heading that is a function swaps with the DAW toggle.
+  var INFO = {
+    editor: { h: function (t) { return t.editor; }, b: 'The window where you edit the notes inside a MIDI clip. Every block is a note. How far across it sits is when it plays, and how high up it sits is how high or low it sounds. Logic calls it the Piano Roll, Pro Tools the MIDI Editor, and Ableton the Note Editor.' },
+    clip:   { h: function (t) { return t.clip; }, b: 'The container that holds the MIDI notes. This one is a single bar that repeats. Logic calls it a Region, while Pro Tools and Ableton call it a Clip.' },
+    ruler:  { h: 'Ruler', b: 'The timeline across the top, marked in bars and beats so you can read where each note lands in the bar.' },
+    keyboard: { h: 'Keyboard', b: 'The piano keys down the side show the pitch of each row. Higher up is a higher note. Click a key to hear its pitch.' },
+    octave: { h: 'Octave', b: 'The number after a note name is its octave, so C2 is one octave below C3. This bass part sits low, around C2. Logic and Pro Tools let you relabel middle C as C3 or C4, but Ableton always calls it C3, so the same note can show a different number in different places.' },
+    grid:   { h: function (t) { return t.grid; }, b: 'The vertical lines the notes line up to. This clip is set to a 1/16 grid, so notes sit on sixteenth-note positions. The grid sets how fine the timing can be.' },
+    note:   { h: 'Note', b: 'A single MIDI note. A note is only instructions for pitch, timing and loudness, so the sound you hear comes from the instrument the clip plays through. Hover a note to see its pitch, length and velocity.' },
+    length: { h: 'Note Length', b: 'How long a note is held, shown by how wide its block is. Short notes sound tight and detached, longer ones sound sustained. A lot of how a bassline feels comes down to note length.' },
+    velocity: { h: 'Velocity', b: 'How hard each note is played, from 1 to 127, shown as the stalks in the lane below. Higher velocity is usually louder, and on many instruments it also opens up the tone. It is set per note, separate from the track volume.' },
+    swing:  { h: function (t) { return t.swing; }, b: 'Swing nudges the off-beat notes slightly late to loosen the feel. Logic and Pro Tools call it Swing, Ableton calls it Groove. It is only named here so you can spot it. You will apply it yourself in a later activity.' },
+    signature: { h: 'Time Signature', b: 'How many beats are in a bar. 4/4 means four beats per bar, the most common count in popular music.' },
+    playhead: { h: function (t) { return t.ph; }, b: 'The line that moves across the clip during playback to show where you are.' },
+    loop:   { h: function (t) { return t.loop; }, b: 'The clip repeats from the start when it reaches the end, so you can keep hearing the one bar.' },
+    tempo:  { h: 'Tempo', b: 'The speed of the clip in beats per minute. This one plays at 72 BPM and is fixed here.' },
+    position: { h: 'Position', b: 'Where the playhead is, read as bar, beat and sixteenth. The separators differ by DAW, so Ableton writes 1.1.1 where Pro Tools writes 1|1|1.' },
+    play:   { h: 'Play', b: 'Starts the clip playing.' },
+    stop:   { h: 'Stop', b: 'Stops playback and returns to the start of the bar.' },
+    daw:    { h: 'DAW Terms', b: 'Different DAWs use different names for the same parts of the editor. Switch between Logic, Pro Tools and Ableton to see what each one calls them.' }
+  };
+
+  var NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  var WHITE = { 0:1,2:1,4:1,5:1,7:1,9:1,11:1 };
+  function noteName(m) { return NAMES[m % 12] + (Math.floor(m / 12) - 2); }  // C3 convention (60 = C3)
+  function freq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  // ---- state ----
+  var daw = 'ableton';
+  var infoKey = null, infoExtra = null;
+  var playing = false;
+  var ctx = null, masterGain = null, loopBuf = null, ready = false;
+  var startTime = 0, nextLoopIdx = 0, scheduled = [];
+  var timer = null;
+
+  // ---- build ----
+  function build() {
+    // keyboard + grid rows
+    var kb = $('kbKeys'), grid = $('grid');
+    for (var r = 0; r < ROWS; r++) {
+      var midi = HIGH - r;
+      var isWhite = WHITE[midi % 12];
+      var isC = (midi % 12 === 0);
+
+      var key = el('div', 'kb-key ' + (isWhite ? 'white' : 'black') + (isC ? ' cmark' : ''));
+      key.dataset.info = isC ? 'octave' : 'keyboard';
+      key.dataset.midi = midi;
+      if (isC) key.textContent = noteName(midi);
+      key.addEventListener('click', function () { audition(+this.dataset.midi, this); });
+      kb.appendChild(key);
+
+      var row = el('div', 'grow ' + (isWhite ? 'white' : 'black') + (isC ? ' cline' : ''));
+      row.style.top = (r * parseFloat(cssVar('--row-h'))) + 'px';
+      grid.appendChild(row);
+    }
+
+    // grid vertical lines (sixteenths, beats heavier)
+    for (var s = 0; s <= BEATS * 4; s++) {
+      var line = el('div', 'gline' + (s % 4 === 0 ? ' beat' : ''));
+      line.style.left = (s / (BEATS * 4) * 100) + '%';
+      grid.appendChild(line);
+    }
+
+    // notes
+    var rowH = parseFloat(cssVar('--row-h'));
+    NOTES.forEach(function (n, i) {
+      var midi = n[0], st = n[1], len = n[2], vel = n[3];
+      var nd = el('div', 'note');
+      nd.dataset.info = 'note';
+      nd.dataset.idx = i;
+      nd.style.left = (st / BEATS * 100) + '%';
+      nd.style.width = 'calc(' + (len / BEATS * 100) + '% - 1px)';
+      nd.style.top = ((HIGH - midi) * rowH + 1.5) + 'px';
+      nd.addEventListener('click', function () {
+        audition(midi, null);
+        showInfo('note', noteMeta(i));
+        litNote(i);
+      });
+      nd.addEventListener('mouseover', function () { showInfo('note', noteMeta(i)); });
+      grid.appendChild(nd);
+    });
+
+    // velocity stalks
+    var vl = $('velLane');
+    NOTES.forEach(function (n, i) {
+      var st = n[1], vel = n[3];
+      var x = st / BEATS * 100;
+      var hPct = Math.max(4, vel / 127 * 100);
+      var stalk = el('div', 'vstalk');
+      stalk.style.left = x + '%';
+      stalk.style.height = 'calc((100% - 12px) * ' + (vel / 127) + ' + 6px)';
+      stalk.dataset.idx = i;
+      var head = el('div', 'vhead');
+      head.style.left = x + '%';
+      head.style.bottom = 'calc((100% - 12px) * ' + (vel / 127) + ' + 2px)';
+      head.dataset.idx = i;
+      var velClick = function () { showInfo('velocity', null); litVel(i); };
+      stalk.addEventListener('click', velClick);
+      head.addEventListener('click', velClick);
+      stalk.addEventListener('mouseover', function () { showInfo('velocity', null); });
+      head.addEventListener('mouseover', function () { showInfo('velocity', null); });
+      vl.appendChild(stalk); vl.appendChild(head);
+    });
+  }
+
+  function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name); }
+
+  function noteMeta(i) {
+    var n = NOTES[i];
+    var lenLabel = lengthLabel(n[2]);
+    return 'Pitch <b>' + noteName(n[0]) + '</b>   Length <b>' + lenLabel + '</b>   Velocity <b>' + n[3] + '</b>';
+  }
+  function lengthLabel(beats) {
+    var map = { 1: '1/4', 0.5: '1/8', 0.25: '1/16', 0.75: 'dotted 1/8', 1.5: 'dotted 1/4', 2: '1/2' };
+    return map[beats] || (beats + ' beats');
+  }
+
+  function litNote(i) {
+    document.querySelectorAll('.note.lit, .vstalk.lit, .vhead.lit').forEach(function (e) { e.classList.remove('lit'); });
+    var nd = document.querySelector('.note[data-idx="' + i + '"]');
+    if (nd) { nd.classList.add('lit'); setTimeout(function () { nd.classList.remove('lit'); }, 320); }
+  }
+  function litVel(i) {
+    document.querySelectorAll('.vstalk.lit, .vhead.lit').forEach(function (e) { e.classList.remove('lit'); });
+    document.querySelectorAll('.vstalk[data-idx="' + i + '"], .vhead[data-idx="' + i + '"]').forEach(function (e) {
+      e.classList.add('lit'); setTimeout(function () { e.classList.remove('lit'); }, 320);
+    });
+  }
+
+  // ---- ruler + terms ----
+  function rulerLabel(beat) {
+    if (daw === 'ableton') return '1.' + (beat + 1);
+    if (daw === 'protools') return '1|' + (beat + 1);
+    return String(beat + 1);
+  }
+  function buildRuler() {
+    var ruler = $('ruler');
+    ruler.querySelectorAll('.bt, .lbl').forEach(function (e) { e.remove(); });
+    for (var s = 0; s <= BEATS * 4; s++) {
+      var t = el('div', 'bt' + (s % 4 === 0 ? ' beat' : ''));
+      t.style.left = (s / (BEATS * 4) * 100) + '%';
+      ruler.appendChild(t);
+    }
+    for (var b = 0; b < BEATS; b++) {
+      var lbl = el('div', 'lbl', rulerLabel(b));
+      lbl.style.left = (b / BEATS * 100) + '%';
+      ruler.appendChild(lbl);
+    }
+  }
+
+  function applyTerms() {
+    var t = TERMS[daw];
+    document.querySelectorAll('[data-term]').forEach(function (n) { n.textContent = t[n.dataset.term]; });
+    document.querySelectorAll('#dawToggle button').forEach(function (b) { b.classList.toggle('active', b.dataset.daw === daw); });
+    buildRuler();
+    renderInfo();
+    if (!playing) setPosition(0);
+  }
+
+  // ---- info ----
+  function renderInfo() {
+    var box = $('info');
+    if (!infoKey) { box.innerHTML = '<div class="info-empty">Hover over or tap anything</div>'; return; }
+    var e = INFO[infoKey];
+    if (!e) { box.innerHTML = '<div class="info-empty">Hover over or tap anything</div>'; return; }
+    var h = typeof e.h === 'function' ? e.h(TERMS[daw]) : e.h;
+    box.innerHTML = '';
+    box.appendChild(el('div', 'info-name', h));
+    box.appendChild(el('div', 'info-body', e.b));
+    if (infoExtra) { var m = el('div', 'info-meta'); m.innerHTML = infoExtra; box.appendChild(m); }
+  }
+  function showInfo(key, extra) {
+    if (key === infoKey && extra === infoExtra) return;
+    infoKey = key; infoExtra = extra || null;
+    renderInfo();
+  }
+  document.addEventListener('mouseover', function (e) {
+    var n = e.target.closest('[data-info]');
+    if (n && n.dataset.info !== 'note' && n.dataset.info !== 'velocity') showInfo(n.dataset.info, null);
+  });
+  document.addEventListener('pointerdown', function (e) {
+    var n = e.target.closest('[data-info]');
+    if (n && n.dataset.info !== 'note' && n.dataset.info !== 'velocity') showInfo(n.dataset.info, null);
+  });
+
+  // ---- audio ----
+  function b64ToArrayBuffer(b64) {
+    var bin = atob(b64), len = bin.length, bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes.buffer;
+  }
+  function ensureCtx() {
+    if (ctx) return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    ctx = new AC();
+    masterGain = ctx.createGain();
+    masterGain.gain.value = 1;
+    masterGain.connect(ctx.destination);
+  }
+  function initAudio() {
+    ensureCtx();
+    ctx.decodeAudioData(b64ToArrayBuffer(LOOP_B64), function (buf) {
+      loopBuf = buf; ready = true; $('loading').remove();
+    }, function () { $('loading').textContent = 'Audio failed to load'; });
+  }
+
+  function audition(midi, keyEl) {
+    ensureCtx(); ctx.resume();
+    if (keyEl) { keyEl.classList.add('lit'); setTimeout(function () { keyEl.classList.remove('lit'); }, 200); }
+    var now = ctx.currentTime;
+    var o = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter();
+    o.type = 'triangle'; o.frequency.value = freq(midi);
+    lp.type = 'lowpass'; lp.frequency.value = 900; lp.Q.value = 0.6;
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.5, now + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+    o.connect(lp); lp.connect(g); g.connect(masterGain);
+    o.start(now); o.stop(now + 0.5);
+  }
+
+  function scheduleLoop(idx) {
+    var when = startTime + idx * LOOP;
+    var src = ctx.createBufferSource();
+    src.buffer = loopBuf; src.connect(masterGain);
+    src.start(when); src.stop(when + LOOP + 0.01);
+    scheduled.push(src);
+  }
+  function tick() {
+    var ahead = ctx.currentTime + 0.25;
+    while (startTime + nextLoopIdx * LOOP < ahead) { scheduleLoop(nextLoopIdx); nextLoopIdx++; }
+    if (scheduled.length > 24) scheduled = scheduled.slice(-12);
+  }
+  function play() {
+    if (!ready || playing) return;
+    ensureCtx(); ctx.resume();
+    playing = true;
+    startTime = ctx.currentTime + 0.06;
+    nextLoopIdx = 0;
+    tick();
+    timer = setInterval(tick, 40);
+    $('playBtn').classList.add('active');
+  }
+  function stop() {
+    if (timer) clearInterval(timer);
+    timer = null;
+    scheduled.forEach(function (s) { try { s.stop(); } catch (e) {} });
+    scheduled = [];
+    playing = false;
+    $('playBtn').classList.remove('active');
+    setPosition(0);
+  }
+
+  function setPosition(frac) {
+    $('playhead').style.left = (frac * 100) + '%';
+    var beats = frac * BEATS;
+    var beat = Math.floor(beats) % 4;
+    var six = Math.floor((beats - Math.floor(beats)) * 4);
+    var sep = daw === 'ableton' ? '.' : (daw === 'protools' ? '|' : ' ');
+    $('posLive').textContent = '1' + sep + (beat + 1) + sep + (six + 1);
+  }
+
+  function frame() {
+    if (playing && ctx) {
+      var t = ctx.currentTime - startTime;
+      if (t < 0) t = 0;
+      setPosition((t % LOOP) / LOOP);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---- wire ----
+  $('playBtn').addEventListener('click', play);
+  $('stopBtn').addEventListener('click', stop);
+  $('loopBtn').addEventListener('click', function () {
+    // loop is always on in this view; press just reaffirms and shows info
+    $('loopBtn').classList.add('active');
+    showInfo('loop', null);
+  });
+  $('dawToggle').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-daw]');
+    if (!b) return;
+    daw = b.dataset.daw;
+    applyTerms();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.code === 'Space' && !e.target.closest('input')) {
+      e.preventDefault();
+      if (playing) stop(); else play();
+    }
+  });
+
+  build();
+  applyTerms();
+  setPosition(0);
+  initAudio();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
