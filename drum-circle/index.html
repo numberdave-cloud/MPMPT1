@@ -253,6 +253,7 @@ const ROOM_DEFAULT = "main";
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
 <script>
 (() => {
@@ -322,37 +323,47 @@ const ROOM_DEFAULT = "main";
     const usersRef  = db.ref(base + "/users");
     const configRef = db.ref(base + "/config");
     const meRef = usersRef.child(uid);
-    meRef.onDisconnect().remove();
 
-    usersRef.once("value").then(snap => {
-      const taken = new Set();
-      snap.forEach(c => { const v=c.val(); if(v&&v.color) taken.add(v.color); });
-      const color = HOST ? HOST_COLOR : (PALETTE.find(c=>!taken.has(c)) || PALETTE[Math.floor(Math.random()*PALETTE.length)]);
-      meRef.update({ color, t: firebase.database.ServerValue.TIMESTAMP });
+    // Sign in anonymously so the database rules can require auth != null.
+    // Resolves either way: if the Anonymous provider isn't switched on yet,
+    // the page still runs under open rules, so deploy order doesn't matter.
+    const authReady = (firebase.auth
+      ? firebase.auth().signInAnonymously().catch(e=>{ console.warn("anon sign-in unavailable:", e && e.code); })
+      : Promise.resolve());
+    const whenReady = fn => authReady.then(fn);
+
+    whenReady(()=>{
+      meRef.onDisconnect().remove();
+      usersRef.once("value").then(snap => {
+        const taken = new Set();
+        snap.forEach(c => { const v=c.val(); if(v&&v.color) taken.add(v.color); });
+        const color = HOST ? HOST_COLOR : (PALETTE.find(c=>!taken.has(c)) || PALETTE[Math.floor(Math.random()*PALETTE.length)]);
+        meRef.update({ color, t: firebase.database.ServerValue.TIMESTAMP });
+      });
     });
 
     return {
       live:true,
-      onNotes:f=>notesRef.on("value",s=>{notes=s.val()||{};f();}),
-      onUsers:f=>usersRef.on("value",s=>{users=s.val()||{};f();}),
-      onConfig:f=>configRef.on("value",s=>{cfg=normaliseCfg(s.val());f();}),
-      placeNote:(k,v)=>notesRef.child(k).set(v),
-      removeNote:k=>notesRef.child(k).remove(),
-      moveNote:(from,to,v)=>{notesRef.child(from).remove();notesRef.child(to).set(v);},
-      clearNotes:()=>notesRef.remove(),
-      setConfig:patch=>configRef.update(patch),
-      updateUser:patch=>meRef.update(patch),
-      seedConfigIfAbsent:()=>configRef.once("value").then(s=>{ if(!s.exists()) configRef.set(CFG_DEFAULTS()); }),
+      onNotes:f=>whenReady(()=>notesRef.on("value",s=>{notes=s.val()||{};f();})),
+      onUsers:f=>whenReady(()=>usersRef.on("value",s=>{users=s.val()||{};f();})),
+      onConfig:f=>whenReady(()=>configRef.on("value",s=>{cfg=normaliseCfg(s.val());f();})),
+      placeNote:(k,v)=>whenReady(()=>notesRef.child(k).set(v)),
+      removeNote:k=>whenReady(()=>notesRef.child(k).remove()),
+      moveNote:(from,to,v)=>whenReady(()=>{notesRef.child(from).remove();notesRef.child(to).set(v);}),
+      clearNotes:()=>whenReady(()=>notesRef.remove()),
+      setConfig:patch=>whenReady(()=>configRef.update(patch)),
+      updateUser:patch=>whenReady(()=>meRef.update(patch)),
+      seedConfigIfAbsent:()=>whenReady(()=>configRef.once("value").then(s=>{ if(!s.exists()) configRef.set(CFG_DEFAULTS()); })),
       trimToAllowance:(limit)=>{
         const lim=(limit==null?cfg.allowance:limit);
-        notesRef.once("value").then(s=>{
+        whenReady(()=>notesRef.once("value").then(s=>{
           const all=s.val()||{}, byUser={};
           Object.entries(all).forEach(([k,v])=>{ if(v.uid&&v.uid!=="host"){(byUser[v.uid]=byUser[v.uid]||[]).push([k,v]);} });
           Object.values(byUser).forEach(list=>{
             list.sort((a,b)=>(b[1].t||0)-(a[1].t||0));
             list.slice(lim).forEach(([k])=>notesRef.child(k).remove());
           });
-        });
+        }));
       }
     };
   }

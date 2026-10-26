@@ -80,6 +80,16 @@ Sync on the IAC input under Link Tempo MIDI.
 - Move distance is Manhattan (lane changes allowed). Switch to horizontal-only if
   wanted.
 
-Last updated: 2026-09-21 — v1.1. Added player initials + note labels, delete-token
+## Security
+- Page signs each visitor in anonymously (Firebase Anonymous auth) before any DB
+  access, so the DB rules can require `auth != null`. Backward-compatible: if the
+  Anonymous provider is off, the page still runs under open rules (no downtime on
+  deploy). Recommended rules once Anonymous sign-in is enabled:
+  `{ "rules": { ".read": "auth != null", ".write": "auth != null" } }`
+- This stops the "database is public" warnings and blocks unauthenticated scripts.
+  It does not restrict to enrolled students (anyone loading the page gets a token);
+  that is the intended level for a class tool.
+
+Last updated: 2026-10-26 — v1.2. Added anonymous Firebase auth so the database rules can require sign-in; backward-compatible with open rules.
 and move-distance strips, player-side room list and `.mid` download, and MIDI
 clock/start/stop out (page as master).
