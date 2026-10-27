@@ -42,13 +42,17 @@
     padding: 18px;
     display: flex;
     justify-content: center;
-    overflow-x: auto;
+    align-items: flex-start;
+    overflow: hidden;
   }
 
+  .stage { position: relative; flex: 0 0 auto; }
+
   .rack {
-    position: relative;
+    position: absolute;
+    top: 0; left: 0;
     width: 900px;
-    min-width: 900px;
+    transform-origin: top left;
     background: var(--panel);
     border: 3px solid var(--frame);
     border-radius: 22px;
@@ -328,6 +332,7 @@
 </style>
 </head>
 <body>
+  <div class="stage" id="stage">
   <div class="rack">
     <div class="top">
       <div class="title">Velocity + Swing</div>
@@ -374,6 +379,7 @@
 
     <div class="hint" id="hint"></div>
     <div class="toast" id="toast"></div>
+  </div>
   </div>
 
 <script>
@@ -769,6 +775,20 @@
   loadDefault();
   buildGrid();
   buildKnob();
+
+  // ---- scale the 900px rack to fit the page while keeping its ratio ----
+  var stageEl = document.getElementById('stage');
+  var rackEl = document.querySelector('.rack');
+  function fitStage() {
+    var avail = document.documentElement.clientWidth - 36;   // body padding 18 each side
+    var z = Math.max(0.2, Math.min(1, avail / 900));
+    rackEl.style.transform = 'scale(' + z + ')';
+    stageEl.style.width = (900 * z) + 'px';
+    stageEl.style.height = (rackEl.offsetHeight * z) + 'px';
+  }
+  window.addEventListener('resize', fitStage);
+  window.addEventListener('load', fitStage);
+  fitStage();
 </script>
 </body>
 </html>

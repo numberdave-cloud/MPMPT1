@@ -9,7 +9,7 @@ Live URL: https://numberdave-cloud.github.io/MPMPT1/velocity-swing/
 
 ## Canvas embed
 
-Height 580 (non-default). The page is a fixed 900 px wide and runs about 539 px tall at every width, so 580 clears it with margin (and covers the horizontal scrollbar when the Canvas column is narrower than 900). The width is deliberately locked so the 16-step grid keeps its proportions instead of cramping; on a narrow column the page scrolls sideways rather than squashing.
+Height 580 (non-default). The rack is laid out at a fixed 900 px and then scaled with a CSS transform to fit the width it is given, so the 16-step grid keeps its proportions instead of cramping or cropping on a narrow column. At full size it is about 539 px tall, so 580 clears it with margin; on a narrower column it scales down and sits shorter, leaving a little space below. The embed width stays 100%.
 
 ```html
 <iframe src="https://numberdave-cloud.github.io/MPMPT1/velocity-swing/" title="Velocity + Swing" width="100%" height="580" style="border: none;" allow="autoplay" loading="lazy"></iframe>
@@ -17,7 +17,7 @@ Height 580 (non-default). The page is a fixed 900 px wide and runs about 539 px 
 
 ## Build state
 
-v1.0, shipped 2026-10-27. Not yet verified in Canvas.
+v1.1, shipped 2026-10-27. Not yet verified in Canvas.
 
 ## How it works
 
@@ -42,4 +42,5 @@ v1.0, shipped 2026-10-27. Not yet verified in Canvas.
 
 ## Last updated
 
+2026-10-27 — v1.1: rack now scales with a transform to fit the page width while holding its ratio (the fixed 900 px layout was cropping narrow Canvas columns).
 2026-10-27 — initial ship (v1.0).
