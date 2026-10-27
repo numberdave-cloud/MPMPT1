@@ -27,7 +27,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Bar Anatomy | `bar-anatomy/` | Composition | live (v1.1, not yet verified in Canvas) | YES |
 | Basic DAW Interface | `first-daw/` | Composition | live (v1.3, not yet verified in Canvas) | YES |
 | Basic Piano Roll | `basic-piano-roll/` | Composition | live (v1.0, not yet verified in Canvas) | YES |
-| Velocity + Swing | `velocity-swing/` | Composition | live (v1.1, not yet verified in Canvas) | YES |
+| Velocity + Swing | `velocity-swing/` | Composition | live (v1.2, not yet verified in Canvas) | YES |
 | Timbre Comparison | `timbre-comparison/` | Composition | live (v1.0, not yet verified in Canvas) | YES |
 | Vintage Sampler | `vintage-sampler/` | Composition | live | YES |
 | Character Generator | `character-generator/` | Composition | live | YES |
