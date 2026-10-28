@@ -17,7 +17,7 @@ Categories: Composition · Mixing · Arranging · Trainers · Miscellaneous
 | Step Sequencer v2 [Drums, sampled, rack-card reskin] | `step-sequencer-v2/` | Composition | live (v2.0, not yet verified in Canvas) | YES |
 | Melodic Step Sequencer | `melodic-sequencer/` | Composition | live | YES |
 | Melodic Step Sequencer v2 [rack-card reskin, master fader, hidden filter panel] | `melodic-sequencer-v2/` | Composition | live (v2.0, not yet verified in Canvas) | YES |
-| Bass Step Sequencer [black Basic-DAW card, rhythm presets, synth-engine easter egg] | `bass-sequencer/` | Composition | live (v1.0, not yet verified in Canvas) | YES |
+| Bass Step Sequencer [black Basic-DAW card, rhythm presets, synth-engine easter egg] | `bass-sequencer/` | Composition | live (v1.1, not yet verified in Canvas) | YES |
 | Quantisation | `quantise/` | Composition | live | YES |
 | Mix Balance [Industrial] | `mix-balance-industrial/` | Mixing | live (v1.1, not yet verified in Canvas) | YES |
 | Mix Balance [Reggae] | `mix-balance-reggae/` | Mixing | live (v1.1, not yet verified in Canvas) | YES |

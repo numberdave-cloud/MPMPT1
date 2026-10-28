@@ -580,7 +580,6 @@
   <div class="preset-wrap" data-info="preset">
     <div class="preset-head">
       <span class="preset-label">Rhythm Presets</span>
-      <span class="preset-note" id="presetNote">placeholder patterns &mdash; final MIDI pending</span>
     </div>
     <div class="preset-btns" id="presetBtns"></div>
   </div>
@@ -1377,13 +1376,13 @@ const PRESETS = [
   {
     id: 'eighths',
     name: 'Steady 8ths',
-    info: 'A root note on every eighth note — the plainest driving bassline there is. Nothing fancy, just the pulse. Sits straight on top of a four-on-the-floor kick.',
+    info: "A steady pulse of eighth notes. Holds down the beat and the equal spaces in between. Widely used in rock to give a sense of drive to the bass.",
     notes: [0,2,4,6,8,10,12,14].map(s => ({ step: s, row: ROW_A2 }))
   },
   {
     id: 'octaves',
     name: 'Octave Jumps',
-    info: 'The root on the beat, the octave above on the offbeat. The bounce between the two As is the engine of disco, Italo and a lot of house. Shown here across the one octave the grid has (A2 up to A3).',
+    info: "The disco octave bassline. So called because it features widely in disco and disco influenced music. The low octave holds down the beat and the high octave fills in the spaces. Gives a song the driving pulse of the eighth note line but with extra excitement.",
     notes: [
       {step:0,row:ROW_A2},{step:2,row:ROW_A3},{step:4,row:ROW_A2},{step:6,row:ROW_A3},
       {step:8,row:ROW_A2},{step:10,row:ROW_A3},{step:12,row:ROW_A2},{step:14,row:ROW_A3}
@@ -1392,31 +1391,31 @@ const PRESETS = [
   {
     id: 'tresillo',
     name: 'Tresillo',
-    info: 'The 3–3–2 cross-rhythm underneath most Latin and a lot of modern pop. Three hits, a gap, then it lands again. Count it as ONE-and-a, TWO-and-a, THREE-and.',
+    info: "A Latin American rhythm that dominated 2010s pop music. You will still find this rhythm hiding everywhere from techno to ballads. Adds a syncopated feel to the bass that restarts every half a bar.",
     notes: [0,3,6,8,11,14].map(s => ({ step: s, row: ROW_A2 }))
   },
   {
     id: 'clave',
     name: 'Son Clave (3-2)',
-    info: 'The son clave, the backbone of Afro-Cuban music. Five hits split 3 on the first bar-half, 2 on the second. Here the whole 3-2 pattern is folded into one bar on the root.',
+    info: "Another Latin American rhythm. Start with a Tresillo and then change the pattern in the second half. Gives the syncopation with more stability and variation.",
     notes: [0,3,6,10,12].map(s => ({ step: s, row: ROW_A2 }))
   },
   {
     id: 'offbeat',
     name: 'Offbeat',
-    info: 'The root on the offbeats only — the "and" of every beat, never on the beat itself. Leaves the downbeat to the kick and springs up between them. The pulse of reggae, ska and a lot of house.',
+    info: "Playing notes right between the kicks. Used in a lot of electronic music where the bassdrum has so much low end that it doesn't make sense to have a bass note at the same time. Trance adjacent styles use this a lot.",
     notes: [2,6,10,14].map(s => ({ step: s, row: ROW_A2 }))
   },
   {
     id: 'psytrance',
     name: 'Psytrance',
-    info: 'The rolling psytrance bass: a note on every sixteenth except the beat, where the kick lands. Blank, note, note, note, over and over. Lock it to a four-on-the-floor kick and it drives the whole track.',
+    info: "The trance gallop. Uses the three 16th notes in every beat that the kick doesn't play on. Has a distinct frenetic energy that suits the style. If you were to offset the pattern back by a 16th note you would have the same gallop rhythm used by metal guitarists.",
     notes: [1,2,3,5,6,7,9,10,11,13,14,15].map(s => ({ step: s, row: ROW_A2 }))
   },
   {
     id: 'giorgio',
     name: 'Giorgio',
-    info: 'A Moroder-style sixteenth-note sequence: four D, two low A, two C, then the whole lot again. The hypnotic arpeggiated bass behind "I Feel Love" and most of what came after it.',
+    info: "I feel love.",
     notes: [
       {step:0,row:ROW_D3},{step:1,row:ROW_D3},{step:2,row:ROW_D3},{step:3,row:ROW_D3},
       {step:4,row:ROW_A2},{step:5,row:ROW_A2},{step:6,row:ROW_C3},{step:7,row:ROW_C3},

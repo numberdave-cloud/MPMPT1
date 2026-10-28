@@ -18,7 +18,7 @@ Height 920 (non-default). The card measures ~871px at desktop widths (~907px bod
 
 ## Build state
 
-v1.0, shipped 2026-10-28. Not yet verified in Canvas.
+v1.1, updated 2026-10-29 (final preset copy, placeholder note removed). v1.0 shipped 2026-10-28. Not yet verified in Canvas.
 
 ## Controls
 
@@ -35,15 +35,15 @@ v1.0, shipped 2026-10-28. Not yet verified in Canvas.
 
 | Name | Pattern (16-step grid, row A2 = low root unless noted) |
 | --- | --- |
-| Steady 8ths | root on every 8th: steps 0,2,4,6,8,10,12,14 — **placeholder** |
-| Octave Jumps | root on beats, A3 (octave) on offbeats — **placeholder** |
-| Tresillo | 3-3-2 cross-rhythm: steps 0,3,6,8,11,14 — **placeholder** |
-| Son Clave (3-2) | steps 0,3,6,10,12 — **placeholder** |
-| Offbeat | low A on the offbeats only: steps 2,6,10,14 (Dave's spec) |
-| Psytrance | every 16th except the beats: all steps bar 0,4,8,12 (Dave's spec) |
-| Giorgio | D D D D, A(low) A, C C, repeated ×2 across the bar (Dave's spec) |
+| Steady 8ths | root on every 8th: steps 0,2,4,6,8,10,12,14 |
+| Octave Jumps | root on beats, A3 (octave) on offbeats |
+| Tresillo | 3-3-2 cross-rhythm: steps 0,3,6,8,11,14 |
+| Son Clave (3-2) | steps 0,3,6,10,12 |
+| Offbeat | low A on the offbeats only: steps 2,6,10,14 |
+| Psytrance | every 16th except the beats: all steps bar 0,4,8,12 |
+| Giorgio | D D D D, A(low) A, C C, repeated ×2 across the bar |
 
-The first four are placeholder patterns programmed from the named rhythms, pending final preset MIDI from Dave. The header note "placeholder patterns — final MIDI pending" stays until all presets are finalised. Swapping real patterns in is data-only: edit the `notes` arrays in the `PRESETS` array (each entry is `{step, row}`; rows are 0=A3 top … 7=A2 bottom).
+All seven patterns are final (Dave confirmed 2026-10-29); the "placeholder patterns" header note has been removed. The info-panel copy for each preset is Dave's own words, locked 2026-10-29. To change a pattern, edit the `notes` arrays in the `PRESETS` array (each entry is `{step, row}`; rows are 0=A3 top … 7=A2 bottom); the preset's `info` string holds its copy.
 
 ## Synth engine (hidden easter egg)
 
@@ -77,10 +77,12 @@ The defaults live in the `let synth*` declarations near the top of the script; e
 ## Open decisions / TODOs
 
 - Verify playback, MIDI export download and embed height live in Canvas.
-- Replace the four placeholder preset patterns (Steady 8ths, Octave Jumps, Tresillo, Son Clave) with final MIDI, then drop the "placeholder patterns" header note.
-- Info-panel copy is Claude's draft, pending Dave's approval (content-before-code).
+- Preset patterns and preset copy are final. Control info-panel copy (Play, Beat, Tempo, etc.) is still Claude's draft, pending Dave's approval.
+- Button labels still read "Steady 8ths", "Octave Jumps", "Son Clave (3-2)"; Dave's copy calls these "8th note", "octave", "Son clave". Rename not yet requested.
 - Safari/iOS OGG/WAV decoding untested.
 
 ## Last updated
+
+2026-10-29 — v1.1. Preset info-panel copy replaced with Dave's final words for all seven presets; all patterns confirmed final; "placeholder patterns — final MIDI pending" note removed from the preset row.
 
 2026-10-28 — v1.0 initial ship. Reskin of melodic-sequencer-v2 to the black Basic DAW card; added rhythm presets (incl. Offbeat, Psytrance, Giorgio to spec), full synth-engine easter egg with Dave's baked-in default patch; DAW toggle and copy/readout removed.
